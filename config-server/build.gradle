@@ -1,0 +1,21 @@
+dependencies {
+    implementation 'org.springframework.cloud:spring-cloud-config-server:4.2.1'
+}
+springBoot {
+    buildInfo()  // исполнение задачи по добавлению информации о сборке
+}
+
+bootJar {
+    launchScript()
+    // добавление атрибутов к манифесту
+    manifest {
+        attributes(
+                'Implementation-Title': 'Spring Cloud Config Server - сервер конфигураций',
+                'Build-Timestamp': System.currentTimeMillis(),
+                'Built-By': project.hasProperty('builtBy') ? project.property('builtBy') : 'default-builder'
+        )
+    }
+    // имя и версия создаваемого архива
+    archiveBaseName = 'config-server'
+    archiveVersion = '1.0.0'
+}

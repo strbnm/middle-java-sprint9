@@ -6,6 +6,12 @@ plugins {
     id 'org.openapi.generator' version "7.11.0"
 }
 
+dependencies {
+    implementation project(':eureka-server')
+    implementation project(':config-server')
+}
+
+
 allprojects {
     group = 'ru.strbnm'
     version = '1.0.0'
@@ -32,7 +38,9 @@ subprojects {
     configurations.configureEach {
         exclude group: 'com.vaadin.external.google', module: 'android-json'
     }
-
+    dependencies {
+        implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    }
     tasks.named('test') {
         useJUnitPlatform()
     }

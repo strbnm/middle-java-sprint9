@@ -1,2 +1,4 @@
 rootProject.name = 'bank-app'
+include 'config-server'
+include 'eureka-server'
 
