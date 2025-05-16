@@ -1,0 +1,64 @@
+//import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+    implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6:3.1.3.RELEASE'
+    implementation 'org.springframework:spring-jdbc:6.2.3'
+    implementation 'com.zaxxer:HikariCP:6.2.1'
+    implementation 'org.liquibase:liquibase-core:4.31.1'
+    implementation 'org.springframework.boot:spring-boot-starter-data-r2dbc'
+    implementation 'org.postgresql:r2dbc-postgresql:1.0.7.RELEASE'
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+    testRuntimeOnly 'com.h2database:h2'
+    implementation 'org.postgresql:postgresql'
+    testRuntimeOnly 'io.r2dbc:r2dbc-h2:1.0.0.RELEASE'
+    implementation 'org.springframework.cloud:spring-cloud-contract-wiremock:4.2.1'
+}
+springBoot {
+    buildInfo()  // исполнение задачи по добавлению информации о сборке
+}
+
+bootJar {
+    launchScript()
+    // добавление атрибутов к манифесту
+    manifest {
+        attributes(
+                'Implementation-Title': 'Reactive Spring Boot шаблон приложения',
+                'Build-Timestamp': System.currentTimeMillis(),
+                'Built-By': project.hasProperty('builtBy') ? project.property('builtBy') : 'default-builder'
+        )
+    }
+    // имя и версия создаваемого архива
+    archiveBaseName = 'template-application'
+    archiveVersion = '1.0.0'
+}
+
+//tasks.register('buildClient', GenerateTask) {
+//    generatorName.set("java")
+//    inputSpec.set("$rootDir/openapi/api-spec.yml")
+//    outputDir.set("$projectDir/build/generated")
+//    modelPackage.set("ru.strbnm.template.client.domain")
+//    invokerPackage.set("ru.strbnm.template.client")
+//    apiPackage.set("ru.strbnm.template.client.api")
+//    configOptions.set([
+//            hideGenerationTimestamp: "true",
+//            library                : "webclient",
+//            useJakartaEe           : "true",
+//            useTags                : "true",
+//            openApiNullable        : "false",
+//            serializableModel      : "true"
+//    ])
+//    typeMappings.set(Double: "java.math.BigDecimal")
+//}
+//
+//sourceSets.main.java.srcDir "$projectDir/build/generated/src/main/java"
+//
+//tasks.named('compileJava') {
+//    dependsOn(tasks.buildClient)
+//}

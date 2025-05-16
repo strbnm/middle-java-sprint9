@@ -1,0 +1,41 @@
+services:
+  template-db:
+    image: postgres:17.2
+    container_name: template-db
+    restart: "no"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgresql_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: ${TEMPLATE_DB_USERNAME:-template_db_user}
+      POSTGRES_PASSWORD: ${TEMPLATE_DB_PASSWORD:-template_db_password}
+      POSTGRES_DB: ${TEMPLATE_DB_NAME:-template_db}
+    healthcheck:
+      test: pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB
+      interval: 10s
+      timeout: 5s
+      start_period: 10s
+      retries: 5
+
+  template-service:
+    build:
+      context: .
+    image: template_service_app:latest
+    container_name: template-service
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      SPRING_DATASOURCE_URL: postgresql://${TEMPLATE_DB_HOST}:5432/${TEMPLATE_DB_NAME}
+      SPRING_DATASOURCE_USERNAME: ${TEMPLATE_DB_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${TEMPLATE_DB_PASSWORD}
+      SERVER_PORT: ${SERVER_PORT:-8080}
+    depends_on:
+      template-db:
+        condition: service_healthy
+    expose:
+      - "${SERVER_PORT}"
+    ports:
+      - "${SERVER_PORT}:${SERVER_PORT}"
+
+volumes:
+  postgresql_data:
