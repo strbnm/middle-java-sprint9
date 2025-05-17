@@ -9,6 +9,7 @@ plugins {
 dependencies {
     implementation project(':eureka-server')
     implementation project(':config-server')
+    implementation project(':api-gateway')
 }
 
 
@@ -45,6 +46,15 @@ subprojects {
         useJUnitPlatform()
     }
 
+    ext {
+        set('springCloudVersion', "2024.0.1")
+    }
+
+    dependencyManagement {
+        imports {
+            mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+        }
+    }
 }
 
 // Отключаем задачи Java в корневом проекте

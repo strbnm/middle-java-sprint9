@@ -1,0 +1,149 @@
+server:
+  port: 8080
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,refresh,busrefresh,busshutdown
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: ${EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE}
+spring:
+  application:
+    name: api-gateway
+  rabbitmq:
+    host: rabbitmq
+    port: 5672
+    username: ${RABBITMQ_DEFAULT_USER}
+    password: ${RABBITMQ_DEFAULT_PASS}
+
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled=true:
+      routes:
+        - id: front-ui-main
+          uri: lb://FRONT-UI
+          predicates:
+            - Path=/
+            - Path=/main
+            - Path=/signin
+            - Path=/signup
+            - Path=/logout
+          filters:
+            - RewritePath=/(?<segment>.*), /$\{segment}
+
+        - id: front-ui-user
+          uri: lb://FRONT-UI
+          predicates:
+            - Path=/user/**
+          filters:
+            - RewritePath=/user/?(?<segment>.*), /$\{segment}
+
+        - id: accounts-service
+          uri: lb://ACCOUNTS-SERVICE
+          predicates:
+            - Path=/accounts-service/**
+          filters:
+            - RewritePath=/accounts-service/?(?<segment>.*), /$\{segment}
+            - TokenRelay=accounts-client
+
+        - id: cash-service
+          uri: lb://CASH-SERVICE
+          predicates:
+            - Path=/cash-service/**
+          filters:
+            - RewritePath=/cash-service/?(?<segment>.*), /$\{segment}
+            - TokenRelay=cash-client
+
+        - id: blocker-service
+          uri: lb://BLOCKER-SERVICE
+          predicates:
+            - Path=/blocker-service/**
+          filters:
+            - RewritePath=/blocker-service/?(?<segment>.*), /$\{segment}
+            - TokenRelay=blocker-client
+
+        - id: exchange-service
+          uri: lb://EXCHANGE-SERVICE
+          predicates:
+            - Path=/exchange-service/**
+          filters:
+            - RewritePath=/exchange-service/?(?<segment>.*), /$\{segment}
+            - TokenRelay=exchange-client
+
+        - id: exchange-generator
+          uri: lb://EXCHANGE-GENERATOR
+          predicates:
+            - Path=/exchange-generator/**
+          filters:
+            - RewritePath=/exchange-generator/?(?<segment>.*), /$\{segment}
+            - TokenRelay=exchange-generator-client
+
+        - id: notifications-service
+          uri: lb://NOTIFICATIONS-SERVICE
+          predicates:
+            - Path=/notifications-service/**
+          filters:
+            - RewritePath=/notifications-service/?(?<segment>.*), /$\{segment}
+            - TokenRelay=notification-client
+
+        - id: transfer-service
+          uri: lb://TRANSFER-SERVICE
+          predicates:
+            - Path=/transfer-service/**
+          filters:
+            - RewritePath=/transfer-service/?(?<segment>.*), /$\{segment}
+            - TokenRelay=transfer-client
+
+  security:
+    oauth2:
+      client:
+        provider:
+          keycloak:
+            issuer-uri: http://keycloak:8080/realms/bank-app # Адрес сервера авторизации для получения токена
+        registration:
+          accounts-client:
+            provider: keycloak
+            client-id: accounts-client
+            client-secret: hKJt3edtezX3QB1O3428JlYrz47aTZWG
+            scope: resource.readwrite
+            authorization-grant-type: client_credentials
+          cash-client:
+            provider: keycloak
+            client-id: cash-client
+            client-secret: 8AIsLpxieP5bAp1n0k0NQhJpYLhoi4j8
+            scope: resource.readwrite
+            authorization-grant-type: client_credentials
+          exchange-client:
+            provider: keycloak
+            client-id: exchange-client
+            client-secret: oCLfPCsMxpZjr0aCTBJQ87oLRyq1n7sA
+            scope: resource.readwrite
+            authorization-grant-type: client_credentials
+          exchange-generator-client:
+            provider: keycloak
+            client-id: exchange-generator-client
+            client-secret: gsUZ6XdjAHp0St3ehdWa7QZsOTUWACMA
+            scope: resource.readwrite
+            authorization-grant-type: client_credentials
+          notification-client:
+            provider: keycloak
+            client-id: notification-client
+            client-secret: QRDpvtnm9Dzq0egNalASiaqTkvqNslbJ
+            scope: resource.readwrite
+            authorization-grant-type: client_credentials
+          transfer-client:
+            provider: keycloak
+            client-id: transfer-client
+            client-secret: 4rOAcwCISsXazgUUTeMj2oiAF4b0AfQV
+            scope: resource.readwrite
+            authorization-grant-type: client_credentials
+          blocker-client:
+            provider: keycloak
+            client-id: blocker-client
+            client-secret: BQ6nbL6boiezjUFQ4MHzMWCGDf3PETfp
+            scope: resource.readwrite
+            authorization-grant-type: client_credentials

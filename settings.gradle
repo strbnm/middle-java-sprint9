@@ -1,4 +1,5 @@
 rootProject.name = 'bank-app'
 include 'config-server'
 include 'eureka-server'
+include 'api-gateway'
 

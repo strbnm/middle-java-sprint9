@@ -1,5 +1,5 @@
 dependencies {
-    implementation 'org.springframework.cloud:spring-cloud-config-server:4.2.1'
+    implementation 'org.springframework.cloud:spring-cloud-config-server'
 }
 springBoot {
     buildInfo()  // исполнение задачи по добавлению информации о сборке

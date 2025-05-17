@@ -1,0 +1,26 @@
+dependencies {
+    implementation 'org.springframework.cloud:spring-cloud-starter-gateway'
+    implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'  // Для регистрации в Eureka и обнаружения других сервисов
+    implementation 'org.springframework.cloud:spring-cloud-starter-loadbalancer'  // Необходимо для DiscoveryClient
+    implementation 'org.springframework.cloud:spring-cloud-starter-config'  // Для взаимодействия с Config Server
+    implementation 'org.springframework.cloud:spring-cloud-starter-bus-amqp'  // Для работы Spring Cloud Bus c RabbitMQ
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'  //Для реализации SSO для сервисов
+}
+springBoot {
+    buildInfo()  // исполнение задачи по добавлению информации о сборке
+}
+
+bootJar {
+    launchScript()
+    // добавление атрибутов к манифесту
+    manifest {
+        attributes(
+                'Implementation-Title': 'API Gateway',
+                'Build-Timestamp': System.currentTimeMillis(),
+                'Built-By': project.hasProperty('builtBy') ? project.property('builtBy') : 'default-builder'
+        )
+    }
+    // имя и версия создаваемого архива
+    archiveBaseName = 'api-gateway'
+    archiveVersion = '1.0.0'
+}
