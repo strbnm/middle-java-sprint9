@@ -1,3 +1,12 @@
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+    org.springframework.http.server.reactive: DEBUG
+    org.springframework.web.reactive.function.client.ExchangeFunctions: TRACE
+    reactor.netty.http.client: DEBUG
+    reactor.netty.http.server: DEBUG
+    org.springframework.security.oauth2.client: TRACE
+    org.springframework.security.oauth2.client.web.reactive.function.client.ServerOAuth2AuthorizedClientExchangeFilterFunction: TRACE
 server:
   port: 8080
 management:
@@ -7,8 +16,12 @@ management:
         include: health,refresh,busrefresh,busshutdown
 eureka:
   client:
+    register-with-eureka: true
+    fetch-registry: true
     serviceUrl:
       defaultZone: ${EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE}
+    healthcheck:
+      enabled: true
 spring:
   application:
     name: api-gateway
@@ -22,7 +35,7 @@ spring:
     gateway:
       discovery:
         locator:
-          enabled=true:
+          enabled: true
       routes:
         - id: front-ui-main
           uri: lb://FRONT-UI
@@ -83,12 +96,12 @@ spring:
             - TokenRelay=exchange-generator-client
 
         - id: notifications-service
-          uri: lb://NOTIFICATIONS-SERVICE
+          uri: lb://notifications-service
           predicates:
             - Path=/notifications-service/**
           filters:
-            - RewritePath=/notifications-service/?(?<segment>.*), /$\{segment}
             - TokenRelay=notification-client
+            - RewritePath=/notifications-service/?(?<segment>.*), /$\{segment}
 
         - id: transfer-service
           uri: lb://TRANSFER-SERVICE
@@ -103,47 +116,54 @@ spring:
       client:
         provider:
           keycloak:
-            issuer-uri: http://keycloak:8080/realms/bank-app # Адрес сервера авторизации для получения токена
+            issuer-uri: ${KEYCLOAK_ISSUER_URL} # Адрес сервера авторизации для получения токена
         registration:
           accounts-client:
             provider: keycloak
             client-id: accounts-client
-            client-secret: hKJt3edtezX3QB1O3428JlYrz47aTZWG
+            client-secret: ${ACCOUNTS_CLIENT_SECRET}
             scope: resource.readwrite
             authorization-grant-type: client_credentials
+            clientAuthenticationMethod: client_secret_post
           cash-client:
             provider: keycloak
             client-id: cash-client
-            client-secret: 8AIsLpxieP5bAp1n0k0NQhJpYLhoi4j8
+            client-secret: ${CASH_CLIENT_SECRET}
             scope: resource.readwrite
             authorization-grant-type: client_credentials
+            clientAuthenticationMethod: client_secret_post
           exchange-client:
             provider: keycloak
             client-id: exchange-client
-            client-secret: oCLfPCsMxpZjr0aCTBJQ87oLRyq1n7sA
+            client-secret: ${EXCHANGE_CLIENT_SECRET}
             scope: resource.readwrite
             authorization-grant-type: client_credentials
+            clientAuthenticationMethod: client_secret_post
           exchange-generator-client:
             provider: keycloak
             client-id: exchange-generator-client
-            client-secret: gsUZ6XdjAHp0St3ehdWa7QZsOTUWACMA
+            client-secret: ${EXCHANGE_GENERATOR_CLIENT_SECRET}
             scope: resource.readwrite
             authorization-grant-type: client_credentials
+            clientAuthenticationMethod: client_secret_post
           notification-client:
             provider: keycloak
             client-id: notification-client
-            client-secret: QRDpvtnm9Dzq0egNalASiaqTkvqNslbJ
+            client-secret: ${NOTIFICATION_CLIENT_SECRET}
             scope: resource.readwrite
             authorization-grant-type: client_credentials
+            clientAuthenticationMethod: client_secret_post
           transfer-client:
             provider: keycloak
             client-id: transfer-client
-            client-secret: 4rOAcwCISsXazgUUTeMj2oiAF4b0AfQV
+            client-secret: ${TRANSFER_CLIENT_SECRET}
             scope: resource.readwrite
             authorization-grant-type: client_credentials
+            clientAuthenticationMethod: client_secret_post
           blocker-client:
             provider: keycloak
             client-id: blocker-client
-            client-secret: BQ6nbL6boiezjUFQ4MHzMWCGDf3PETfp
+            client-secret: ${BLOCKER_CLIENT_SECRET}
             scope: resource.readwrite
             authorization-grant-type: client_credentials
+            clientAuthenticationMethod: client_secret_post

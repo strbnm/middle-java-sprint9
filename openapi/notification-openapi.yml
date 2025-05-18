@@ -1,0 +1,76 @@
+openapi: 3.0.3
+info:
+  title: Notifications Service API
+  description: RESTful API для сервиса отправки уведомлений
+  version: 1.0.0
+
+paths:
+  /api/v1/notifications:
+    post:
+      summary: Регистрация нового сообщения для отправки
+      description: Регистрирует новое уведомление для отправки пользователю
+      operationId: notificationCreate
+      tags:
+        - Notifications Service
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NotificationRequest'
+      responses:
+        '201':
+          description: Сообщение успешно зарегистрировано
+          content:
+            application/json:
+              schema:
+                type: string
+        '400':
+          description: Неизвестный источник сообщения
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    NotificationRequest:
+      type: object
+      required:
+        - email
+        - message
+        - application
+      properties:
+        email:
+          type: string
+          format: email
+          example: user@example.com
+          description: Email пользователя, которому отправляется сообщение
+        message:
+          type: string
+          example: Пополнение счёта RUB на сумму 300.00 руб.
+          description: Текст сообщения
+        application:
+          type: string
+          enum:
+            - transfer-service
+            - cash-service
+            - accounts-service
+          example: transfer-service
+          description: Название микросервиса-источника уведомления
+
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Внутренняя ошибка сервера
+        status_code:
+          type: integer
+          example: 500

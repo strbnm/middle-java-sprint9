@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="AmplicodeJpaIdeaProjectConfig">
+  <component name="AmplicodeJpaIdeaProjectConfig" snapshotDbType="POSTGRES" ddlActionDbType="postgres">
+    <option name="liquibaseDirectory" value="db/changelog" />
     <option name="renamerInitialized" value="true" />
+    <option name="isSnapshotDb" value="false" />
+    <option name="snapshotModelValue" value="Default" />
+    <option name="includeToChangelogDirectory" value="notifications-service/src/main/resources/db/changelog/db.changelog-master.xml" />
   </component>
 </project>

@@ -1,0 +1,58 @@
+spring:
+  application:
+    name: notifications-service
+
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: ampq_user
+    password: ampq_pass
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8082/realms/bank-app
+
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5433/app_db
+    username: notifications_service_user
+    password: notifications_service_password
+    pool:
+      enabled: true                               # Включение пула соединений
+      initial-size: 10                            # Начальное количество соединений в пуле
+      max-size: 50                                # Максимальное количество соединений
+      max-idle-time: 30s                          # Время бездействия соединения перед закрытием
+      max-life-time: 10m                          # Максимальное время жизни соединения
+      validation-query: SELECT 1                  # SQL-запрос для проверки работоспособности соединения
+
+  liquibase:
+    enabled: true
+    url: jdbc:postgresql://localhost:5433/app_db
+    user: notifications_service_user
+    password: notifications_service_password
+    change-log: classpath:db/changelog/db.changelog-master.xml
+    contexts: prod
+
+  sql:
+    init:
+      mode: never
+
+openapi:
+  notificationService:
+    base-path: /
+
+springdoc:
+  swagger-ui:
+    enabled: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,refresh,busrefresh,busshutdown
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/

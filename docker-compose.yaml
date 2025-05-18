@@ -61,6 +61,13 @@ services:
     hostname: api-gateway
     environment:
       <<: *common-env
+      ACCOUNTS_CLIENT_SECRET: ${ACCOUNTS_CLIENT_SECRET}
+      CASH_CLIENT_SECRET: ${CASH_CLIENT_SECRET}
+      EXCHANGE_CLIENT_SECRET: ${EXCHANGE_CLIENT_SECRET}
+      EXCHANGE_GENERATOR_CLIENT_SECRET: ${EXCHANGE_GENERATOR_CLIENT_SECRET}
+      NOTIFICATION_CLIENT_SECRET: ${NOTIFICATION_CLIENT_SECRET}
+      TRANSFER_CLIENT_SECRET: ${TRANSFER_CLIENT_SECRET}
+      BLOCKER_CLIENT_SECRET: ${BLOCKER_CLIENT_SECRET}
     expose:
       - "8080"
     ports:
@@ -75,7 +82,7 @@ services:
       keycloak:
         condition: service_healthy
     healthcheck:
-      test: "curl --fail --silent localhost:8761/actuator/health | grep UP || exit 1"
+      test: "curl --fail --silent localhost:8080/actuator/health | grep UP || exit 1"
       interval: 20s
       timeout: 5s
       retries: 5
@@ -83,7 +90,67 @@ services:
     networks:
       - bank-net
 
+  notifications-service:
+    build:
+      context: ./notifications-service
+    image: notifications_service:1.0.0
+    container_name: notifications-service
+    hostname: notifications-service
+    environment:
+      <<: *common-env
+      NOTIFICATIONS_SERVICE_DB_HOST: ${NOTIFICATIONS_SERVICE_DB_HOST}
+      NOTIFICATIONS_SERVICE_DB_USER: ${NOTIFICATIONS_SERVICE_DB_USER}
+      NOTIFICATIONS_SERVICE_DB_PASSWORD: ${NOTIFICATIONS_SERVICE_DB_PASSWORD}
+    expose:
+      - "8080"
+    ports:
+      - "8083:8080"
+    depends_on:
+      spring-cloud-config-server:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+      notifications-service-db:
+        condition: service_healthy
+    healthcheck:
+      test: "curl --fail --silent localhost:8080/actuator/health | grep UP || exit 1"
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+    networks:
+      - bank-net
+
+  notifications-service-db:
+    image: postgres:17.2
+    container_name: notifications-service-db
+    hostname: notifications-service-db
+    restart: "no"
+    volumes:
+      - notification_service_db_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: ${NOTIFICATIONS_SERVICE_DB_USER}
+      POSTGRES_PASSWORD: ${NOTIFICATIONS_SERVICE_DB_PASSWORD}
+      POSTGRES_DB: app_db
+    expose:
+      - "5432"
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB
+      interval: 10s
+      timeout: 5s
+      start_period: 10s
+      retries: 5
+    networks:
+      - bank-net
+
   rabbitmq:
+    restart: always
     image: rabbitmq:3-management
     container_name: rabbitmq
     hostname: rabbitmq
@@ -125,6 +192,7 @@ services:
       KC_HTTP_ENABLED: 'true'
       KC_HEALTH_ENABLED: true
       KC_METRICS_ENABLED: true
+      KC_LOG_LEVEL: org.keycloak:DEBUG,org.jboss.resteasy:DEBUG
     volumes:
       - ./keycloak/:/opt/keycloak/data/import/
     depends_on:
@@ -164,3 +232,5 @@ networks:
 volumes:
   keycloak_db_data:
     name: keycloak_db_data
+  notification_service_db_data:
+    name: notification_service_db_data
