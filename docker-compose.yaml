@@ -1,6 +1,6 @@
 x-common-env: &common-env
-    EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka-server:8761/eureka/
-    KEYCLOAK_ISSUER_URL: http://keycloak:8080/realms/bank-app
+    EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: ${EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE:-http://eureka-server:8761/eureka/}
+    KEYCLOAK_ISSUER_URL: ${KEYCLOAK_ISSUER_URL:-http://keycloak:8080/realms/bank-app}
     CONFIG_SERVER_HOST: ${CONFIG_SERVER_HOST:-spring-cloud-config-server}
     CONFIG_SERVER_PORT: ${CONFIG_SERVER_PORT:-8888}
     RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}

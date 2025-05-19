@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.server.ServerWebExchange;
@@ -25,6 +26,7 @@ public class NotificationsController implements NotificationsServiceApi {
         this.notificationRepository = notificationRepository;
     }
 
+  @Transactional
   @Override
   public Mono<ResponseEntity<String>> notificationCreate(
           @Parameter(name = "NotificationRequest", description = "", required = true) @Valid @RequestBody Mono<NotificationRequest> notificationRequest,
@@ -38,7 +40,7 @@ public class NotificationsController implements NotificationsServiceApi {
                   .build();
 
           return notificationRepository.save(notification)
-                  .thenReturn(ResponseEntity.status(HttpStatus.CREATED).build());
+                  .thenReturn(ResponseEntity.status(HttpStatus.CREATED).body("Success"));
       });
   }
 

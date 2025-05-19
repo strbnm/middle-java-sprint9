@@ -1,9 +1,11 @@
 plugins {
     id 'java'
+    id 'groovy'
     id 'org.springframework.boot' version '3.4.4'
     id 'io.spring.dependency-management' version '1.1.7'
     id 'io.freefair.lombok' version '8.13.1'
     id 'org.openapi.generator' version "7.11.0"
+    id 'org.springframework.cloud.contract' version "4.2.1"
 }
 
 dependencies {
@@ -36,6 +38,7 @@ subprojects {
     apply plugin: 'io.spring.dependency-management'
     apply plugin: 'io.freefair.lombok'
     apply plugin: 'org.openapi.generator'
+    apply plugin: 'org.springframework.cloud.contract'
 
     configurations.configureEach {
         exclude group: 'com.vaadin.external.google', module: 'android-json'

@@ -1,8 +1,3 @@
-logging:
-  level:
-    reactor.netty.http.server: TRACE
-    org.springframework.http.server.reactive: TRACE
-
 openapi:
   notificationService:
     base-path: /

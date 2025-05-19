@@ -30,6 +30,8 @@ dependencies {
     testImplementation 'io.projectreactor:reactor-test:3.7.3'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     testImplementation 'org.springframework.security:spring-security-test'
+    testImplementation 'org.springframework.cloud:spring-cloud-starter-contract-verifier'
+    testImplementation 'io.rest-assured:spring-web-test-client:5.5.2'
 }
 
 springBoot {
@@ -80,4 +82,10 @@ sourceSets.main.java.srcDir "$projectDir/build/generated/src/main/java"
 
 tasks.named('compileJava') {
     dependsOn(tasks.openApiGenerate)
+}
+
+contracts {
+    testMode = "WebTestClient"
+    baseClassForTests = 'ru.strbnm.notifications_service.contractTest.BaseContractTest'
+    generatedTestJavaSourcesDir = project.file('src/contractTest/java/ru/strbnm/notifications_service/contractTest/generatedContract')
 }
