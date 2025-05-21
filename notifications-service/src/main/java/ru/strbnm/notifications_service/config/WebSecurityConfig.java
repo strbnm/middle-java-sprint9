@@ -12,7 +12,7 @@ import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 
 @Slf4j
-@Profile("!contracts")
+@Profile("!contracts & !test")
 @Configuration
 @EnableWebFluxSecurity
 @EnableReactiveMethodSecurity
@@ -31,14 +31,5 @@ public class WebSecurityConfig {
                     .authenticated())
         .csrf(ServerHttpSecurity.CsrfSpec::disable)
         .build();
-  }
-
-  @Bean
-  @Profile("contracts")
-  public SecurityWebFilterChain securityFilterChainTestContracts(ServerHttpSecurity http) {
-    return http
-            .authorizeExchange(exchanges -> exchanges.anyExchange().permitAll())
-            .csrf(ServerHttpSecurity.CsrfSpec::disable)
-            .build();
   }
 }
