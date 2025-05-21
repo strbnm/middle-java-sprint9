@@ -98,9 +98,9 @@ services:
     hostname: notifications-service
     environment:
       <<: *common-env
-      NOTIFICATIONS_SERVICE_DB_HOST: ${NOTIFICATIONS_SERVICE_DB_HOST}
-      NOTIFICATIONS_SERVICE_DB_USER: ${NOTIFICATIONS_SERVICE_DB_USER}
-      NOTIFICATIONS_SERVICE_DB_PASSWORD: ${NOTIFICATIONS_SERVICE_DB_PASSWORD}
+      SERVICE_DB_HOST: ${NOTIFICATIONS_SERVICE_DB_HOST}
+      SERVICE_DB_USER: ${NOTIFICATIONS_SERVICE_DB_USER}
+      SERVICE_DB_PASSWORD: ${NOTIFICATIONS_SERVICE_DB_PASSWORD}
     expose:
       - "8080"
     ports:
@@ -148,6 +148,66 @@ services:
       retries: 5
     networks:
       - bank-net
+
+  exchange-service:
+    build:
+      context: ./exchange-service
+    image: exchange_service:1.0.0
+    container_name: exchange-service
+    hostname: exchange-service
+    environment:
+      <<: *common-env
+      SERVICE_DB_HOST: ${EXCHANGE_SERVICE_DB_HOST}
+      SERVICE_DB_USER: ${EXCHANGE_SERVICE_DB_USER}
+      SERVICE_DB_PASSWORD: ${EXCHANGE_SERVICE_DB_PASSWORD}
+    expose:
+      - "8080"
+    ports:
+      - "8084:8080"
+    depends_on:
+      spring-cloud-config-server:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+      exchange-service-db:
+        condition: service_healthy
+    healthcheck:
+      test: "curl --fail --silent localhost:8080/actuator/health | grep UP || exit 1"
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+    networks:
+      - bank-net
+
+  exchange-service-db:
+    image: postgres:17.2
+    container_name: exchange-service-db
+    hostname: exchange-service-db
+    restart: "no"
+    volumes:
+      - exchange_service_db_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: ${EXCHANGE_SERVICE_DB_USER}
+      POSTGRES_PASSWORD: ${EXCHANGE_SERVICE_DB_PASSWORD}
+      POSTGRES_DB: app_db
+    expose:
+      - "5432"
+    ports:
+      - "5434:5432"
+    healthcheck:
+      test: pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB
+      interval: 10s
+      timeout: 5s
+      start_period: 10s
+      retries: 5
+    networks:
+      - bank-net
+
 
   rabbitmq:
     restart: always
@@ -234,3 +294,5 @@ volumes:
     name: keycloak_db_data
   notification_service_db_data:
     name: notification_service_db_data
+  exchange_service_db_data:
+    name: exchange_service_db_data

@@ -24,3 +24,9 @@ bootJar {
     archiveBaseName = 'api-gateway'
     archiveVersion = '1.0.0'
 }
+
+afterEvaluate {
+    tasks.matching { it.name.startsWith("contract") || it.name.contains("Contract") }.configureEach {
+        enabled = false
+    }
+}

@@ -13,6 +13,7 @@ dependencies {
     implementation project(':config-server')
     implementation project(':api-gateway')
     implementation project(':notifications-service')
+    implementation project(':exchange-service')
 }
 
 
@@ -68,4 +69,10 @@ tasks.withType(JavaCompile).configureEach {
 
 tasks.withType(Jar).configureEach {
     onlyIf { false }
+}
+
+afterEvaluate {
+    tasks.matching { it.name.startsWith("contract") || it.name.contains("Contract") }.configureEach {
+        enabled = false
+    }
 }

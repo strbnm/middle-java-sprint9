@@ -37,9 +37,9 @@ spring:
           issuer-uri: ${KEYCLOAK_ISSUER_URL}
 
   r2dbc:
-    url: r2dbc:postgresql://${NOTIFICATIONS_SERVICE_DB_HOST}:5432/app_db
-    username: ${NOTIFICATIONS_SERVICE_DB_USER}
-    password: ${NOTIFICATIONS_SERVICE_DB_PASSWORD}
+    url: r2dbc:postgresql://${SERVICE_DB_HOST}:5432/app_db
+    username: ${SERVICE_DB_USER}
+    password: ${SERVICE_DB_PASSWORD}
     pool:
       enabled: true                               # Включение пула соединений
       initial-size: 10                            # Начальное количество соединений в пуле
@@ -50,9 +50,9 @@ spring:
 
   liquibase:
     enabled: true
-    url: jdbc:postgresql://${NOTIFICATIONS_SERVICE_DB_HOST}:5432/app_db
-    user: ${NOTIFICATIONS_SERVICE_DB_USER}
-    password: ${NOTIFICATIONS_SERVICE_DB_PASSWORD}
+    url: jdbc:postgresql://${SERVICE_DB_HOST}:5432/app_db
+    user: ${SERVICE_DB_USER}
+    password: ${SERVICE_DB_PASSWORD}
     change-log: classpath:db/changelog/db.changelog-master.xml
     contexts: prod
 
