@@ -11,7 +11,9 @@ import ru.strbnm.notifications_service.contractTest.config.ContractTestSecurityC
 
 @ActiveProfiles("contracts")
 @Import(ContractTestSecurityConfig.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+    properties = {"spring.config.name=application-contracts"})
 public abstract class BaseContractTest {
 
   @Autowired protected WebTestClient webTestClient;
