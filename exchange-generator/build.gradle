@@ -1,0 +1,76 @@
+import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+dependencies {
+    implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'  // Для регистрации в Eureka и обнаружения других сервисов
+    implementation 'org.springframework.cloud:spring-cloud-starter-config'  // Для взаимодействия с Config Server
+    implementation 'org.springframework.cloud:spring-cloud-starter-bus-amqp'  // Для работы Spring Cloud Bus c RabbitMQ
+    implementation 'org.mapstruct:mapstruct:1.6.3'
+    annotationProcessor 'org.mapstruct:mapstruct-processor:1.6.3'
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.5'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'io.projectreactor:reactor-test:3.7.3'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testImplementation 'org.springframework.cloud:spring-cloud-starter-contract-verifier'
+    testImplementation 'io.rest-assured:spring-web-test-client:5.5.2'
+}
+
+springBoot {
+    buildInfo()  // исполнение задачи по добавлению информации о сборке
+}
+
+bootJar {
+    launchScript()
+    // добавление атрибутов к манифесту
+    manifest {
+        attributes(
+                'Implementation-Title': 'Сервис генерации курсов валют (Exchange Generator)',
+                'Build-Timestamp': System.currentTimeMillis(),
+                'Built-By': project.hasProperty('builtBy') ? project.property('builtBy') : 'default-builder'
+        )
+    }
+    // имя и версия создаваемого архива
+    archiveBaseName = 'exchange-generator'
+    archiveVersion = '1.0.0'
+}
+
+
+tasks.register('buildClient', GenerateTask) {
+    generatorName.set("java")
+    inputSpec.set("$rootDir/openapi/exchange-openapi.yml")
+    outputDir.set("$projectDir/build/generated")
+    modelPackage.set("ru.strbnm.exchange_generator.client.domain")
+    invokerPackage.set("ru.strbnm.exchange_generator.client")
+    apiPackage.set("ru.strbnm.exchange_generator.client.api")
+    configOptions.set([
+            hideGenerationTimestamp: "true",
+            library                : "webclient",
+            useJakartaEe           : "true",
+            useTags                : "true",
+            openApiNullable        : "false",
+            serializableModel      : "true",
+            additionalModelTypeAnnotations: "@lombok.RequiredArgsConstructor",
+    ])
+    typeMappings.set(Double: "java.math.BigDecimal")
+}
+
+sourceSets.main.java.srcDir "$projectDir/build/generated/src/main/java"
+
+tasks.named('compileJava') {
+    dependsOn(tasks.buildClient)
+}
+
+afterEvaluate {
+    tasks.matching { it.name.startsWith("contract") || it.name.contains("Contract") }.configureEach {
+        enabled = false
+    }
+}
+

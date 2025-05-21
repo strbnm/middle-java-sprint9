@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: exchange-generator
+
+  cloud:
+    config:
+      enabled: false
+
+eureka:
+  client:
+    enabled: false
+
+  rest:
+    exchange-service:
+      url: http://api-gateway:8080/exchange-service
