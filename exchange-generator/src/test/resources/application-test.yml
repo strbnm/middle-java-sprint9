@@ -12,4 +12,4 @@ eureka:
 
   rest:
     exchange-service:
-      url: http://api-gateway:8080/exchange-service
+      url: http://localhost:8080
