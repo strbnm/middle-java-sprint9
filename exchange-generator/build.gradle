@@ -20,6 +20,7 @@ dependencies {
     testImplementation 'io.projectreactor:reactor-test:3.7.3'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     testImplementation 'org.springframework.cloud:spring-cloud-starter-contract-verifier'
+    testImplementation 'org.springframework.cloud:spring-cloud-starter-contract-stub-runner'
     testImplementation 'io.rest-assured:spring-web-test-client:5.5.2'
 }
 
