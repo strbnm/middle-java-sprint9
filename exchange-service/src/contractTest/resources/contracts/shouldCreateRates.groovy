@@ -8,7 +8,7 @@ Contract.make {
         method 'POST'
         url '/api/v1/rates'
         body([
-                timestamp: anyNumber(),
+                timestamp: anyPositiveInt(),
                 rates: [
                         [title: "Доллар", name : "USD", value: anyNumber()],
                         [title: "Юань", name : "CNY", value: anyNumber()],
