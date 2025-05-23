@@ -17,6 +17,7 @@ import ru.strbnm.exchange_service.repository.ExchangeRateRepository;
 public class ExchangeServiceImpl implements ExchangeService {
 
   private final ExchangeRateRepository exchangeRateRepository;
+  private final String BASE_CURRENCY = "RUB";
 
   public ExchangeServiceImpl(ExchangeRateRepository exchangeRateRepository) {
     this.exchangeRateRepository = exchangeRateRepository;
@@ -25,30 +26,57 @@ public class ExchangeServiceImpl implements ExchangeService {
   @Override
   public Mono<BigDecimal> convert(String from, String to, BigDecimal amount) {
     if (from.equals(to)) return Mono.just(amount);
+    if (BASE_CURRENCY.equals(from)) {
+      return fromBaseCurrency(to, amount);
+    } else if (BASE_CURRENCY.equals(to)) {
+      return toBaseCurrency(from, amount);
+    } else {
+      return fromIntermediateCurrency(from, to, amount);
+    }
+  }
 
+  private Mono<BigDecimal> fromBaseCurrency(String to, BigDecimal amount) {
     return exchangeRateRepository
-        .findByCurrencyCode(from)
-        .zipWith(exchangeRateRepository.findByCurrencyCode(to))
-        .map(
-            tuple -> {
+        .findByCurrencyCode(to)
+        .map(toRate -> round(amount.multiply(toRate.getRateToRub())));
+  }
+
+  private Mono<BigDecimal> toBaseCurrency(String from, BigDecimal amount) {
+    return exchangeRateRepository
+            .findByCurrencyCode(from)
+            .map(fromRate -> round(amount.divide(fromRate.getRateToRub(), 8, RoundingMode.HALF_UP)));
+  }
+
+  private Mono<BigDecimal> fromIntermediateCurrency(String from, String to, BigDecimal amount) {
+    return exchangeRateRepository.findByCurrencyCode(from)
+            .zipWith(exchangeRateRepository.findByCurrencyCode(to))
+            .map(tuple -> {
               BigDecimal fromRate = tuple.getT1().getRateToRub();
               BigDecimal toRate = tuple.getT2().getRateToRub();
-              return amount.multiply(toRate).divide(fromRate, 8, RoundingMode.HALF_UP);
+              return round(amount.divide(fromRate, 8, RoundingMode.HALF_UP).multiply(toRate));
             });
+  }
+
+  private BigDecimal round(BigDecimal value) {
+    return value.setScale(4, RoundingMode.HALF_UP);
   }
 
   @Override
   public Mono<Void> saveRates(ExchangeRateRequest rateRequest) {
-    return exchangeRateRepository.deleteAll()
-            .thenMany(Flux.fromIterable(rateRequest.getRates())
-                    .map(rate -> ExchangeRate.builder()
+    return exchangeRateRepository
+        .deleteAll()
+        .thenMany(
+            Flux.fromIterable(rateRequest.getRates())
+                .map(
+                    rate ->
+                        ExchangeRate.builder()
                             .title(rate.getTitle())
                             .currencyCode(rate.getName())
                             .rateToRub(rate.getValue())
                             .createdAt(rateRequest.getTimestamp())
                             .build()))
-            .transform(exchangeRateRepository::saveAll)
-            .then();
+        .transform(exchangeRateRepository::saveAll)
+        .then();
   }
 
   @Override
