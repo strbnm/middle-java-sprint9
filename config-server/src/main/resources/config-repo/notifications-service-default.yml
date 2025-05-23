@@ -54,7 +54,7 @@ spring:
     user: ${SERVICE_DB_USER}
     password: ${SERVICE_DB_PASSWORD}
     change-log: classpath:db/changelog/db.changelog-master.xml
-    contexts: prod
+    contexts: default
 
   sql:
     init:
