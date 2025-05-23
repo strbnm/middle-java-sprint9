@@ -80,12 +80,30 @@ openApiGenerate {
 
 sourceSets.main.java.srcDir "$projectDir/build/generated/src/main/java"
 
-tasks.named('compileJava') {
-    dependsOn(tasks.openApiGenerate)
-}
-
 contracts {
     testMode = "WebTestClient"
     baseClassForTests = 'ru.strbnm.notifications_service.contractTest.BaseContractTest'
     generatedTestJavaSourcesDir = project.file('src/contractTest/java/ru/strbnm/notifications_service/contractTest/generatedContract')
+}
+
+apply plugin: 'maven-publish'
+
+publishing {
+    publications {
+        create("mavenJava", MavenPublication) {
+            artifact verifierStubsJar
+        }
+    }
+    repositories {
+        mavenLocal()
+    }
+}
+
+//Зависимости задач Gradle
+tasks.named('compileJava') {
+    dependsOn(tasks.openApiGenerate)
+}
+tasks.named('build') {
+    dependsOn 'verifierStubsJar'
+    finalizedBy 'publishToMavenLocal'
 }
