@@ -1,0 +1,18 @@
+spring:
+  application:
+    name: exchange-service
+
+  cloud:
+    config:
+      enabled: false
+
+  security:
+    enabled: false
+
+eureka:
+  client:
+    enabled: false
+
+openapi:
+  exchangeService:
+    base-path: /

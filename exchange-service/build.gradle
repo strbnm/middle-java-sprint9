@@ -1,3 +1,5 @@
+import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
+
 configurations {
     compileOnly {
         extendsFrom annotationProcessor
@@ -76,6 +78,7 @@ openApiGenerate {
             bigDecimalAsString: "true",
             additionalModelTypeAnnotations: "@lombok.Builder(toBuilder = true)\n@com.fasterxml.jackson.annotation.JsonIgnoreProperties(ignoreUnknown=true)",
     ])
+    typeMappings.set(Double: "java.math.BigDecimal")
 }
 
 sourceSets.main.java.srcDir "$projectDir/build/generated/src/main/java"
@@ -86,12 +89,16 @@ tasks.named('compileJava') {
 
 contracts {
     testMode = "WebTestClient"
-    baseClassForTests = 'ru.strbnm.exchange_service.contractTest.BaseContractTest'
-    generatedTestJavaSourcesDir = project.file('src/contractTest/java/ru/strbnm/exchange_service/contractTest/generatedContract')
+    baseClassForTests = 'ru.strbnm.exchange_service.BaseContractTest'
+    generatedTestJavaSourcesDir = project.file('src/contractTest/java/ru/strbnm/exchange_service/generatedContract')
 }
 
-afterEvaluate {
-    tasks.matching { it.name.startsWith("contract") || it.name.contains("Contract") }.configureEach {
-        enabled = false
+apply plugin: 'maven-publish'
+
+publishing {
+    publications {
+        create("mavenJava", MavenPublication) {
+            artifact verifierStubsJar
+        }
     }
 }
