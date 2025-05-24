@@ -17,7 +17,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CheckTransactionRequest'
+              oneOf:
+                - $ref: '#/components/schemas/CashTransactionRequest'
+                - $ref: '#/components/schemas/TransferTransactionRequest'
+              discriminator:
+                propertyName: operationType
+                mapping:
+                  cash: CashTransactionRequest
+                  transfer: TransferTransactionRequest
       responses:
         '200':
           description: Успешно
@@ -40,59 +47,111 @@ paths:
 
 components:
   schemas:
-    CheckTransactionRequest:
-      oneOf:
-        - $ref: '#/components/schemas/CashTransactionRequest'
-        - $ref: '#/components/schemas/TransferTransactionRequest'
-      discriminator:
-        propertyName: operationType
-        mapping:
-          cash: CashTransactionRequest
-          transfer: TransferTransactionRequest
-
-    TransactionRequest:
+    CashTransactionRequest:
       type: object
       required: [ transactionId, from, to, amount, operationType ]
       properties:
         transactionId:
-          $ref: '#/components/schemas/TransactionId'
+          type: integer
+          format: int64
+          description: Идентификатор транзакции
+          example: 10546379
         from:
           type: object
           required: [ currencyCode, source ]
           properties:
             currencyCode:
-              $ref: '#/components/schemas/CurrencyCode'
+              type: string
+              minLength: 3
+              maxLength: 3
+              example: USD
             source:
-              $ref: '#/components/schemas/CorrespondentType'
+              type: string
+              description: Тип отправителя. cash - снятие наличных денежных средств, account - снятие со счета
+              enum:
+                - account
+                - cash
+              example: account
         to:
           type: object
           required: [ currencyCode, target ]
           properties:
             currencyCode:
-              $ref: '#/components/schemas/CurrencyCode'
+              type: string
+              minLength: 3
+              maxLength: 3
+              example: CNY
             target:
-              $ref: '#/components/schemas/CorrespondentType'
+              type: string
+              description: Тип получателя. cash - внесение наличных денежных средств, account - пополнение счета
+              enum:
+                - account
+                - cash
+              example: account
         amount:
           type: number
           format: double
           minimum: 0.0000001
         operationType:
           type: string
-          enum: [ cash, transfer ]
+          description: Тип операции
+          pattern: ^(cash|transfer)$
           example: cash
 
-    CashTransactionRequest:
-      allOf:
-        - $ref: '#/components/schemas/TransactionRequest'
-
     TransferTransactionRequest:
-      allOf:
-        - $ref: '#/components/schemas/TransactionRequest'
-        - type: object
-          required: [ isToYourself ]
+      type: object
+      required: [ transactionId, from, to, amount, operationType, isToYourself ]
+      properties:
+        transactionId:
+          type: integer
+          format: int64
+          description: Идентификатор транзакции
+          example: 10546379
+        from:
+          type: object
+          required: [ currencyCode, source ]
           properties:
-            isToYourself:
-              type: boolean
+            currencyCode:
+              type: string
+              minLength: 3
+              maxLength: 3
+              example: USD
+            source:
+              type: string
+              description: Тип отправителя. cash - снятие наличных денежных средств, account - снятие со счета
+              enum:
+                - account
+                - cash
+              example: account
+        to:
+          type: object
+          required: [ currencyCode, target ]
+          properties:
+            currencyCode:
+              type: string
+              minLength: 3
+              maxLength: 3
+              example: CNY
+            target:
+              type: string
+              description: Тип получателя. cash - внесение наличных денежных средств, account - пополнение счета
+              enum:
+                - account
+                - cash
+              example: account
+        amount:
+          type: number
+          format: double
+          minimum: 0.0000001
+        operationType:
+          type: string
+          description: Тип операции
+          pattern: ^(cash|transfer)$
+          example: cash
+        isToYourself:
+          type: boolean
+          description: Флаг перевода самому себе
+          example: false
 
 
     CheckTransactionResponse:
@@ -128,22 +187,3 @@ components:
           description: Код ошибки
           example: 500
 
-    CorrespondentType:
-      type: string
-      description: Тип отправителя или получателя. cash - внесение/снятие наличных денежных средств, account - снятие со счета или пополнение счета
-      enum:
-        - account
-        - cash
-      example: account
-
-    CurrencyCode:
-      type: string
-      minLength: 3
-      maxLength: 3
-      example: USD
-
-    TransactionId:
-      type: integer
-      format: int64
-      description: Идентификатор транзакции
-      example: 10546379
