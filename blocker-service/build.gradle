@@ -74,8 +74,8 @@ sourceSets.main.java.srcDir "$projectDir/build/generated/src/main/java"
 
 contracts {
     testMode = "WebTestClient"
-    baseClassForTests = 'ru.strbnm.blocker_service.contractTest.BaseContractTest'
-    generatedTestJavaSourcesDir = project.file('src/contractTest/java/ru/strbnm/blocker_service/contractTest/generatedContract')
+    baseClassForTests = 'ru.strbnm.blocker_service.BaseContractTest'
+    generatedTestJavaSourcesDir = project.file('src/contractTest/java/ru/strbnm/blocker_service/generatedContract')
 }
 
 apply plugin: 'maven-publish'
@@ -100,8 +100,8 @@ tasks.named('build') {
     finalizedBy 'publishToMavenLocal'
 }
 
-afterEvaluate {
-    tasks.matching { it.name.startsWith("contract") || it.name.contains("Contract") }.configureEach {
-        enabled = false
-    }
-}
+//afterEvaluate {
+//    tasks.matching { it.name.startsWith("contract") || it.name.contains("Contract") }.configureEach {
+//        enabled = false
+//    }
+//}

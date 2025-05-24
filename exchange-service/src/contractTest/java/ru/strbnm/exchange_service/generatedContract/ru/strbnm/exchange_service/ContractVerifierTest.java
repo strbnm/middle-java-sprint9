@@ -43,7 +43,7 @@ public class ContractVerifierTest extends BaseContractTest {
 			WebTestClientRequestSpecification request = given()
 					.header("Content-Type", "application/json")
 					.header("Accept", "application/json")
-					.body("{\"timestamp\":1186004127,\"rates\":[{\"title\":\"\u0414\u043E\u043B\u043B\u0430\u0440\",\"name\":\"USD\",\"value\":1923015883},{\"title\":\"\u042E\u0430\u043D\u044C\",\"name\":\"CNY\",\"value\":1065045955},{\"title\":\"\u0420\u0443\u0431\u043B\u044C\",\"name\":\"RUB\",\"value\":1.0}]}");
+					.body("{\"timestamp\":1043378400,\"rates\":[{\"title\":\"\u0414\u043E\u043B\u043B\u0430\u0440\",\"name\":\"USD\",\"value\":376456592},{\"title\":\"\u042E\u0430\u043D\u044C\",\"name\":\"CNY\",\"value\":-1666306399},{\"title\":\"\u0420\u0443\u0431\u043B\u044C\",\"name\":\"RUB\",\"value\":1.0}]}");
 
 		// when:
 			WebTestClientResponse response = given().spec(request)
