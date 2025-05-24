@@ -1,0 +1,149 @@
+openapi: 3.0.3
+info:
+  title: Blocker Service API
+  description: RESTful API для сервиса блокировки подозрительных операций
+  version: 1.0.0
+
+paths:
+  /api/v1/check_transaction:
+    post:
+      summary: Проверка денежной операции
+      description: Производит проверку денежной операции и возвращает флаг блокировки
+      operationId: checkTransaction
+      tags:
+        - Blocker Service
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CheckTransactionRequest'
+      responses:
+        '200':
+          description: Успешно
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CheckTransactionResponse'
+        '400':
+          description: Ошибочный запрос
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    CheckTransactionRequest:
+      oneOf:
+        - $ref: '#/components/schemas/CashTransactionRequest'
+        - $ref: '#/components/schemas/TransferTransactionRequest'
+      discriminator:
+        propertyName: operationType
+        mapping:
+          cash: CashTransactionRequest
+          transfer: TransferTransactionRequest
+
+    TransactionRequest:
+      type: object
+      required: [ transactionId, from, to, amount, operationType ]
+      properties:
+        transactionId:
+          $ref: '#/components/schemas/TransactionId'
+        from:
+          type: object
+          required: [ currencyCode, source ]
+          properties:
+            currencyCode:
+              $ref: '#/components/schemas/CurrencyCode'
+            source:
+              $ref: '#/components/schemas/CorrespondentType'
+        to:
+          type: object
+          required: [ currencyCode, target ]
+          properties:
+            currencyCode:
+              $ref: '#/components/schemas/CurrencyCode'
+            target:
+              $ref: '#/components/schemas/CorrespondentType'
+        amount:
+          type: number
+          format: double
+          minimum: 0.0000001
+        operationType:
+          type: string
+          enum: [ cash, transfer ]
+          example: cash
+
+    CashTransactionRequest:
+      allOf:
+        - $ref: '#/components/schemas/TransactionRequest'
+
+    TransferTransactionRequest:
+      allOf:
+        - $ref: '#/components/schemas/TransactionRequest'
+        - type: object
+          required: [ isToYourself ]
+          properties:
+            isToYourself:
+              type: boolean
+
+
+    CheckTransactionResponse:
+      type: object
+      required:
+        - isBlocked
+        - transactionId
+      properties:
+        transactionId:
+          type: integer
+          format: int64
+          description: Идентификатор транзакции
+        isBlocked:
+          type: boolean
+          description: Флаг блокировки транзакции
+          example: false
+        reason:
+          type: string
+          description: Причина блокировки
+          example: Сумма перевода больше 600000 руб.
+
+    ErrorResponse:
+      type: object
+      required:
+        - message
+        - status_code
+      properties:
+        message:
+          type: string
+          example: Внутренняя ошибка сервера
+        status_code:
+          type: integer
+          description: Код ошибки
+          example: 500
+
+    CorrespondentType:
+      type: string
+      description: Тип отправителя или получателя. cash - внесение/снятие наличных денежных средств, account - снятие со счета или пополнение счета
+      enum:
+        - account
+        - cash
+      example: account
+
+    CurrencyCode:
+      type: string
+      minLength: 3
+      maxLength: 3
+      example: USD
+
+    TransactionId:
+      type: integer
+      format: int64
+      description: Идентификатор транзакции
+      example: 10546379
