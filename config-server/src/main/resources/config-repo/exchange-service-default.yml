@@ -59,7 +59,3 @@ spring:
   sql:
     init:
       mode: never
-
-application:
-  notification:
-    limit: 10
