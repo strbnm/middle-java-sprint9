@@ -29,6 +29,11 @@ spring:
     config:
       enabled: false
 
+  rabbitmq:
+    listener:
+      direct:
+        auto-startup: false
+
 eureka:
   client:
     enabled: false

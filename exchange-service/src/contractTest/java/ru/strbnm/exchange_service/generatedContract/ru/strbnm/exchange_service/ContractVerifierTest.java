@@ -1,15 +1,17 @@
 package ru.strbnm.exchange_service;
 
-import static com.toomuchcoding.jsonassert.JsonAssertion.assertThatJson;
-import static io.restassured.module.webtestclient.RestAssuredWebTestClient.*;
-import static org.springframework.cloud.contract.verifier.assertion.SpringCloudContractAssertions.assertThat;
-import static org.springframework.cloud.contract.verifier.util.ContractVerifierUtil.*;
-
+import ru.strbnm.exchange_service.BaseContractTest;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
-import io.restassured.module.webtestclient.response.WebTestClientResponse;
-import io.restassured.module.webtestclient.specification.WebTestClientRequestSpecification;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import io.restassured.module.webtestclient.specification.WebTestClientRequestSpecification;
+import io.restassured.module.webtestclient.response.WebTestClientResponse;
+
+import static org.springframework.cloud.contract.verifier.assertion.SpringCloudContractAssertions.assertThat;
+import static org.springframework.cloud.contract.verifier.util.ContractVerifierUtil.*;
+import static com.toomuchcoding.jsonassert.JsonAssertion.assertThatJson;
+import static io.restassured.module.webtestclient.RestAssuredWebTestClient.*;
 
 @SuppressWarnings("rawtypes")
 public class ContractVerifierTest extends BaseContractTest {
@@ -41,7 +43,7 @@ public class ContractVerifierTest extends BaseContractTest {
 			WebTestClientRequestSpecification request = given()
 					.header("Content-Type", "application/json")
 					.header("Accept", "application/json")
-					.body("{\"timestamp\":2145866985,\"rates\":[{\"title\":\"\u0414\u043E\u043B\u043B\u0430\u0440\",\"name\":\"USD\",\"value\":1214654756},{\"title\":\"\u042E\u0430\u043D\u044C\",\"name\":\"CNY\",\"value\":-989536676},{\"title\":\"\u0420\u0443\u0431\u043B\u044C\",\"name\":\"RUB\",\"value\":1.0}]}");
+					.body("{\"timestamp\":1186004127,\"rates\":[{\"title\":\"\u0414\u043E\u043B\u043B\u0430\u0440\",\"name\":\"USD\",\"value\":1923015883},{\"title\":\"\u042E\u0430\u043D\u044C\",\"name\":\"CNY\",\"value\":1065045955},{\"title\":\"\u0420\u0443\u0431\u043B\u044C\",\"name\":\"RUB\",\"value\":1.0}]}");
 
 		// when:
 			WebTestClientResponse response = given().spec(request)
