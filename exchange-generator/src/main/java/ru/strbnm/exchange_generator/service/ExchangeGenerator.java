@@ -70,7 +70,7 @@ public class ExchangeGenerator {
 
   @PostConstruct
   public void scheduleRateGeneration() {
-    Flux.interval(Duration.ofMinutes(1), Duration.ofSeconds(1))
+    Flux.interval(Duration.ofMinutes(2), Duration.ofSeconds(1))
             .flatMap(tick -> generateAndSendRates())
             .subscribe();
   }
