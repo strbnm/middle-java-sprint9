@@ -16,6 +16,7 @@ dependencies {
     implementation project(':notifications-service')
     implementation project(':exchange-service')
     implementation project(':exchange-generator')
+    implementation project(':blocker-service')
 }
 
 

@@ -5,4 +5,5 @@ include 'api-gateway'
 include 'notifications-service'
 include 'exchange-service'
 include 'exchange-generator'
+include 'blocker-service'
 
