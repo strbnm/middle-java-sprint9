@@ -5,8 +5,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import reactor.core.publisher.Mono;
 import ru.strbnm.blocker_service.domain.CashTransactionRequest;
-import ru.strbnm.blocker_service.domain.CashTransactionRequestFrom;
-import ru.strbnm.blocker_service.domain.CashTransactionRequestTo;
+import ru.strbnm.blocker_service.domain.CorrespondentEnum;
+import ru.strbnm.blocker_service.domain.CurrencyEnum;
 import ru.strbnm.blocker_service.domain.TransferTransactionRequest;
 import ru.strbnm.blocker_service.dto.CheckResult;
 
@@ -19,9 +19,8 @@ public class TransactionFilterConfig {
         .addFilter(
             (request, chain) -> {
               if (request instanceof CashTransactionRequest cashReq
-                  && CashTransactionRequestTo.TargetEnum.fromValue("cash")
-                      .equals(cashReq.getTo().getTarget())
-                  && exceedsCashLimit(cashReq.getAmount(), cashReq.getFrom().getCurrencyCode())) {
+                  && CorrespondentEnum.fromValue("cash").equals(cashReq.getTarget())
+                  && exceedsCashLimit(cashReq.getAmount(), cashReq.getCurrencyCode())) {
                 return Mono.just(CheckResult.blocked("Превышена допустимая сумма снятия наличных"));
               }
               return chain.next(request);
@@ -29,9 +28,9 @@ public class TransactionFilterConfig {
         .addFilter(
             (request, chain) -> {
               if (request instanceof TransferTransactionRequest transferReq
-                  && (CashTransactionRequestTo.TargetEnum.fromValue("cash")
+                  && (CorrespondentEnum.fromValue("cash")
                           .equals(transferReq.getTo().getTarget())
-                      || CashTransactionRequestFrom.SourceEnum.fromValue("cash")
+                      || CorrespondentEnum.fromValue("cash")
                           .equals(transferReq.getFrom().getSource()))) {
                 return Mono.just(
                     CheckResult.blocked("Недопустимая операция для сервиса переводов"));
@@ -41,10 +40,10 @@ public class TransactionFilterConfig {
         .addFilter(
             (request, chain) -> {
               if (request instanceof CashTransactionRequest cashReq
-                  && CashTransactionRequestTo.TargetEnum.fromValue("account")
-                      .equals(cashReq.getTo().getTarget())
-                  && CashTransactionRequestFrom.SourceEnum.fromValue("account")
-                      .equals(cashReq.getFrom().getSource())) {
+                  && CorrespondentEnum.fromValue("account")
+                      .equals(cashReq.getTarget())
+                  && CorrespondentEnum.fromValue("account")
+                      .equals(cashReq.getSource())) {
                 return Mono.just(
                     CheckResult.blocked("Недопустимая операция для сервиса обналичивания денег"));
               }
@@ -64,21 +63,19 @@ public class TransactionFilterConfig {
         .build();
   }
 
-  private boolean exceedsCashLimit(Double amount, String currency) {
+  private boolean exceedsCashLimit(Double amount, CurrencyEnum currency) {
     return switch (currency) {
-      case "RUB" -> amount > 150_000;
-      case "USD" -> amount > 1_500;
-      case "CNY" -> amount > 15_000;
-      default -> false;
+      case CurrencyEnum.RUB -> amount > 150_000;
+      case CurrencyEnum.USD -> amount > 1_500;
+      case CurrencyEnum.CNY -> amount > 15_000;
     };
   }
 
-  private boolean exceedsTransferLimit(Double amount, String currency) {
+  private boolean exceedsTransferLimit(Double amount, CurrencyEnum currency) {
     return switch (currency) {
-      case "RUB" -> amount > 600_000;
-      case "USD" -> amount > 6_000;
-      case "CNY" -> amount > 60_000;
-      default -> false;
+      case CurrencyEnum.RUB -> amount > 600_000;
+      case CurrencyEnum.USD -> amount > 6_000;
+      case CurrencyEnum.CNY -> amount > 60_000;
     };
   }
 }
