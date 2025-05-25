@@ -9,15 +9,10 @@ Contract.make {
         url '/api/v1/check_transaction'
         body([
                 transactionId: 2,
-                from: [
-                        currencyCode: 'USD',
-                        source      : 'account'
-                ],
-                to: [
-                        currencyCode: 'USD',
-                        target      : 'cash'
-                ],
-                amount       : 2000.0,
+                currencyCode: 'USD',
+                source: 'account',
+                target: 'cash',
+                amount: 2000.0,
                 operationType: 'cash'
         ])
 

@@ -22,7 +22,7 @@ public class ContractVerifierTest extends BaseContractTest {
 			WebTestClientRequestSpecification request = given()
 					.header("Content-Type", "application/json")
 					.header("Accept", "application/json")
-					.body("{\"transactionId\":1,\"from\":{\"currencyCode\":\"RUB\",\"source\":\"account\"},\"to\":{\"currencyCode\":\"USD\",\"target\":\"cash\"},\"amount\":1000.0,\"operationType\":\"cash\"}");
+					.body("{\"transactionId\":1,\"currencyCode\":\"RUB\",\"source\":\"account\",\"target\":\"cash\",\"amount\":1000.0,\"operationType\":\"cash\"}");
 
 		// when:
 			WebTestClientResponse response = given().spec(request)
@@ -45,7 +45,7 @@ public class ContractVerifierTest extends BaseContractTest {
 			WebTestClientRequestSpecification request = given()
 					.header("Content-Type", "application/json")
 					.header("Accept", "application/json")
-					.body("{\"transactionId\":2,\"from\":{\"currencyCode\":\"USD\",\"source\":\"account\"},\"to\":{\"currencyCode\":\"USD\",\"target\":\"cash\"},\"amount\":2000.0,\"operationType\":\"cash\"}");
+					.body("{\"transactionId\":2,\"currencyCode\":\"USD\",\"source\":\"account\",\"target\":\"cash\",\"amount\":2000.0,\"operationType\":\"cash\"}");
 
 		// when:
 			WebTestClientResponse response = given().spec(request)
