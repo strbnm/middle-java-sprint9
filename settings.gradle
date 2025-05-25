@@ -6,4 +6,5 @@ include 'notifications-service'
 include 'exchange-service'
 include 'exchange-generator'
 include 'blocker-service'
+include 'accounts-service'
 
