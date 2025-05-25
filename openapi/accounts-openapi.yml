@@ -1,0 +1,475 @@
+openapi: 3.0.3
+info:
+  title: Accounts Service API
+  description: RESTful API для сервиса аккаунтов
+  version: 1.0.0
+
+paths:
+  /api/v1/users:
+    post:
+      summary: Регистрация нового пользователя
+      description: Производит добавление нового пользователя
+      operationId: createUser
+      tags:
+        - Accounts Service
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+      responses:
+        '201':
+          description: Успешно
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDetailResponse'
+        '400':
+          description: Ошибочный запрос
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorListResponse'
+        '409':
+          description: Пользователь с таким login уже существует
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    get:
+      summary: Получение списка пользователей
+      description: Возвращает список всех пользователей (логин и имя)
+      operationId: getUserList
+      tags:
+        - Accounts Service
+      responses:
+        '200':
+          description: Успешно
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserListResponse'
+        '400':
+          description: Ошибочный запрос
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorListResponse'
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/users/{login}:
+    get:
+      summary: Получение информации о пользователе по login
+      description: Возвращает информацию по пользователю
+      operationId: getUser
+      tags:
+        - Accounts Service
+      parameters:
+        - $ref: '#/components/parameters/Login'
+      responses:
+        '200':
+          description: Успешно
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDetailResponse'
+        '400':
+          description: Ошибочный запрос
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorListResponse'
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      summary: Обновление данных пользователя
+      description: Обновляет данные пользователя
+      operationId: updateUser
+      tags:
+        - Accounts Service
+      parameters:
+        - $ref: '#/components/parameters/Login'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+      responses:
+        '200':
+          description: Успешно
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDetailResponse'
+        '400':
+          description: Ошибочный запрос
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorListResponse'
+        '404':
+          description: Пользователь с указанным login не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/users/{login}/password:
+    patch:
+      summary: Обновление пароля пользователя
+      description: Обновляет пароль пользователя
+      operationId: updateUserPassword
+      tags:
+        - Accounts Service
+      parameters:
+        - $ref: '#/components/parameters/Login'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserPasswordRequest'
+      responses:
+        '200':
+          description: Успешно
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDetailResponse'
+        '400':
+          description: Ошибочный запрос
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorListResponse'
+        '404':
+          description: Пользователь с указанным login не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/users/{login}/transfer:
+    post:
+      summary: Операция перевода денег между счетами (своими или на счет другого пользователя)
+      description: Осуществляет перевод денег между счетами
+      operationId: transferTransaction
+      tags:
+        - Accounts Service
+      parameters:
+        - $ref: '#/components/parameters/Login'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransferRequest'
+      responses:
+        '200':
+          description: Успешно
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDetailResponse'
+        '400':
+          description: Ошибочный запрос
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorListResponse'
+        '404':
+          description: Пользователь с указанным login не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Ошибки в процессе обработки перевода
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorListResponse'
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/users/{login}/cash:
+    post:
+      summary: Операция перевода внесения/снятие наличных денежных средств
+      description: Осуществляет внесение/снятие денежных средств со счета в выбранной валюте
+      operationId: cashTransaction
+      tags:
+        - Accounts Service
+      parameters:
+        - $ref: '#/components/parameters/Login'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CashRequest'
+      responses:
+        '200':
+          description: Успешно
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDetailResponse'
+        '400':
+          description: Ошибочный запрос
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorListResponse'
+        '404':
+          description: Пользователь с указанным login не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Ошибки в процессе обработки перевода
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorListResponse'
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  parameters:
+    Login:
+      name: login
+      description: Идентификатор пользователя
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: '[A-Za-z]'
+  schemas:
+    UserRequest:
+      type: object
+      required:
+        - login
+        - password
+        - name
+        - email
+        - birthdate
+      properties:
+        login:
+          type: string
+          pattern: '[A-Za-z]'
+          description: Логин пользователя
+        password:
+          type: string
+          description: Хеш пароля пользователя
+        name:
+          type: string
+          description: Фамилия Имя пользователя
+        email:
+          type: string
+          format: email
+          description: Адрес электронной почты пользователя
+        birthdate:
+          type: string
+          format: date
+        accounts:
+          type: array
+          items:
+            $ref: '#/components/schemas/CurrencyEnum'
+    UserPasswordRequest:
+      type: object
+      required:
+        - login
+        - newPassword
+      properties:
+        login:
+          type: string
+          pattern: '[A-Za-z]'
+          description: Логин пользователя
+        newPassword:
+          type: string
+          description: Хеш нового пароля пользователя
+
+    UserDetailResponse:
+      type: object
+      required:
+        - login
+        - password
+        - name
+        - email
+        - birthdate
+        - roles
+      properties:
+        login:
+          type: string
+          pattern: '[A-Za-z]'
+          description: Логин пользователя
+        password:
+          type: string
+          description: Хеш пароля
+        name:
+          type: string
+          description: Фамилия Имя пользователя
+        email:
+          type: string
+          format: email
+          description: Адрес электронной почты пользователя
+        birthdate:
+          type: string
+          description: Дата рождения пользователя
+          format: date
+        roles:
+          type: array
+          items:
+            type: string
+        accounts:
+          type: array
+          items:
+            $ref: '#/components/schemas/AccountInfoRow'
+        errors:
+          type: array
+          description: Список ошибок при создании или обновлении пользователя
+          items:
+            type: string
+
+    AccountInfoRow:
+      type: object
+      properties:
+        currency:
+          $ref: '#/components/schemas/CurrencyEnum'
+        value:
+          type: number
+          format: double
+          description: Сумма на счету пользователя в этой валюте
+          example: 1200.50
+        exists:
+          type: boolean
+          description: Признак наличия счета у пользователя в данной валюте
+          example: true
+      required:
+        - currency
+        - value
+        - exists
+
+    TransferRequest:
+      type: object
+      required:
+        - fromCurrency
+        - toCurrency
+        - fromAmount
+        - toAmount
+        - toLogin
+      properties:
+        fromCurrency:
+          $ref: '#/components/schemas/CurrencyEnum'
+        toCurrency:
+          $ref: '#/components/schemas/CurrencyEnum'
+        fromAmount:
+          type: number
+          format: double
+          description: Сумма перевода в валюте счета отправителя
+        toAmount:
+          type: number
+          format: double
+          description: Сумма перевода в валюте счета получателя
+        toLogin:
+          type: string
+          description: Логин пользователя для перевода. При переводе самому себе совпадает с login
+
+    CashRequest:
+      type: object
+      required:
+        - currency
+        - amount
+        - action
+      properties:
+        currency:
+          $ref: '#/components/schemas/CurrencyEnum'
+        amount:
+          type: number
+          format: double
+          description: Сумма перевода в валюте исходного счета
+        action:
+          type: string
+          enum:
+            - PUT  # внесение ДС
+            - GET  # снятие ДС
+
+    ErrorResponse:
+      type: object
+      required:
+        - message
+        - status_code
+      properties:
+        message:
+          type: string
+          example: Внутренняя ошибка сервера
+        status_code:
+          type: integer
+          example: 500
+
+    ErrorListResponse:
+      type: object
+      required:
+        - message
+        - status_code
+      properties:
+        messages:
+          type: array
+          items:
+            type: string
+        status_code:
+          type: integer
+          example: 500
+
+    UserListResponse:
+      type: array
+      items:
+        type: object
+        required:
+          - login
+          - name
+        properties:
+          login:
+            type: string
+          name:
+            type: string
+    CurrencyEnum:
+      type: string
+      enum:
+        - USD
+        - RUB
+        - CNY
