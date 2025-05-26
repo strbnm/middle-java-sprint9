@@ -76,7 +76,7 @@ openApiGenerate {
             serializableModel: "true",
             returnSuccessCode: "true",
             bigDecimalAsString: "true",
-            additionalModelTypeAnnotations: "@lombok.Builder(toBuilder = true)\n@com.fasterxml.jackson.annotation.JsonIgnoreProperties(ignoreUnknown=true)",
+            additionalModelTypeAnnotations: "@com.fasterxml.jackson.annotation.JsonIgnoreProperties(ignoreUnknown=true)",
     ])
     typeMappings.set(Double: "java.math.BigDecimal")
 }
@@ -97,36 +97,12 @@ tasks.register('buildNotificationsClient', GenerateTask) {
             useTags                : "true",
             openApiNullable        : "false",
             serializableModel      : "true",
-            additionalModelTypeAnnotations: "@lombok.RequiredArgsConstructor",
     ])
     typeMappings.set(Double: "java.math.BigDecimal")
 }
 
 tasks.named('compileJava') {
     dependsOn(tasks.buildNotificationsClient)
-}
-
-tasks.register('buildExchangeClient', GenerateTask) {
-    generatorName.set("java")
-    inputSpec.set("$rootDir/openapi/exchange-openapi.yml")
-    outputDir.set("$projectDir/build/generated")
-    modelPackage.set("ru.strbnm.accounts_service.client.exchange.domain")
-    invokerPackage.set("ru.strbnm.accounts_service.client.exchange")
-    apiPackage.set("ru.strbnm.accounts_service.client.exchange.api")
-    configOptions.set([
-            hideGenerationTimestamp: "true",
-            library                : "webclient",
-            useJakartaEe           : "true",
-            useTags                : "true",
-            openApiNullable        : "false",
-            serializableModel      : "true",
-            additionalModelTypeAnnotations: "@lombok.RequiredArgsConstructor",
-    ])
-    typeMappings.set(Double: "java.math.BigDecimal")
-}
-
-tasks.named('compileJava') {
-    dependsOn(tasks.buildExchangeClient)
 }
 
 contracts {
