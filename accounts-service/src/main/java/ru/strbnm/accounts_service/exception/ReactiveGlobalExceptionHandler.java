@@ -33,10 +33,11 @@ public class ReactiveGlobalExceptionHandler {
                 })
                 .filter(Objects::nonNull)
                 .toList();
-
+        ErrorListResponse response = new ErrorListResponse(400);
+        response.setMessages(messages);
         return Mono.just(ResponseEntity
                 .badRequest()
-                .body(ErrorListResponse.builder().messages(messages).statusCode(400).build()));
+                .body(response));
     }
 
     @ExceptionHandler(UserAlreadyExistsException.class)

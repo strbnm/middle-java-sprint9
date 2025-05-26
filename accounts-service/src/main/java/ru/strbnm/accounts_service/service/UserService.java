@@ -6,12 +6,13 @@ import ru.strbnm.accounts_service.domain.*;
 
 public interface UserService {
     // Операции с пользователями
-    Mono<UserDetailResponse> createUser(UserRequest userRequest);
-    Mono<UserDetailResponse> updateUser(UserRequest userRequest);
+    Mono<OperationResponse> createUser(UserRequest userRequest);
+    Mono<OperationResponse> updateUser(UserRequest userRequest);
     Flux<UserListResponseInner> getUserList();
     Mono<UserDetailResponse> getUserByLogin(String login);
+    Mono<OperationResponse> updateUserPassword(UserPasswordRequest userPasswordRequest);
 
     // Операции со счетами
-    Mono<UserDetailResponse> cashOperation(CashRequest cashRequest, String login);
-    Mono<UserDetailResponse> transferOperation(TransferRequest transferRequest, String login);
+    Mono<OperationResponse> cashOperation(CashRequest cashRequest, String login);
+    Mono<OperationResponse> transferOperation(TransferRequest transferRequest, String login);
 }

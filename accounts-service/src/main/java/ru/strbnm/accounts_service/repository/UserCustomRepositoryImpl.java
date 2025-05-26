@@ -35,14 +35,14 @@ public class UserCustomRepositoryImpl implements UserCustomRepository {
                 .map(
                         row -> {
                             String[] rolesArray = row.get("roles", String[].class);
-                            return UserDetailResponse.builder()
-                                    .login(row.get("login", String.class))
-                                    .password(row.get("password", String.class))
-                                    .name(row.get("name", String.class))
-                                    .email(row.get("email", String.class))
-                                    .birthdate(row.get("birthdate", LocalDate.class))
-                                    .roles(rolesArray != null ? Arrays.asList(rolesArray) : List.of())
-                                    .build();
+                            return new UserDetailResponse(
+                                    row.get("login", String.class),
+                                    row.get("password", String.class),
+                                    row.get("name", String.class),
+                                    row.get("email", String.class),
+                                    row.get("birthdate", LocalDate.class),
+                                    rolesArray != null ? Arrays.asList(rolesArray) : List.of()
+                            );
                         })
                 .one();
     }

@@ -37,12 +37,11 @@ public class AccountCustomRepositoryImpl implements AccountCustomRepository {
         .sql(query)
         .bind("login", login)
         .map(
-            row ->
-                AccountInfoRow.builder()
-                    .currency(CurrencyEnum.valueOf(row.get("currency", String.class)))
-                    .value(row.get("balance", BigDecimal.class))
-                    .exists(row.get("exists", Boolean.class))
-                    .build())
+            row -> new AccountInfoRow(
+                    CurrencyEnum.valueOf(row.get("currency", String.class)),
+                    row.get("balance", BigDecimal.class),
+                    row.get("exists", Boolean.class)
+            ))
         .all();
   }
 }
