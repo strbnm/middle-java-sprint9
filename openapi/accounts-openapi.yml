@@ -24,7 +24,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserDetailResponse'
+                $ref: '#/components/schemas/OperationResponse'
         '400':
           description: Ошибочный запрос
           content:
@@ -37,6 +37,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Ошибки в процессе обработки перевода
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperationResponse'
         '500':
           description: Внутренняя ошибка сервера
           content:
@@ -116,7 +122,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserDetailResponse'
+                $ref: '#/components/schemas/OperationResponse'
         '400':
           description: Ошибочный запрос
           content:
@@ -129,6 +135,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Ошибки в процессе обновления пользователя
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperationResponse'
         '500':
           description: Внутренняя ошибка сервера
           content:
@@ -156,7 +168,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserDetailResponse'
+                $ref: '#/components/schemas/OperationResponse'
         '400':
           description: Ошибочный запрос
           content:
@@ -169,6 +181,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Ошибки в процессе обновления пароля
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperationResponse'
         '500':
           description: Внутренняя ошибка сервера
           content:
@@ -196,7 +214,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserDetailResponse'
+                $ref: '#/components/schemas/OperationResponse'
         '400':
           description: Ошибочный запрос
           content:
@@ -214,7 +232,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorListResponse'
+                $ref: '#/components/schemas/OperationResponse'
         '500':
           description: Внутренняя ошибка сервера
           content:
@@ -242,7 +260,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserDetailResponse'
+                $ref: '#/components/schemas/OperationResponse'
         '400':
           description: Ошибочный запрос
           content:
@@ -260,7 +278,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorListResponse'
+                $ref: '#/components/schemas/OperationResponse'
         '500':
           description: Внутренняя ошибка сервера
           content:
@@ -467,6 +485,23 @@ components:
             type: string
           name:
             type: string
+
+    OperationResponse:
+      type: object
+      required:
+        - operationStatus
+        - errors
+      properties:
+        operationStatus:
+          type: string
+          enum:
+            - SUCCESS
+            - FAILED
+        errors:
+          type: array
+          items:
+            type: string
+
     CurrencyEnum:
       type: string
       enum:
