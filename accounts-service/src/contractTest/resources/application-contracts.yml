@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: accounts-service
+
+  cloud:
+    config:
+      enabled: false
+
+  security:
+    enabled: false
+
+  rabbitmq:
+    listener:
+      direct:
+        auto-startup: false
+
+eureka:
+  client:
+    enabled: false
+
+openapi:
+  accountsService:
+    base-path: /
+
