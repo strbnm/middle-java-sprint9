@@ -295,7 +295,7 @@ components:
       required: true
       schema:
         type: string
-        pattern: '[A-Za-z]'
+        pattern: '^[A-Za-z\d_-]+$'
   schemas:
     UserRequest:
       type: object
@@ -308,7 +308,7 @@ components:
       properties:
         login:
           type: string
-          pattern: '[A-Za-z]'
+          pattern: '^[A-Za-z\d_-]+$'
           description: Логин пользователя
         password:
           type: string
@@ -335,7 +335,7 @@ components:
       properties:
         login:
           type: string
-          pattern: '[A-Za-z]'
+          pattern: '^[A-Za-z\d_-]+$'
           description: Логин пользователя
         newPassword:
           type: string
@@ -353,7 +353,7 @@ components:
       properties:
         login:
           type: string
-          pattern: '[A-Za-z]'
+          pattern: '^[A-Za-z\d_-]+$'
           description: Логин пользователя
         password:
           type: string
