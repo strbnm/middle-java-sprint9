@@ -133,8 +133,8 @@ tasks.named('build') {
     finalizedBy 'publishToMavenLocal'
 }
 
-afterEvaluate {
-    tasks.matching { it.name.startsWith("contract") || it.name.contains("Contract") }.configureEach {
-        enabled = false
-    }
-}
+//afterEvaluate {
+//    tasks.matching { it.name.startsWith("contract") || it.name.contains("Contract") }.configureEach {
+//        enabled = false
+//    }
+//}
