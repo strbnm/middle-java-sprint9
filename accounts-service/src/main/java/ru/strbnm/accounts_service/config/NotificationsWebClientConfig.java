@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
@@ -12,6 +13,7 @@ import ru.strbnm.accounts_service.client.notifications.ApiClient;
 import ru.strbnm.accounts_service.client.notifications.api.NotificationsServiceApi;
 
 @Slf4j
+@Profile("!contracts")
 @Configuration
 public class NotificationsWebClientConfig {
     @Value("${spring.rest.notifications-service.url}")

@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -38,7 +37,7 @@ public class UserServiceImpl implements UserService {
 
   private final String FROM_CURRENCY = "fromCurrency";
   private final String TO_CURRENCY = "toCurrency";
-  private final String NOT_ITSELS_ACCOUNT = "У Вас отсутствует счет в выбранной валюте";
+  private final String NOT_ITSELF_ACCOUNT = "У Вас отсутствует счет в выбранной валюте";
   private final String NOT_FOUND_USER = "Пользователь с логином %s не существует";
 
   @Autowired
@@ -243,7 +242,7 @@ public class UserServiceImpl implements UserService {
         .findByUserIdAndCurrency(user.getId(), cashRequest.getCurrency().name())
         .map(account -> new AccountCheckResult(account, new ArrayList<>()))
         .switchIfEmpty(
-            Mono.just(new AccountCheckResult(null, new ArrayList<>(List.of(NOT_ITSELS_ACCOUNT)))))
+            Mono.just(new AccountCheckResult(null, new ArrayList<>(List.of(NOT_ITSELF_ACCOUNT)))))
         .flatMap(
             accountCheckResult -> {
               // Дополнительная проверка и добавление ошибок
@@ -299,7 +298,7 @@ public class UserServiceImpl implements UserService {
     User recipient = userTuple.getT2();
 
     Mono<AccountCheckResult> senderAccountCheckResultMono =
-        getAccountCheckResultMono(transferRequest, sender, FROM_CURRENCY, NOT_ITSELS_ACCOUNT);
+        getAccountCheckResultMono(transferRequest, sender, FROM_CURRENCY, NOT_ITSELF_ACCOUNT);
 
     Mono<AccountCheckResult> recipientAccountCheckResultMono =
         getAccountCheckResultMono(
@@ -323,9 +322,9 @@ public class UserServiceImpl implements UserService {
     } else {
 
       Mono<AccountCheckResult> senderAccountCheckResultMono =
-          getAccountCheckResultMono(transferRequest, user, FROM_CURRENCY, NOT_ITSELS_ACCOUNT);
+          getAccountCheckResultMono(transferRequest, user, FROM_CURRENCY, NOT_ITSELF_ACCOUNT);
       Mono<AccountCheckResult> recipientAccountCheckResultMono =
-          getAccountCheckResultMono(transferRequest, user, TO_CURRENCY, NOT_ITSELS_ACCOUNT);
+          getAccountCheckResultMono(transferRequest, user, TO_CURRENCY, NOT_ITSELF_ACCOUNT);
 
       return Mono.zip(senderAccountCheckResultMono, recipientAccountCheckResultMono)
           .flatMap(
@@ -605,10 +604,10 @@ public class UserServiceImpl implements UserService {
 
   private Mono<Role> findOrCreateClientRole() {
     return roleRepository
-        .findByRoleName("client")
+        .findByRoleName("ROLE_CLIENT")
         .switchIfEmpty(
             roleRepository.save(
-                new Role(null, "client", "Клиент — зарегистрированный пользователь")));
+                new Role(null, "ROLE_CLIENT", "Клиент — зарегистрированный пользователь")));
   }
 
   private Mono<User> saveUserAsClient(Role role, UserRequest userRequest) {

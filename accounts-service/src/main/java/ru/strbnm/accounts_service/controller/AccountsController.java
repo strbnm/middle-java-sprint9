@@ -33,7 +33,7 @@ public class AccountsController implements AccountsServiceApi {
     @Override
     public Mono<ResponseEntity<OperationResponse>> createUser(Mono<UserRequest> userRequest, ServerWebExchange exchange) {
         return userRequest.flatMap(userService::createUser)
-                .flatMap(this::returnOperationResponse);
+                .flatMap(this::returnOperationResponseCreated);
     }
 
     @Override
@@ -73,6 +73,14 @@ public class AccountsController implements AccountsServiceApi {
             return Mono.just(ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(operationResponse));
         } else {
             return Mono.just(ResponseEntity.ok().body(operationResponse));
+        }
+    }
+
+    private Mono<ResponseEntity<OperationResponse>> returnOperationResponseCreated (OperationResponse operationResponse) {
+        if (operationResponse.getOperationStatus() == OperationResponse.OperationStatusEnum.FAILED) {
+            return Mono.just(ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(operationResponse));
+        } else {
+            return Mono.just(ResponseEntity.status(HttpStatus.CREATED).body(operationResponse));
         }
     }
 }

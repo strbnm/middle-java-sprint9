@@ -1,0 +1,4 @@
+login;password;name;email;birthdate;enabled
+test_user1;$2a$12$i3Mc.UTtmmFNgiqx0csrHe.dGbdVwXPbuEJ0T92InqlzX4YTzmwBa;Иванов Иван;ivanov@example.ru;2000-05-21;true
+test_user2;$2a$12$8iuXDswC26EzrjL0qWNOiuzwZi5/zGuuJY7gaEkoPnaIPZodfm.xi;Петров Петр;petrov@example.ru;1990-05-21;true
+test_user3;$2a$12$DpyrJV1Ob2RR7WZnEEUsVOShUOexUQIg.J/lzad8FNYty6/BDByo6;Сидоров Степан;sidorov@example.ru;1980-05-21;true

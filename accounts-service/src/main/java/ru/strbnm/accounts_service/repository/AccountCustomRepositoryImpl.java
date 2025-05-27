@@ -25,7 +25,7 @@ public class AccountCustomRepositoryImpl implements AccountCustomRepository {
         """
         SELECT
           c.currency AS currency,
-          a.balance AS balance,
+          COALESCE(a.balance, 0::numeric) AS balance,
           CASE WHEN a.id IS NOT NULL THEN TRUE ELSE FALSE END AS "exists"
         FROM users u
         CROSS JOIN (VALUES ('RUB'), ('USD'), ('CNY')) AS c(currency)

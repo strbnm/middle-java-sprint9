@@ -3,6 +3,7 @@ package ru.strbnm.accounts_service.exception;
 import java.util.List;
 import java.util.Objects;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -13,16 +14,19 @@ import reactor.core.publisher.Mono;
 import ru.strbnm.accounts_service.domain.ErrorListResponse;
 import ru.strbnm.accounts_service.domain.ErrorResponse;
 
+@Slf4j
 @RestControllerAdvice
 public class ReactiveGlobalExceptionHandler {
 
     @ExceptionHandler(IllegalArgumentException.class)
     public Mono<ResponseEntity<ErrorResponse>> handleIllegalArgument(IllegalArgumentException exception) {
+        log.error("Ошибка {}", exception.getMessage(), exception);
         return Mono.just(ResponseEntity.badRequest().body(new ErrorResponse(exception.getMessage(), 400)));
     }
 
     @ExceptionHandler(WebExchangeBindException.class)
     public Mono<ResponseEntity<ErrorListResponse>> handleValidationException(WebExchangeBindException ex) {
+        log.error("Ошибка {}", ex.getMessage(), ex);
         List<String> messages = ex.getAllErrors().stream()
                 .map(error -> {
                     if (error instanceof FieldError fieldError) {
@@ -42,6 +46,7 @@ public class ReactiveGlobalExceptionHandler {
 
     @ExceptionHandler(UserAlreadyExistsException.class)
     public Mono<ResponseEntity<ErrorResponse>> handleIllegalArgument(UserAlreadyExistsException exception) {
+        log.error("Ошибка {}", exception.getMessage(), exception);
         return Mono.just(ResponseEntity.status(HttpStatus.CONFLICT).body(new ErrorResponse(exception.getMessage(), 409)));
     }
 
@@ -51,6 +56,7 @@ public class ReactiveGlobalExceptionHandler {
             UserNotFoundException.class
     })
     public Mono<ResponseEntity<ErrorResponse>> handleIllegalArgument(UserOperationException exception) {
+        log.error("Ошибка {}", exception.getMessage(), exception);
         return Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(exception.getMessage(), 404)));
     }
 }

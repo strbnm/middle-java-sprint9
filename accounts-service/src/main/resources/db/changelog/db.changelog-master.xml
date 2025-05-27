@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+<changeSet id="1748369908395-1" author="strbnm" context="default,test">
+    <preConditions>
+        <not>
+            <tableExists tableName="users"/>
+        </not>
+    </preConditions>
+    <createTable tableName="users">
+        <column name="id" type="BIGINT" autoIncrement="true">
+            <constraints nullable="false" primaryKey="true" primaryKeyName="pk_users"/>
+        </column>
+        <column name="login" type="VARCHAR(255)">
+            <constraints nullable="false"/>
+        </column>
+        <column name="password" type="VARCHAR(512)">
+            <constraints nullable="false"/>
+        </column>
+        <column name="name" type="VARCHAR(255)">
+            <constraints nullable="false" />
+        </column>
+        <column name="email" type="VARCHAR(255)">
+            <constraints nullable="false"/>
+        </column>
+        <column name="birthdate" type="DATE">
+            <constraints nullable="false" checkConstraint="(birthdate - INTERVAL '18 years') >= 0"/>
+        </column>
+        <column name="enabled" type="BOOLEAN">
+            <constraints nullable="false"/>
+        </column>
+    </createTable>
+    <rollback>
+        <dropTable tableName="users"/>
+    </rollback>
+</changeSet>
+    <changeSet id="1748370867767-1" author="strbnm" context="default,test">
+        <preConditions>
+            <not>
+                <tableExists tableName="role"/>
+            </not>
+        </preConditions>
+        <createTable tableName="roles">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_roles"/>
+            </column>
+            <column name="role_name" type="VARCHAR(50)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="description" type="VARCHAR">
+                <constraints nullable="false" unique="true"/>
+            </column>
+        </createTable>
+        <rollback>
+            <dropTable tableName="roles"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="1748370867767-2" author="strbnm" context="default,test">
+        <preConditions>
+            <not>
+                <tableExists tableName="users_roles"/>
+            </not>
+        </preConditions>
+        <createTable tableName="users_roles">
+            <column name="user_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="role_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <rollback>
+            <dropTable tableName="users_roles"/>
+        </rollback>
+    </changeSet>
+    <changeSet id="1748370867767-3" author="strbnm" context="default,test">
+        <addForeignKeyConstraint baseColumnNames="user_id" baseTableName="users_roles"
+                                 constraintName="FK_USER_ROLES_USER" referencedColumnNames="id"
+                                 referencedTableName="users" />
+        <rollback>
+            <dropForeignKeyConstraint baseTableName="users_roles" constraintName="FK_USER_ROLES_USER" />
+        </rollback>
+    </changeSet>
+    <changeSet id="1748370867767-4" author="strbnm" context="default,test">
+        <addForeignKeyConstraint baseColumnNames="role_id" baseTableName="users_roles"
+                                 constraintName="FK_USER_ROLES_ROLE" referencedColumnNames="id"
+                                 referencedTableName="roles" />
+        <rollback>
+            <dropForeignKeyConstraint baseTableName="users_roles" constraintName="FK_USER_ROLES_ROLE" />
+        </rollback>
+    </changeSet>
+    <changeSet id="1748371527740-1" author="strbnm" context="default,test">
+        <preConditions>
+            <not>
+                <tableExists tableName="outbox_notifications"/>
+            </not>
+        </preConditions>
+        <createTable tableName="outbox_notifications">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_outbox_notifications"/>
+            </column>
+            <column name="user_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="email" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="message" type="VARCHAR(4000)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="BIGINT">
+                <constraints nullable="true"/>
+            </column>
+            <column name="is_sent" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <rollback>
+            <dropTable tableName="outbox_notifications"/>
+        </rollback>
+    </changeSet>
+    <changeSet id="1748371527740-2" author="strbnm" context="default,test">
+        <addForeignKeyConstraint baseColumnNames="user_id" baseTableName="outbox_notifications"
+                                 constraintName="FK_USER_OUTBOX_NOTIFICATION" referencedColumnNames="id"
+                                 referencedTableName="users" />
+        <rollback>
+            <dropForeignKeyConstraint baseTableName="outbox_notifications" constraintName="FK_USER_OUTBOX_NOTIFICATION" />
+        </rollback>
+    </changeSet>
+    <changeSet id="1748371527740-3" author="strbnm" context="default,test">
+        <preConditions>
+            <not>
+                <tableExists tableName="accounts"/>
+            </not>
+        </preConditions>
+        <createTable tableName="accounts">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_accounts"/>
+            </column>
+            <column name="user_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="currency" type="VARCHAR(3)">
+                <constraints nullable="false" checkConstraint="currency IN ('RUB', 'USD', 'CNY')"/>
+            </column>
+            <column name="balance" type="DECIMAL(19,4)">
+                <constraints nullable="false" checkConstraint="balance >= 0"/>
+            </column>
+        </createTable>
+        <rollback>
+            <dropTable tableName="accounts"/>
+        </rollback>
+    </changeSet>
+    <changeSet id="1748371527740-4" author="strbnm" context="default,test">
+        <addForeignKeyConstraint baseColumnNames="user_id" baseTableName="accounts"
+                                 constraintName="FK_USER_ACCOUNTS" referencedColumnNames="id"
+                                 referencedTableName="users" />
+        <rollback>
+            <dropForeignKeyConstraint baseTableName="accounts" constraintName="FK_USER_ACCOUNTS" />
+        </rollback>
+    </changeSet>
+    <changeSet id="1748371527740-5" author="strbnm" context="default,test">
+        <addUniqueConstraint tableName="accounts" columnNames="user_id,currency" constraintName="UNIQUE_USER_CURRENCY"/>
+        <rollback>
+            <dropUniqueConstraint tableName="accounts" constraintName="UNIQUE_USER_CURRENCY"/>
+        </rollback>
+    </changeSet>
+    <changeSet id="1740155129595-14" author="strbnm" context="default">
+        <loadData tableName="users" file="db/data/users.csv" separator=";">
+            <column name="login" type="VARCHAR(255)"/>
+            <column name="password" type="VARCHAR(512)"/>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="email" type="VARCHAR(255)"/>
+            <column name="birthdate" type="DATE"/>
+            <column name="enabled" type="BOOLEAN"/>
+        </loadData>
+        <loadData tableName="roles" file="db/data/roles.csv" separator=";">
+            <column name="role_name" type="VARCHAR(50)"/>
+            <column name="password" type="VARCHAR"/>
+        </loadData>
+        <loadData tableName="users_roles" file="db/data/users_roles.csv" separator=";">
+            <column name="user_id" type="BIGINT"/>
+            <column name="role_id" type="BIGINT"/>
+        </loadData>
+        <loadData tableName="accounts" file="db/data/accounts.csv" separator=";">
+            <column name="user_id" type="BIGINT"/>
+            <column name="currency" type="VARCHAR(3)"/>
+            <column name="balance" type="DECIMAL(19,4)"/>
+        </loadData>
+    </changeSet>
+</databaseChangeLog>
