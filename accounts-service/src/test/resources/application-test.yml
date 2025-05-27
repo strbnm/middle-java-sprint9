@@ -37,8 +37,6 @@ spring:
   rest:
     notifications-service:
       url: http://localhost:8080
-    exchange-service:
-      url: http://localhost:8080
 
 eureka:
   client:
@@ -48,3 +46,7 @@ logging:
   level:
     org.springframework.r2dbc.core: DEBUG  # Логирование SQL-запросов
     io.r2dbc.h2: DEBUG                     # Для H2
+
+application:
+  notification:
+    limit:
