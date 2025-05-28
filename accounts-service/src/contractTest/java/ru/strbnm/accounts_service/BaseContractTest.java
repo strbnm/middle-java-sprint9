@@ -111,7 +111,7 @@ public abstract class BaseContractTest {
         List.of(
             new AccountInfoRow(CurrencyEnum.RUB, new BigDecimal("150000.0"), true),
             new AccountInfoRow(CurrencyEnum.CNY, new BigDecimal("20000.0"), true),
-            new AccountInfoRow(CurrencyEnum.USD, BigDecimal.ONE, false)));
+            new AccountInfoRow(CurrencyEnum.USD, BigDecimal.ZERO, false)));
 
     successOperationResponse =
         new OperationResponse(OperationResponse.OperationStatusEnum.SUCCESS, List.of());
@@ -143,7 +143,7 @@ public abstract class BaseContractTest {
 
     when(userService.updateUser(updateUserRequestSuccess))
         .thenReturn(Mono.just(successOperationResponse));
-    when(userService.createUser(updateUserRequestFailed)).thenReturn(Mono.just(updateUserFailed));
+    when(userService.updateUser(updateUserRequestFailed)).thenReturn(Mono.just(updateUserFailed));
 
     when(userService.updateUserPassword(updatePasswordRequestSuccess))
         .thenReturn(Mono.just(successOperationResponse));
@@ -163,7 +163,7 @@ public abstract class BaseContractTest {
                 new UserListResponseInner("test_user2", "Петров Петр")));
 
     when(userService.cashOperation(cashRequestSuccess, "test_user1")).thenReturn(Mono.just(successOperationResponse));
-    when(userService.cashOperation(cashRequestFailed, "test_user1")).thenReturn(Mono.just(successOperationResponse));
+    when(userService.cashOperation(cashRequestFailed, "test_user1")).thenReturn(Mono.just(cashOperationFailed));
 
     when(userService.transferOperation(transferRequestSuccess, "test_user1")).thenReturn(Mono.just(successOperationResponse));
     when(userService.transferOperation(transferRequestFailed, "test_user1")).thenReturn(Mono.just(transferOperationFailed));
