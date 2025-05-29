@@ -217,7 +217,7 @@ services:
     expose:
       - "8080"
     ports:
-      - "8085:8080"
+      - "8086:8080"
     depends_on:
       spring-cloud-config-server:
         condition: service_healthy
@@ -246,7 +246,7 @@ services:
     expose:
       - "5432"
     ports:
-      - "5435:5432"
+      - "5440:5432"
     healthcheck:
       test: pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB
       interval: 10s
@@ -332,7 +332,7 @@ services:
       - start
       - --import-realm
     ports:
-      - "8082:8080"
+      - "8092:8080"
     environment:
       KC_DB: postgres
       KC_DB_URL: jdbc:postgresql://keycloak-db:5432/keycloak
