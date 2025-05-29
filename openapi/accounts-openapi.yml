@@ -505,6 +505,6 @@ components:
     CurrencyEnum:
       type: string
       enum:
-        - USD
-        - RUB
         - CNY
+        - RUB
+        - USD
