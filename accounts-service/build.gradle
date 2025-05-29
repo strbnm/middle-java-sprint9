@@ -45,7 +45,7 @@ bootJar {
     // добавление атрибутов к манифесту
     manifest {
         attributes(
-                'Implementation-Title': 'ССервис аккаунтов (Accounts)',
+                'Implementation-Title': 'Сервис аккаунтов (Accounts)',
                 'Build-Timestamp': System.currentTimeMillis(),
                 'Built-By': project.hasProperty('builtBy') ? project.property('builtBy') : 'default-builder'
         )
