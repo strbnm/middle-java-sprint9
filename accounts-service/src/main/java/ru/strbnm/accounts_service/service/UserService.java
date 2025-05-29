@@ -12,7 +12,7 @@ public interface UserService {
     Mono<UserDetailResponse> getUserByLogin(String login);
     Mono<OperationResponse> updateUserPassword(UserPasswordRequest userPasswordRequest);
 
-    // Операции со счетами
+    // Операции со счетами пользователей
     Mono<OperationResponse> cashOperation(CashRequest cashRequest, String login);
     Mono<OperationResponse> transferOperation(TransferRequest transferRequest, String login);
 }

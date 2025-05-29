@@ -61,28 +61,94 @@ public class UserServiceImpl implements UserService {
   @Transactional(isolation = Isolation.REPEATABLE_READ)
   @Override
   public Mono<OperationResponse> createUser(UserRequest userRequest) {
-    return userRepository
-        .findUserByLogin(userRequest.getLogin())
-        .flatMap(
-            existingUser ->
-                Mono.<OperationResponse>error(
-                    new UserAlreadyExistsException(
-                        "Пользователь с таким логином уже существует: " + existingUser.getLogin())))
-        .switchIfEmpty(
-            findOrCreateClientRole()
-                .flatMap(role -> saveUserAsClient(role, userRequest)
-                    .flatMap(user -> saveOutboxNotification(
-                            user.getId(),
-                            user.getEmail(),
-                            "Вы успешно зарегистрированы.")))
-                    .flatMap(empty -> getOperationResponse(OperationResponse.OperationStatusEnum.SUCCESS, List.of()))
-                    .onErrorResume(e -> {
-                      log.error("Ошибка при создании пользователя {}", userRequest, e);
-                      List<String> errors =
-                              List.of("Ошибка регистрации. Повторите еще раз чуть позже.");
-                      return getOperationResponse(OperationResponse.OperationStatusEnum.FAILED, errors);
-                    }));
+    return checkUserRequest(userRequest)
+            .flatMap(createUserDataErrors -> {
+              if (!createUserDataErrors.isEmpty()) {
+                return getOperationResponse(OperationResponse.OperationStatusEnum.FAILED, createUserDataErrors);
+              } else {
+                return processCreateUser(userRequest);
+              }
+            });
+  }
 
+  private Mono<OperationResponse> processCreateUser(UserRequest userRequest) {
+    return userRepository
+            .findUserByLogin(userRequest.getLogin())
+            .flatMap(this::throwUserAlreadyExistsException)
+            .switchIfEmpty(
+                    findOrCreateClientRole()
+                            .flatMap(role -> saveUserAsClient(role, userRequest)
+                                    .flatMap(user ->
+                                            saveOutboxNotification(user.getId(), user.getEmail(), "Вы успешно зарегистрированы.")
+                                                    .then(getOperationResponse(OperationResponse.OperationStatusEnum.SUCCESS, List.of()))
+                                    ))
+                            .onErrorResume(e -> {
+                              log.error("Ошибка при создании пользователя {}", userRequest, e);
+                              List<String> errors =
+                                      List.of("Ошибка регистрации. Повторите еще раз чуть позже.");
+                              return getOperationResponse(OperationResponse.OperationStatusEnum.FAILED, errors);
+                            }));
+  }
+
+  private Mono<OperationResponse> throwUserAlreadyExistsException(User existingUser) {
+    return Mono.<OperationResponse>error(
+            new UserAlreadyExistsException(
+                    "Пользователь с таким логином уже существует: " + existingUser.getLogin()));
+  }
+
+  private Mono<List<String>> checkUserRequest(UserRequest userRequest) {
+    List<String> createUserDataErrors = new ArrayList<>();
+    // Проверяем Фамилия Имя
+    if (userRequest.getName().isEmpty()) {
+      createUserDataErrors.add("Заполните поле Фамилия Имя");
+    }
+    // Проверяем email
+    if (userRequest.getEmail().isEmpty()) {
+      createUserDataErrors.add("Заполните электронную почту");
+    }
+    // Проверяем дату рождения
+    if (calculateAge(userRequest.getBirthdate()) == 0) {
+      createUserDataErrors.add("Дата рождения не может быть пустой или позже текущей даты");
+    } else if (calculateAge(userRequest.getBirthdate()) < 18) {
+      createUserDataErrors.add("Вам должно быть больше 18 лет");
+    }
+    return Mono.just(createUserDataErrors);
+  }
+
+  private Mono<Role> findOrCreateClientRole() {
+    return roleRepository
+            .findByRoleName("ROLE_CLIENT")
+            .switchIfEmpty(
+                    roleRepository.save(
+                            new Role(null, "ROLE_CLIENT", "Клиент — зарегистрированный пользователь")));
+  }
+
+  private Mono<User> saveUserAsClient(Role role, UserRequest userRequest) {
+    return userRepository
+            .save(userMapper.mapToUserEntity(userRequest))
+            .flatMap(
+                    savedUser ->
+                            userRoleRepository
+                                    .save(
+                                            UserRole.builder()
+                                                    .userId(savedUser.getId())
+                                                    .roleId(role.getId().longValue())
+                                                    .build())
+                                    .thenReturn(savedUser));
+  }
+
+  private Mono<Void> saveOutboxNotification(Long userId, String email, String message) {
+    OutboxNotification outboxNotification = OutboxNotification.builder()
+            .userId(userId)
+            .email(email)
+            .message(message)
+            .build();
+    return outboxNotificationRepository.save(outboxNotification).then();
+  }
+
+  private Mono<OperationResponse> getOperationResponse(
+          OperationResponse.OperationStatusEnum operationStatus, List<String> errors) {
+    return Mono.just(new OperationResponse(operationStatus, errors));
   }
 
   @Transactional(isolation = Isolation.REPEATABLE_READ)
@@ -118,7 +184,7 @@ public class UserServiceImpl implements UserService {
   @Override
   public Flux<UserListResponseInner> getUserList() {
     return userRepository
-        .findAll()
+        .findAllOrderByNameAsc()
         .map(user -> new UserListResponseInner(user.getLogin(), user.getName()));
   }
 
@@ -136,6 +202,7 @@ public class UserServiceImpl implements UserService {
             });
   }
 
+  @Transactional(isolation = Isolation.REPEATABLE_READ)
   @Override
   public Mono<OperationResponse> updateUserPassword(UserPasswordRequest userPasswordRequest) {
     return userRepository
@@ -158,8 +225,10 @@ public class UserServiceImpl implements UserService {
 
   private Mono<OperationResponse> processUpdateUserPassword(User existingUser) {
     return userRepository.save(existingUser)
-            .zipWith(saveOutboxNotification(existingUser.getId(), existingUser.getEmail(), "Пароль успешно обновлен"))
-            .flatMap(tuple -> getOperationResponse(OperationResponse.OperationStatusEnum.SUCCESS, List.of()))
+            .flatMap(user ->
+                    saveOutboxNotification(user.getId(), user.getEmail(), "Пароль успешно обновлен")
+                            .then(getOperationResponse(OperationResponse.OperationStatusEnum.SUCCESS, List.of()))
+            )
             .onErrorResume(e -> {
                     log.error("Ошибка при сохранении изменений пароля для userId {}", existingUser.getId(), e);
                     List<String> errors =
@@ -200,8 +269,10 @@ public class UserServiceImpl implements UserService {
     }
     return accountRepository
         .save(account)
-        .zipWith(sendNotificationAfterCashTransaction(cashRequest, existingUser.getEmail(), existingUser.getId()))
-        .flatMap(tuple -> getOperationResponse(OperationResponse.OperationStatusEnum.SUCCESS, List.of()))
+        .flatMap(savedAccount ->
+                sendNotificationAfterCashTransaction(cashRequest, existingUser.getEmail(), existingUser.getId())
+                        .then(getOperationResponse(OperationResponse.OperationStatusEnum.SUCCESS, List.of()))
+        )
         .onErrorResume(
             e -> {
               log.error("Ошибка при сохранении изменений по счету {}", account.getId(), e);
@@ -230,11 +301,6 @@ public class UserServiceImpl implements UserService {
                   cashRequest.getAmount(), cashRequest.getCurrency()));
     }
     return saveOutboxNotification(userId, email, msg.toString()).then();
-  }
-
-  private Mono<OperationResponse> getOperationResponse(
-      OperationResponse.OperationStatusEnum operationStatus, List<String> errors) {
-    return Mono.just(new OperationResponse(operationStatus, errors));
   }
 
   private Mono<AccountCheckResult> checkCashTransaction(CashRequest cashRequest, User user) {
@@ -279,9 +345,7 @@ public class UserServiceImpl implements UserService {
 
     return Mono.zip(senderMono, recipientMono)
         .flatMap(
-            tuple -> {
-              return processTransferOtherOperation(transferRequest, tuple);
-            });
+            tuple -> processTransferOtherOperation(transferRequest, tuple));
   }
 
   private Mono<OperationResponse> transferItselfOperation(
@@ -387,15 +451,10 @@ public class UserServiceImpl implements UserService {
     recipientAccount.setBalance(recipientAccount.getBalance().add(transferRequest.getToAmount()));
 
     return accountRepository
-        .saveAll(List.of(senderAccount, recipientAccount))
-        .zipWith(sendNotificationAfterTransferOtherTransaction(
-                    transferRequest, sender, recipient))
-        .then()
-        .flatMap(empty -> getOperationResponse(OperationResponse.OperationStatusEnum.SUCCESS, List.of()))
-        .onErrorResume(
-            e ->
-                processErrorApplyTransferOtherOperation(
-                    sender, senderAccount, recipientAccount, e));
+            .saveAll(List.of(senderAccount, recipientAccount))
+            .then(sendNotificationAfterTransferOtherTransaction(transferRequest, sender, recipient))
+            .then(getOperationResponse(OperationResponse.OperationStatusEnum.SUCCESS, List.of()))
+            .onErrorResume(e -> processErrorApplyTransferOtherOperation(senderAccount, recipientAccount, e));
   }
 
   private Mono<OperationResponse> applyTransferItselfOperation(
@@ -403,15 +462,14 @@ public class UserServiceImpl implements UserService {
     senderAccount.setBalance(senderAccount.getBalance().subtract(transferRequest.getFromAmount()));
     recipientAccount.setBalance(recipientAccount.getBalance().add(transferRequest.getToAmount()));
     return accountRepository
-        .saveAll(List.of(senderAccount, recipientAccount))
-        .zipWith(sendNotificationAfterTransferItselfTransaction(transferRequest, user))
-        .then()
-        .flatMap(empty -> getOperationResponse(OperationResponse.OperationStatusEnum.SUCCESS, List.of()))
-        .onErrorResume(e -> processErrorApplyTransferOtherOperation(user, senderAccount, recipientAccount, e));
+            .saveAll(List.of(senderAccount, recipientAccount))
+            .then(sendNotificationAfterTransferItselfTransaction(transferRequest, user))
+            .then(getOperationResponse(OperationResponse.OperationStatusEnum.SUCCESS, List.of()))
+            .onErrorResume(e -> processErrorApplyTransferOtherOperation(senderAccount, recipientAccount, e));
   }
 
   private Mono<OperationResponse> processErrorApplyTransferOtherOperation(
-      User sender, Account senderAccount, Account recipientAccount, Throwable e) {
+      Account senderAccount, Account recipientAccount, Throwable e) {
     log.error(
         "Ошибка при сохранении изменений по счетам {}, {}",
         senderAccount.getId(),
@@ -602,34 +660,4 @@ public class UserServiceImpl implements UserService {
         );
   }
 
-  private Mono<Role> findOrCreateClientRole() {
-    return roleRepository
-        .findByRoleName("ROLE_CLIENT")
-        .switchIfEmpty(
-            roleRepository.save(
-                new Role(null, "ROLE_CLIENT", "Клиент — зарегистрированный пользователь")));
-  }
-
-  private Mono<User> saveUserAsClient(Role role, UserRequest userRequest) {
-    return userRepository
-        .save(userMapper.mapToUserEntity(userRequest))
-        .flatMap(
-            savedUser ->
-                userRoleRepository
-                    .save(
-                        UserRole.builder()
-                            .userId(savedUser.getId())
-                            .roleId(role.getId().longValue())
-                            .build())
-                    .thenReturn(savedUser));
-  }
-
-  private Mono<Void> saveOutboxNotification(Long userId, String email, String message) {
-    OutboxNotification outboxNotification = OutboxNotification.builder()
-            .userId(userId)
-            .email(email)
-            .message(message)
-            .build();
-    return outboxNotificationRepository.save(outboxNotification).then();
-  }
 }
