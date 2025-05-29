@@ -66,4 +66,4 @@ spring:
 
 application:
   notification:
-    limit:
+    limit: 10
