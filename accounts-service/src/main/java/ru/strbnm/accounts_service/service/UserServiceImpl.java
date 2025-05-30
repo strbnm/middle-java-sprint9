@@ -190,16 +190,20 @@ public class UserServiceImpl implements UserService {
 
   @Override
   public Mono<UserDetailResponse> getUserByLogin(String login) {
-    return Mono.zip(
-            userRepository.getUserWithRolesByLogin(login),
-            accountRepository.findUserCurrencyAccounts(login).collectList())
-        .map(
-            tuple2 -> {
-              UserDetailResponse existingUser = tuple2.getT1();
-              List<AccountInfoRow> accounts = tuple2.getT2();
-              existingUser.accounts(accounts);
-              return existingUser;
-            });
+    return userRepository
+            .findUserByLogin(login)
+            .switchIfEmpty(Mono.error(new UserNotFoundException(String.format(NOT_FOUND_USER, login))))
+            .flatMap(user ->
+                    Mono.zip(
+                            userRepository.getUserWithRolesByLogin(login),
+                            accountRepository.findUserCurrencyAccounts(login).collectList())
+                    .map(
+                            tuple2 -> {
+                              UserDetailResponse existingUser = tuple2.getT1();
+                              List<AccountInfoRow> accounts = tuple2.getT2();
+                              existingUser.accounts(accounts);
+                              return existingUser;
+            }));
   }
 
   @Transactional(isolation = Isolation.REPEATABLE_READ)
