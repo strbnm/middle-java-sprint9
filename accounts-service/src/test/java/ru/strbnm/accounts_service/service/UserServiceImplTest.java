@@ -19,17 +19,12 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.r2dbc.core.DatabaseClient;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import ru.strbnm.accounts_service.config.LiquibaseConfig;
-import ru.strbnm.accounts_service.domain.AccountInfoRow;
-import ru.strbnm.accounts_service.domain.CurrencyEnum;
-import ru.strbnm.accounts_service.domain.OperationResponse;
-import ru.strbnm.accounts_service.domain.UserRequest;
-import ru.strbnm.accounts_service.entity.Account;
+import ru.strbnm.accounts_service.domain.*;
+import ru.strbnm.accounts_service.exception.AccountNotFoundForCurrencyException;
 import ru.strbnm.accounts_service.exception.UserAlreadyExistsException;
 import ru.strbnm.accounts_service.exception.UserNotFoundException;
 import ru.strbnm.accounts_service.mapper.UserMapper;
@@ -269,7 +264,7 @@ class UserServiceImplTest {
               .assertNext(
                       account -> {
                           assertEquals(CurrencyEnum.USD, account.getCurrency());
-                          assertEquals(BigDecimal.ZERO, account.getValue());
+                          assertEquals(0, account.getValue().compareTo(BigDecimal.ZERO));
                           assertTrue(account.getExists());
                       })
               .verifyComplete();
@@ -342,7 +337,7 @@ class UserServiceImplTest {
                       account -> {
                           log.info("Счет RUB: {}", account);
                           assertEquals(CurrencyEnum.RUB, account.getCurrency());
-                          assertEquals(BigDecimal.ZERO, account.getValue());
+                          assertEquals(0, account.getValue().compareTo(BigDecimal.ZERO));
                           assertTrue(account.getExists());
                       })
               .assertNext(
@@ -356,7 +351,7 @@ class UserServiceImplTest {
   }
 
   @Test
-  void updateExistingUser_shouldReturnUserNotFoundError() {
+  void updateNotExistingUser_shouldReturnUserNotFoundError() {
     UserRequest updateUserRequestNotFound =
         new UserRequest(
             "test_user4",
@@ -376,7 +371,7 @@ class UserServiceImplTest {
   }
 
   @Test
-  void getUserList() {
+  void getUserList_shouldReturnUserListResponse() {
       StepVerifier.create(userService.getUserList())
               .assertNext(existingUser -> {
                   assertNotNull(existingUser, "Объект не должен быть null.");
@@ -403,7 +398,7 @@ class UserServiceImplTest {
   }
 
   @Test
-  void getUserByLogin() {
+  void getUserByLogin_shouldReturnUserDetailResponse() {
       AccountInfoRow rubAccount = new AccountInfoRow(CurrencyEnum.RUB, BigDecimal.ZERO, false);
       AccountInfoRow usdAccount = new AccountInfoRow(CurrencyEnum.USD, BigDecimal.ZERO, false);
       AccountInfoRow cnyAccount = new AccountInfoRow(CurrencyEnum.CNY, new BigDecimal("5000.0"), true);
@@ -436,14 +431,769 @@ class UserServiceImplTest {
               .verifyComplete();
   }
 
-  @Test
-  void updateUserPassword() {}
+    @Test
+    void getUserByLoginNotExistingUser_shouldReturnUserNotFoundError() {
+        StepVerifier.create(userService.getUserByLogin("test_user4"))
+                .verifyErrorSatisfies(
+                        throwable -> {
+                            assertInstanceOf(UserNotFoundException.class, throwable);
+                            assertEquals(
+                                    "Пользователь с логином test_user4 не существует",
+                                    throwable.getMessage());
+                        });
+    }
 
   @Test
-  void cashOperation() {}
+  void updateUserPasswordOk_shouldReturnOperationResponseWithSuccess() {
+      UserPasswordRequest userPasswordRequestSuccess = new UserPasswordRequest(
+              "test_user1", "$2a$12$DpyrJV1Ob2RR7WZnEEUsVOShUOexUQIg.J/lzad8FNYty6/BDByo6"
+      );
+      StepVerifier.create(userService.updateUserPassword(userPasswordRequestSuccess))
+              .assertNext(
+                      operationResponse -> {
+                          assertNotNull(operationResponse, "Объект не должен быть null.");
+                          assertEquals(
+                                  OperationResponse.OperationStatusEnum.SUCCESS,
+                                  operationResponse.getOperationStatus(),
+                                  "Статус должен быть SUCCESS");
+                          assertTrue(operationResponse.getErrors().isEmpty(), "Список ошибок должен быть пуст");
+                      })
+              .verifyComplete();
+  }
+    @Test
+    void updateUserPasswordInvalidHash_shouldReturnOperationResponseWithFailed() {
+        UserPasswordRequest userPasswordRequestFailed = new UserPasswordRequest(
+                "test_user1", "b2RR7WZnEEUsVOShUOexUQIg.J/lzad8FNYty6/BDByo6"
+        );
+        StepVerifier.create(userService.updateUserPassword(userPasswordRequestFailed))
+                .assertNext(
+                        operationResponse -> {
+                            assertNotNull(operationResponse, "Объект не должен быть null.");
+                            assertEquals(
+                                    OperationResponse.OperationStatusEnum.FAILED,
+                                    operationResponse.getOperationStatus(),
+                                    "Статус должен быть FAILED");
+                            assertFalse(operationResponse.getErrors().isEmpty(), "Список ошибок должен быть не пуст");
+                            assertEquals(List.of("Ошибка при сохранении изменений пароля. Операция отменена"), operationResponse.getErrors());
+                        })
+                .verifyComplete();
+    }
+
+    @Test
+    void updateUserPasswordNotExistingUser_shouldReturnUserNotFoundError() {
+        UserPasswordRequest userPasswordRequestFailed = new UserPasswordRequest(
+                "test_user4", "$2a$12$DpyrJV1Ob2RR7WZnEEUsVOShUOexUQIg.J/lzad8FNYty6/BDByo6"
+        );
+        StepVerifier.create(userService.updateUserPassword(userPasswordRequestFailed))
+                .verifyErrorSatisfies(
+                        throwable -> {
+                            assertInstanceOf(UserNotFoundException.class, throwable);
+                            assertEquals(
+                                    "Пользователь с логином test_user4 не существует",
+                                    throwable.getMessage());
+                        });
+    }
 
   @Test
-  void transferOperation() {}
+  void cashOperationOk_shouldReturnOperationResponseWithSuccess() {
+      CashRequest cashRequestSuccess = new CashRequest(
+              CurrencyEnum.RUB,
+              new BigDecimal("10000.0"),
+              CashRequest.ActionEnum.GET
+      );
+
+      StepVerifier.create(userService.getUserByLogin("test_user1"))
+                      .assertNext(userDetailResponse -> {
+                          assertNotNull(userDetailResponse, "Объект не должен быть null.");
+                          assertEquals(0, new BigDecimal("150000.0").compareTo(
+                                  userDetailResponse.getAccounts().stream()
+                                  .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.RUB)
+                                  .map(AccountInfoRow::getValue)
+                                  .findFirst().get()));
+                      }).verifyComplete();
+
+      StepVerifier.create(userService.cashOperation(cashRequestSuccess, "test_user1"))
+              .assertNext(
+                      operationResponse -> {
+                          assertNotNull(operationResponse, "Объект не должен быть null.");
+                          assertEquals(
+                                  OperationResponse.OperationStatusEnum.SUCCESS,
+                                  operationResponse.getOperationStatus(),
+                                  "Статус должен быть SUCCESS");
+                          assertTrue(operationResponse.getErrors().isEmpty(), "Список ошибок должен быть пуст");
+                      })
+              .verifyComplete();
+
+      StepVerifier.create(userService.getUserByLogin("test_user1"))
+              .assertNext(userDetailResponse -> {
+                  assertNotNull(userDetailResponse, "Объект не должен быть null.");
+                  assertEquals(0, new BigDecimal("140000.0").compareTo(
+                          userDetailResponse.getAccounts().stream()
+                                  .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.RUB)
+                                  .map(AccountInfoRow::getValue)
+                                  .findFirst().get()));
+              }).verifyComplete();
+  }
+
+    @Test
+    void cashOperationWithMissingAccount_shouldReturnOperationResponseWithFailed() {
+        CashRequest cashRequestFailed = new CashRequest(
+                CurrencyEnum.USD,
+                new BigDecimal("10000.0"),
+                CashRequest.ActionEnum.GET
+        );
+        // Отсутствует счет в USD
+        StepVerifier.create(userService.getUserByLogin("test_user1"))
+                .assertNext(userDetailResponse -> {
+                    assertNotNull(userDetailResponse, "Объект не должен быть null.");
+                    assertFalse(
+                            userDetailResponse.getAccounts().stream()
+                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.USD)
+                                    .map(AccountInfoRow::getExists)
+                                    .findFirst().get());
+                }).verifyComplete();
+
+        StepVerifier.create(userService.cashOperation(cashRequestFailed, "test_user1"))
+                .assertNext(
+                        operationResponse -> {
+                            assertNotNull(operationResponse, "Объект не должен быть null.");
+                            assertEquals(
+                                    OperationResponse.OperationStatusEnum.FAILED,
+                                    operationResponse.getOperationStatus(),
+                                    "Статус должен быть FAILED");
+                            assertFalse(operationResponse.getErrors().isEmpty(), "Список ошибок должен быть не пуст");
+                            assertEquals(List.of("У Вас отсутствует счет в выбранной валюте"), operationResponse.getErrors());
+                        })
+                .verifyComplete();
+
+        // Счет не появился
+        StepVerifier.create(userService.getUserByLogin("test_user1"))
+                .assertNext(userDetailResponse -> {
+                    assertNotNull(userDetailResponse, "Объект не должен быть null.");
+                    assertFalse(
+                            userDetailResponse.getAccounts().stream()
+                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.USD)
+                                    .map(AccountInfoRow::getExists)
+                                    .findFirst().get());
+                }).verifyComplete();
+    }
+
+    @Test
+    void cashOperationWithInsufficientFunds_shouldReturnOperationResponseWithFailed() {
+        CashRequest cashRequestFailed = new CashRequest(
+                CurrencyEnum.CNY,
+                new BigDecimal("20001.0"),
+                CashRequest.ActionEnum.GET
+        );
+
+        StepVerifier.create(userService.getUserByLogin("test_user1"))
+                .assertNext(userDetailResponse -> {
+                    assertNotNull(userDetailResponse, "Объект не должен быть null.");
+                    assertEquals(0, new BigDecimal("20000.0").compareTo(
+                            userDetailResponse.getAccounts().stream()
+                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.CNY)
+                                    .map(AccountInfoRow::getValue)
+                                    .findFirst().get()));
+                }).verifyComplete();
+
+        StepVerifier.create(userService.cashOperation(cashRequestFailed, "test_user1"))
+                .assertNext(
+                        operationResponse -> {
+                            assertNotNull(operationResponse, "Объект не должен быть null.");
+                            assertEquals(
+                                    OperationResponse.OperationStatusEnum.FAILED,
+                                    operationResponse.getOperationStatus(),
+                                    "Статус должен быть FAILED");
+                            assertFalse(operationResponse.getErrors().isEmpty(), "Список ошибок должен быть не пуст");
+                            assertEquals(List.of("На счете недостаточно средств"), operationResponse.getErrors());
+                        })
+                .verifyComplete();
+
+        StepVerifier.create(userService.getUserByLogin("test_user1"))
+                .assertNext(userDetailResponse -> {
+                    assertNotNull(userDetailResponse, "Объект не должен быть null.");
+                    assertEquals(0, new BigDecimal("20000.0").compareTo(
+                            userDetailResponse.getAccounts().stream()
+                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.CNY)
+                                    .map(AccountInfoRow::getValue)
+                                    .findFirst().get()));
+                }).verifyComplete();
+    }
+
+    @Test
+    void cashOperationNotExistingUser_shouldReturnUserNotFoundError() {
+        CashRequest cashRequestFailed = new CashRequest(
+                CurrencyEnum.CNY,
+                new BigDecimal("20001.0"),
+                CashRequest.ActionEnum.GET
+        );
+        StepVerifier.create(userService.cashOperation(cashRequestFailed, "test_user4"))
+                .verifyErrorSatisfies(
+                        throwable -> {
+                            assertInstanceOf(UserNotFoundException.class, throwable);
+                            assertEquals(
+                                    "Пользователь с логином test_user4 не существует",
+                                    throwable.getMessage());
+                        });
+    }
+
+    @Test
+    void transferOperationOtherOk_shouldReturnOperationResponseWithSuccess() {
+    TransferRequest transferRequestOtherSuccess = new TransferRequest(
+            CurrencyEnum.CNY,
+            CurrencyEnum.CNY,
+            new BigDecimal("10000.0"),
+            new BigDecimal("10000.0"),
+            "test_user2"
+    );
+
+        StepVerifier.create(userService.getUserByLogin("test_user1"))
+                .assertNext(userDetailResponse -> {
+                    assertNotNull(userDetailResponse, "Объект не должен быть null.");
+                    assertEquals(0, new BigDecimal("20000.0").compareTo(
+                            userDetailResponse.getAccounts().stream()
+                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.CNY)
+                                    .map(AccountInfoRow::getValue)
+                                    .findFirst().get()));
+                }).verifyComplete();
+
+        StepVerifier.create(userService.getUserByLogin("test_user2"))
+                .assertNext(userDetailResponse -> {
+                    assertNotNull(userDetailResponse, "Объект не должен быть null.");
+                    assertEquals(0, new BigDecimal("12000.0").compareTo(
+                            userDetailResponse.getAccounts().stream()
+                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.CNY)
+                                    .map(AccountInfoRow::getValue)
+                                    .findFirst().get()));
+                }).verifyComplete();
+
+        StepVerifier.create(userService.transferOperation(transferRequestOtherSuccess, "test_user1"))
+                .assertNext(
+                        operationResponse -> {
+                            assertNotNull(operationResponse, "Объект не должен быть null.");
+                            assertEquals(
+                                    OperationResponse.OperationStatusEnum.SUCCESS,
+                                    operationResponse.getOperationStatus(),
+                                    "Статус должен быть SUCCESS");
+                            assertTrue(operationResponse.getErrors().isEmpty(), "Список ошибок должен быть пуст");
+                        })
+                .verifyComplete();
+
+        StepVerifier.create(userService.getUserByLogin("test_user1"))
+                .assertNext(userDetailResponse -> {
+                    assertNotNull(userDetailResponse, "Объект не должен быть null.");
+                    assertEquals(0, new BigDecimal("10000.0").compareTo(
+                            userDetailResponse.getAccounts().stream()
+                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.CNY)
+                                    .map(AccountInfoRow::getValue)
+                                    .findFirst().get()));
+                }).verifyComplete();
+
+        StepVerifier.create(userService.getUserByLogin("test_user2"))
+                .assertNext(userDetailResponse -> {
+                    assertNotNull(userDetailResponse, "Объект не должен быть null.");
+                    assertEquals(0, new BigDecimal("22000.0").compareTo(
+                            userDetailResponse.getAccounts().stream()
+                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.CNY)
+                                    .map(AccountInfoRow::getValue)
+                                    .findFirst().get()));
+                }).verifyComplete();
+    }
+
+    @Test
+    void transferOperationOtherWithMissingAccountIfself_shouldReturnAccountNotFoundForCurrencyException() {
+        TransferRequest transferRequestOtherSuccess = new TransferRequest(
+                CurrencyEnum.USD,
+                CurrencyEnum.CNY,
+                new BigDecimal("1000.0"),
+                new BigDecimal("10000.0"),
+                "test_user2"
+        );
+
+        // Отсутствует счет в USD
+        StepVerifier.create(userService.getUserByLogin("test_user1"))
+                .assertNext(userDetailResponse -> {
+                    assertNotNull(userDetailResponse, "Объект не должен быть null.");
+                    assertFalse(
+                            userDetailResponse.getAccounts().stream()
+                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.USD)
+                                    .map(AccountInfoRow::getExists)
+                                    .findFirst().get());
+                }).verifyComplete();
+
+        StepVerifier.create(userService.getUserByLogin("test_user2"))
+                .assertNext(userDetailResponse -> {
+                    assertNotNull(userDetailResponse, "Объект не должен быть null.");
+                    assertEquals(0, new BigDecimal("12000.0").compareTo(
+                            userDetailResponse.getAccounts().stream()
+                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.CNY)
+                                    .map(AccountInfoRow::getValue)
+                                    .findFirst().get()));
+                }).verifyComplete();
+
+        StepVerifier.create(userService.transferOperation(transferRequestOtherSuccess, "test_user1"))
+                .verifyErrorSatisfies(
+                        throwable -> {
+                            assertInstanceOf(AccountNotFoundForCurrencyException.class, throwable);
+                            assertEquals(
+                                    "У Вас отсутствует счет в выбранной валюте",
+                                    throwable.getMessage());
+                        });
+
+        // Отсутствует счет в USD
+        StepVerifier.create(userService.getUserByLogin("test_user1"))
+                .assertNext(userDetailResponse -> {
+                    assertNotNull(userDetailResponse, "Объект не должен быть null.");
+                    assertFalse(
+                            userDetailResponse.getAccounts().stream()
+                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.USD)
+                                    .map(AccountInfoRow::getExists)
+                                    .findFirst().get());
+                }).verifyComplete();
+
+        StepVerifier.create(userService.getUserByLogin("test_user2"))
+                .assertNext(userDetailResponse -> {
+                    assertNotNull(userDetailResponse, "Объект не должен быть null.");
+                    assertEquals(0, new BigDecimal("12000.0").compareTo(
+                            userDetailResponse.getAccounts().stream()
+                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.CNY)
+                                    .map(AccountInfoRow::getValue)
+                                    .findFirst().get()));
+                }).verifyComplete();
+    }
+
+    @Test
+    void transferOperationOtherWithMissingAccountOther_shouldReturnAccountNotFoundForCurrencyException() {
+        TransferRequest transferRequestOtherSuccess = new TransferRequest(
+                CurrencyEnum.CNY,
+                CurrencyEnum.RUB,
+                new BigDecimal("1000.0"),
+                new BigDecimal("10000.0"),
+                "test_user2"
+        );
+
+        // Отсутствует счет в USD
+        StepVerifier.create(userService.getUserByLogin("test_user1"))
+                .assertNext(userDetailResponse -> {
+                    assertNotNull(userDetailResponse, "Объект не должен быть null.");
+                    assertFalse(
+                            userDetailResponse.getAccounts().stream()
+                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.USD)
+                                    .map(AccountInfoRow::getExists)
+                                    .findFirst().get());
+                }).verifyComplete();
+
+        StepVerifier.create(userService.getUserByLogin("test_user2"))
+                .assertNext(userDetailResponse -> {
+                    assertNotNull(userDetailResponse, "Объект не должен быть null.");
+                    assertEquals(0, new BigDecimal("12000.0").compareTo(
+                            userDetailResponse.getAccounts().stream()
+                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.CNY)
+                                    .map(AccountInfoRow::getValue)
+                                    .findFirst().get()));
+                }).verifyComplete();
+
+        StepVerifier.create(userService.transferOperation(transferRequestOtherSuccess, "test_user1"))
+                .verifyErrorSatisfies(
+                        throwable -> {
+                            assertInstanceOf(AccountNotFoundForCurrencyException.class, throwable);
+                            assertEquals(
+                                    "У клиента Петров Петр отсутствует счет в выбранной валюте",
+                                    throwable.getMessage());
+                        });
+
+        // Отсутствует счет в USD
+        StepVerifier.create(userService.getUserByLogin("test_user1"))
+                .assertNext(userDetailResponse -> {
+                    assertNotNull(userDetailResponse, "Объект не должен быть null.");
+                    assertFalse(
+                            userDetailResponse.getAccounts().stream()
+                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.USD)
+                                    .map(AccountInfoRow::getExists)
+                                    .findFirst().get());
+                }).verifyComplete();
+
+        StepVerifier.create(userService.getUserByLogin("test_user2"))
+                .assertNext(userDetailResponse -> {
+                    assertNotNull(userDetailResponse, "Объект не должен быть null.");
+                    assertEquals(0, new BigDecimal("12000.0").compareTo(
+                            userDetailResponse.getAccounts().stream()
+                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.CNY)
+                                    .map(AccountInfoRow::getValue)
+                                    .findFirst().get()));
+                }).verifyComplete();
+    }
+
+
+    @Test
+    void transferOperationOtherWithInsufficientFunds_shouldReturnOperationResponseWithFailed() {
+        TransferRequest transferRequestOtherSuccess = new TransferRequest(
+                CurrencyEnum.CNY,
+                CurrencyEnum.CNY,
+                new BigDecimal("20001.0"),
+                new BigDecimal("10000.0"),
+                "test_user2"
+        );
+
+        StepVerifier.create(userService.getUserByLogin("test_user1"))
+                .assertNext(userDetailResponse -> {
+                    assertNotNull(userDetailResponse, "Объект не должен быть null.");
+                    assertEquals(0, new BigDecimal("20000.0").compareTo(
+                            userDetailResponse.getAccounts().stream()
+                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.CNY)
+                                    .map(AccountInfoRow::getValue)
+                                    .findFirst().get()));
+                }).verifyComplete();
+
+        StepVerifier.create(userService.getUserByLogin("test_user2"))
+                .assertNext(userDetailResponse -> {
+                    assertNotNull(userDetailResponse, "Объект не должен быть null.");
+                    assertEquals(0, new BigDecimal("12000.0").compareTo(
+                            userDetailResponse.getAccounts().stream()
+                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.CNY)
+                                    .map(AccountInfoRow::getValue)
+                                    .findFirst().get()));
+                }).verifyComplete();
+
+        StepVerifier.create(userService.transferOperation(transferRequestOtherSuccess, "test_user1"))
+                .assertNext(
+                        operationResponse -> {
+                            assertNotNull(operationResponse, "Объект не должен быть null.");
+                            assertEquals(
+                                    OperationResponse.OperationStatusEnum.FAILED,
+                                    operationResponse.getOperationStatus(),
+                                    "Статус должен быть FAILED");
+                            assertFalse(operationResponse.getErrors().isEmpty(), "Список ошибок должен быть не пуст");
+                            assertEquals(List.of("На счете недостаточно средств"), operationResponse.getErrors());
+                        })
+                .verifyComplete();
+
+        StepVerifier.create(userService.getUserByLogin("test_user1"))
+                .assertNext(userDetailResponse -> {
+                    assertNotNull(userDetailResponse, "Объект не должен быть null.");
+                    assertEquals(0, new BigDecimal("20000.0").compareTo(
+                            userDetailResponse.getAccounts().stream()
+                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.CNY)
+                                    .map(AccountInfoRow::getValue)
+                                    .findFirst().get()));
+                }).verifyComplete();
+
+        StepVerifier.create(userService.getUserByLogin("test_user2"))
+                .assertNext(userDetailResponse -> {
+                    assertNotNull(userDetailResponse, "Объект не должен быть null.");
+                    assertEquals(0, new BigDecimal("12000.0").compareTo(
+                            userDetailResponse.getAccounts().stream()
+                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.CNY)
+                                    .map(AccountInfoRow::getValue)
+                                    .findFirst().get()));
+                }).verifyComplete();
+    }
+
+    @Test
+    void transferOperationItselfOk_shouldReturnOperationResponseWithSuccess() {
+        TransferRequest transferRequestOtherSuccess = new TransferRequest(
+                CurrencyEnum.CNY,
+                CurrencyEnum.RUB,
+                new BigDecimal("10000.0"),
+                new BigDecimal("100000.0"),
+                "test_user1"
+        );
+
+        StepVerifier.create(userService.getUserByLogin("test_user1"))
+                .assertNext(userDetailResponse -> {
+                    assertNotNull(userDetailResponse, "Объект не должен быть null.");
+                    assertEquals(0, new BigDecimal("20000.0").compareTo(
+                            userDetailResponse.getAccounts().stream()
+                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.CNY)
+                                    .map(AccountInfoRow::getValue)
+                                    .findFirst().get()));
+                    assertEquals(0, new BigDecimal("150000.0").compareTo(
+                            userDetailResponse.getAccounts().stream()
+                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.RUB)
+                                    .map(AccountInfoRow::getValue)
+                                    .findFirst().get()));
+                }).verifyComplete();
+
+        StepVerifier.create(userService.transferOperation(transferRequestOtherSuccess, "test_user1"))
+                .assertNext(
+                        operationResponse -> {
+                            assertNotNull(operationResponse, "Объект не должен быть null.");
+                            assertEquals(
+                                    OperationResponse.OperationStatusEnum.SUCCESS,
+                                    operationResponse.getOperationStatus(),
+                                    "Статус должен быть SUCCESS");
+                            assertTrue(operationResponse.getErrors().isEmpty(), "Список ошибок должен быть пуст");
+                        })
+                .verifyComplete();
+
+        StepVerifier.create(userService.getUserByLogin("test_user1"))
+                .assertNext(userDetailResponse -> {
+                    assertNotNull(userDetailResponse, "Объект не должен быть null.");
+                    assertEquals(0, new BigDecimal("10000.0").compareTo(
+                            userDetailResponse.getAccounts().stream()
+                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.CNY)
+                                    .map(AccountInfoRow::getValue)
+                                    .findFirst().get()));
+                    assertEquals(0, new BigDecimal("250000.0").compareTo(
+                            userDetailResponse.getAccounts().stream()
+                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.RUB)
+                                    .map(AccountInfoRow::getValue)
+                                    .findFirst().get()));
+                }).verifyComplete();
+    }
+
+    @Test
+    void transferOperationItselfWithMissingAccount_shouldReturnAccountNotFoundForCurrencyException() {
+        TransferRequest transferRequestOtherSuccess = new TransferRequest(
+                CurrencyEnum.USD,
+                CurrencyEnum.CNY,
+                new BigDecimal("1000.0"),
+                new BigDecimal("10000.0"),
+                "test_user1"
+        );
+
+        // Отсутствует счет в USD
+        StepVerifier.create(userService.getUserByLogin("test_user1"))
+                .assertNext(userDetailResponse -> {
+                    assertNotNull(userDetailResponse, "Объект не должен быть null.");
+                    assertFalse(
+                            userDetailResponse.getAccounts().stream()
+                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.USD)
+                                    .map(AccountInfoRow::getExists)
+                                    .findFirst().get());
+                }).verifyComplete();
+
+        StepVerifier.create(userService.transferOperation(transferRequestOtherSuccess, "test_user1"))
+                .verifyErrorSatisfies(
+                        throwable -> {
+                            assertInstanceOf(AccountNotFoundForCurrencyException.class, throwable);
+                            assertEquals(
+                                    "У Вас отсутствует счет в выбранной валюте",
+                                    throwable.getMessage());
+                        });
+
+        // Отсутствует счет в USD
+        StepVerifier.create(userService.getUserByLogin("test_user1"))
+                .assertNext(userDetailResponse -> {
+                    assertNotNull(userDetailResponse, "Объект не должен быть null.");
+                    assertFalse(
+                            userDetailResponse.getAccounts().stream()
+                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.USD)
+                                    .map(AccountInfoRow::getExists)
+                                    .findFirst().get());
+                }).verifyComplete();
+
+        StepVerifier.create(userService.getUserByLogin("test_user2"))
+                .assertNext(userDetailResponse -> {
+                    assertNotNull(userDetailResponse, "Объект не должен быть null.");
+                    assertEquals(0, new BigDecimal("12000.0").compareTo(
+                            userDetailResponse.getAccounts().stream()
+                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.CNY)
+                                    .map(AccountInfoRow::getValue)
+                                    .findFirst().get()));
+                }).verifyComplete();
+    }
+
+    @Test
+    void transferOperationItselfWithMissingAccountOther_shouldReturnAccountNotFoundForCurrencyException() {
+        TransferRequest transferRequestOtherSuccess = new TransferRequest(
+                CurrencyEnum.CNY,
+                CurrencyEnum.USD,
+                new BigDecimal("1000.0"),
+                new BigDecimal("10000.0"),
+                "test_user1"
+        );
+
+        // Отсутствует счет в USD
+        StepVerifier.create(userService.getUserByLogin("test_user1"))
+                .assertNext(userDetailResponse -> {
+                    assertNotNull(userDetailResponse, "Объект не должен быть null.");
+                    assertFalse(
+                            userDetailResponse.getAccounts().stream()
+                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.USD)
+                                    .map(AccountInfoRow::getExists)
+                                    .findFirst().get());
+                }).verifyComplete();
+
+        StepVerifier.create(userService.getUserByLogin("test_user2"))
+                .assertNext(userDetailResponse -> {
+                    assertNotNull(userDetailResponse, "Объект не должен быть null.");
+                    assertEquals(0, new BigDecimal("12000.0").compareTo(
+                            userDetailResponse.getAccounts().stream()
+                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.CNY)
+                                    .map(AccountInfoRow::getValue)
+                                    .findFirst().get()));
+                }).verifyComplete();
+
+        StepVerifier.create(userService.transferOperation(transferRequestOtherSuccess, "test_user1"))
+                .verifyErrorSatisfies(
+                        throwable -> {
+                            assertInstanceOf(AccountNotFoundForCurrencyException.class, throwable);
+                            assertEquals(
+                                    "У Вас отсутствует счет в выбранной валюте",
+                                    throwable.getMessage());
+                        });
+
+        // Отсутствует счет в USD
+        StepVerifier.create(userService.getUserByLogin("test_user1"))
+                .assertNext(userDetailResponse -> {
+                    assertNotNull(userDetailResponse, "Объект не должен быть null.");
+                    assertFalse(
+                            userDetailResponse.getAccounts().stream()
+                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.USD)
+                                    .map(AccountInfoRow::getExists)
+                                    .findFirst().get());
+                }).verifyComplete();
+
+        StepVerifier.create(userService.getUserByLogin("test_user2"))
+                .assertNext(userDetailResponse -> {
+                    assertNotNull(userDetailResponse, "Объект не должен быть null.");
+                    assertEquals(0, new BigDecimal("12000.0").compareTo(
+                            userDetailResponse.getAccounts().stream()
+                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.CNY)
+                                    .map(AccountInfoRow::getValue)
+                                    .findFirst().get()));
+                }).verifyComplete();
+    }
+
+
+    @Test
+    void transferOperationItselfWithInsufficientFunds_shouldReturnOperationResponseWithFailed() {
+        TransferRequest transferRequestOtherSuccess = new TransferRequest(
+                CurrencyEnum.RUB,
+                CurrencyEnum.CNY,
+                new BigDecimal("150001.0"),
+                new BigDecimal("10000.0"),
+                "test_user1"
+        );
+
+        StepVerifier.create(userService.getUserByLogin("test_user1"))
+                .assertNext(userDetailResponse -> {
+                    assertNotNull(userDetailResponse, "Объект не должен быть null.");
+                    assertEquals(0, new BigDecimal("20000.0").compareTo(
+                            userDetailResponse.getAccounts().stream()
+                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.CNY)
+                                    .map(AccountInfoRow::getValue)
+                                    .findFirst().get()));
+                    assertEquals(0, new BigDecimal("150000.0").compareTo(
+                            userDetailResponse.getAccounts().stream()
+                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.RUB)
+                                    .map(AccountInfoRow::getValue)
+                                    .findFirst().get()));
+                }).verifyComplete();
+
+        StepVerifier.create(userService.transferOperation(transferRequestOtherSuccess, "test_user1"))
+                .assertNext(
+                        operationResponse -> {
+                            assertNotNull(operationResponse, "Объект не должен быть null.");
+                            assertEquals(
+                                    OperationResponse.OperationStatusEnum.FAILED,
+                                    operationResponse.getOperationStatus(),
+                                    "Статус должен быть FAILED");
+                            assertFalse(operationResponse.getErrors().isEmpty(), "Список ошибок должен быть не пуст");
+                            assertEquals(List.of("На счете недостаточно средств"), operationResponse.getErrors());
+                        })
+                .verifyComplete();
+
+        StepVerifier.create(userService.getUserByLogin("test_user1"))
+                .assertNext(userDetailResponse -> {
+                    assertNotNull(userDetailResponse, "Объект не должен быть null.");
+                    assertEquals(0, new BigDecimal("20000.0").compareTo(
+                            userDetailResponse.getAccounts().stream()
+                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.CNY)
+                                    .map(AccountInfoRow::getValue)
+                                    .findFirst().get()));
+                    assertEquals(0, new BigDecimal("150000.0").compareTo(
+                            userDetailResponse.getAccounts().stream()
+                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.RUB)
+                                    .map(AccountInfoRow::getValue)
+                                    .findFirst().get()));
+                }).verifyComplete();
+    }
+
+    @Test
+    void transferOperationItselfWithWithSameAccounts_shouldReturnOperationResponseWithFailed() {
+        TransferRequest transferRequestOtherSuccess = new TransferRequest(
+                CurrencyEnum.RUB,
+                CurrencyEnum.RUB,
+                new BigDecimal("10000.0"),
+                new BigDecimal("10000.0"),
+                "test_user1"
+        );
+
+        StepVerifier.create(userService.getUserByLogin("test_user1"))
+                .assertNext(userDetailResponse -> {
+                    assertNotNull(userDetailResponse, "Объект не должен быть null.");
+                    assertEquals(0, new BigDecimal("150000.0").compareTo(
+                            userDetailResponse.getAccounts().stream()
+                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.RUB)
+                                    .map(AccountInfoRow::getValue)
+                                    .findFirst().get()));
+                }).verifyComplete();
+
+        StepVerifier.create(userService.transferOperation(transferRequestOtherSuccess, "test_user1"))
+                .assertNext(
+                        operationResponse -> {
+                            assertNotNull(operationResponse, "Объект не должен быть null.");
+                            assertEquals(
+                                    OperationResponse.OperationStatusEnum.FAILED,
+                                    operationResponse.getOperationStatus(),
+                                    "Статус должен быть FAILED");
+                            assertFalse(operationResponse.getErrors().isEmpty(), "Список ошибок должен быть не пуст");
+                            assertEquals(List.of("Перевести можно только между разными счетами"), operationResponse.getErrors());
+                        })
+                .verifyComplete();
+
+        StepVerifier.create(userService.getUserByLogin("test_user1"))
+                .assertNext(userDetailResponse -> {
+                    assertNotNull(userDetailResponse, "Объект не должен быть null.");
+                    assertEquals(0, new BigDecimal("150000.0").compareTo(
+                            userDetailResponse.getAccounts().stream()
+                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.RUB)
+                                    .map(AccountInfoRow::getValue)
+                                    .findFirst().get()));
+                }).verifyComplete();
+    }
+
+    @Test
+    void transferOperationNotExistingFromUser_shouldReturnUserNotFoundError() {
+        TransferRequest transferRequestOtherSuccess = new TransferRequest(
+                CurrencyEnum.RUB,
+                CurrencyEnum.RUB,
+                new BigDecimal("10000.0"),
+                new BigDecimal("10000.0"),
+                "test_user1"
+        );
+
+        StepVerifier.create(userService.transferOperation(transferRequestOtherSuccess, "test_user4"))
+                .verifyErrorSatisfies(
+                        throwable -> {
+                            assertInstanceOf(UserNotFoundException.class, throwable);
+                            assertEquals(
+                                    "Пользователь с логином test_user4 не существует",
+                                    throwable.getMessage());
+                        });
+    }
+
+    @Test
+    void transferOperationNotExistingToUser_shouldReturnUserNotFoundError() {
+        TransferRequest transferRequestOtherSuccess = new TransferRequest(
+                CurrencyEnum.RUB,
+                CurrencyEnum.RUB,
+                new BigDecimal("10000.0"),
+                new BigDecimal("10000.0"),
+                "test_user4"
+        );
+
+        StepVerifier.create(userService.transferOperation(transferRequestOtherSuccess, "test_user1"))
+                .verifyErrorSatisfies(
+                        throwable -> {
+                            assertInstanceOf(UserNotFoundException.class, throwable);
+                            assertEquals(
+                                    "Пользователь с логином test_user4 не существует",
+                                    throwable.getMessage());
+                        });
+    }
 
   @TestConfiguration
   static class TestConfig {
@@ -452,9 +1202,5 @@ class UserServiceImplTest {
       return Mappers.getMapper(UserMapper.class);
     }
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-      return new BCryptPasswordEncoder();
-    }
   }
 }
