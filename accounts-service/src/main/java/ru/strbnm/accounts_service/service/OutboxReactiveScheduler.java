@@ -20,7 +20,7 @@ import ru.strbnm.accounts_service.repository.OutboxNotificationRepository;
 
 
 @Slf4j
-@Profile("!contracts")
+@Profile("!contracts & !test")
 @Component
 public class OutboxReactiveScheduler {
 

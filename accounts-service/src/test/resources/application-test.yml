@@ -49,4 +49,4 @@ logging:
 
 application:
   notification:
-    limit:
+    limit: 10
