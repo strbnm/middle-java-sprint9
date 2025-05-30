@@ -10,7 +10,7 @@ Contract.make {
         body([
                 email: "test@example.ru",
                 message: "Пополнение счёта RUB на сумму 300.00 руб.",
-                application: "cash-service"
+                application: anyOf("accounts-service", "cash-service", "transfer-service")
         ])
         headers {
             contentType('application/json')
