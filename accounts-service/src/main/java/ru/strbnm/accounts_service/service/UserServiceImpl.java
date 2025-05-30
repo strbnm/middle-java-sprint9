@@ -5,6 +5,8 @@ import java.time.LocalDate;
 import java.time.Period;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
+
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -33,7 +35,7 @@ public class UserServiceImpl implements UserService {
   private final AccountRepository accountRepository;
   private final OutboxNotificationRepository outboxNotificationRepository;
   private final UserMapper userMapper;
-  private final PasswordEncoder passwordEncoder;
+  private final Pattern BCRYPT_PATTERN = Pattern.compile("\\A\\$2(a|y|b)?\\$(\\d\\d)\\$[./0-9A-Za-z]{53}");
 
   private final String FROM_CURRENCY = "fromCurrency";
   private final String TO_CURRENCY = "toCurrency";
@@ -47,15 +49,13 @@ public class UserServiceImpl implements UserService {
           UserRoleRepository userRoleRepository,
           AccountRepository accountRepository,
           OutboxNotificationRepository outboxNotificationRepository,
-          UserMapper userMapper,
-          PasswordEncoder passwordEncoder) {
+          UserMapper userMapper) {
     this.userRepository = userRepository;
     this.roleRepository = roleRepository;
     this.userRoleRepository = userRoleRepository;
     this.accountRepository = accountRepository;
     this.outboxNotificationRepository = outboxNotificationRepository;
     this.userMapper = userMapper;
-      this.passwordEncoder = passwordEncoder;
   }
 
   @Transactional(isolation = Isolation.REPEATABLE_READ)
@@ -213,17 +213,15 @@ public class UserServiceImpl implements UserService {
             .findUserByLogin(userPasswordRequest.getLogin())
             .switchIfEmpty(Mono.error(new UserNotFoundException(String.format(NOT_FOUND_USER, userPasswordRequest.getLogin()))))
             .flatMap(existingUser -> {
-              try {
-                passwordEncoder.matches("dummy", userPasswordRequest.getNewPassword());
-                // Если не выбросило исключение — хеш валиден по структуре. Обновляем в БД
+             if (this.BCRYPT_PATTERN.matcher(userPasswordRequest.getNewPassword()).matches()) {
                 existingUser.setPassword(userPasswordRequest.getNewPassword());
                 return processUpdateUserPassword(existingUser);
-              } catch (Exception e) {
-                log.error("Ошибка при сохранении изменений пароля для userId {}", existingUser.getId(), e);
+             } else {
+                log.warn("Ошибка при сохранении изменений пароля для userId {}", existingUser.getId());
                 String msg = "Ошибка при сохранении изменений пароля. Операция отменена";
                 return saveOutboxNotification(existingUser.getId(), existingUser.getEmail(), msg)
-                        .flatMap(empty -> getOperationResponse(OperationResponse.OperationStatusEnum.FAILED, List.of(msg)));
-              }
+                        .then(getOperationResponse(OperationResponse.OperationStatusEnum.FAILED, List.of(msg)));
+             }
             });
   }
 
@@ -502,7 +500,7 @@ public class UserServiceImpl implements UserService {
         .findUserByLogin(login)
         .switchIfEmpty(
             Mono.error(
-                new UserNotFoundException("Пользователь с логином " + login + " не существует.")));
+                new UserNotFoundException(String.format(NOT_FOUND_USER, login))));
   }
 
   private Mono<Void> sendNotificationAfterTransferOtherTransaction(
