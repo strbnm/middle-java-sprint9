@@ -68,6 +68,7 @@ openApiGenerate {
             bigDecimalAsString: "true",
             additionalModelTypeAnnotations: "@com.fasterxml.jackson.annotation.JsonIgnoreProperties(ignoreUnknown=true)",
     ])
+    typeMappings.set(Double: "java.math.BigDecimal")
 }
 
 sourceSets.main.java.srcDir "$projectDir/build/generated/src/main/java"
