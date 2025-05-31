@@ -1,0 +1,132 @@
+openapi: 3.0.3
+info:
+  title: Cash Service API
+  description: RESTful API для сервиса обналичивания денег
+  version: 1.0.0
+
+paths:
+  /api/v1/cash:
+    post:
+      summary: Операция перевода внесения/снятие наличных денежных средств
+      description: Осуществляет внесение/снятие денежных средств со счета в выбранной валюте
+      operationId: cashTransaction
+      tags:
+        - Cash Service
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CashRequest'
+      responses:
+        '200':
+          description: Успешно
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperationResponse'
+        '400':
+          description: Ошибочный запрос
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorListResponse'
+        '403':
+          description: Операция заблокирована
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Пользователь с указанным login не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Ошибки в процессе обработки перевода
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperationResponse'
+        '503':
+          description: Сервис или связанные сервисы временно не доступны
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    CashRequest:
+      type: object
+      required:
+        - login
+        - currency
+        - amount
+        - action
+      properties:
+        login:
+          type: string
+          pattern: '^[A-Za-z\d_-]+$'
+        currency:
+          $ref: '#/components/schemas/CurrencyEnum'
+        amount:
+          type: number
+          format: double
+          description: Сумма перевода в валюте исходного счета
+        action:
+          type: string
+          enum:
+            - PUT  # внесение ДС
+            - GET  # снятие ДС
+
+    ErrorResponse:
+      type: object
+      required:
+        - message
+        - status_code
+      properties:
+        message:
+          type: string
+          example: Внутренняя ошибка сервера
+        status_code:
+          type: integer
+          example: 503
+
+    ErrorListResponse:
+      type: object
+      required:
+        - message
+        - status_code
+      properties:
+        messages:
+          type: array
+          items:
+            type: string
+        status_code:
+          type: integer
+          example: 500
+
+    OperationResponse:
+      type: object
+      required:
+        - operationStatus
+        - errors
+      properties:
+        operationStatus:
+          type: string
+          enum:
+            - SUCCESS
+            - FAILED
+        errors:
+          type: array
+          items:
+            type: string
+
+    CurrencyEnum:
+      type: string
+      enum:
+        - CNY
+        - RUB
+        - USD
