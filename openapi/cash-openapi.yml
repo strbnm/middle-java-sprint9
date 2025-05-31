@@ -17,48 +17,48 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CashRequest'
+              $ref: '#/components/schemas/CashOperationRequest'
       responses:
         '200':
           description: Успешно
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OperationResponse'
+                $ref: '#/components/schemas/CashOperationResponse'
         '400':
           description: Ошибочный запрос
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorListResponse'
+                $ref: '#/components/schemas/CashErrorListResponse'
         '403':
           description: Операция заблокирована
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/CashErrorResponse'
         '404':
           description: Пользователь с указанным login не найден
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/CashErrorResponse'
         '422':
           description: Ошибки в процессе обработки перевода
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OperationResponse'
+                $ref: '#/components/schemas/CashOperationResponse'
         '503':
           description: Сервис или связанные сервисы временно не доступны
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/CashErrorResponse'
 
 components:
   schemas:
-    CashRequest:
+    CashOperationRequest:
       type: object
       required:
         - login
@@ -70,7 +70,7 @@ components:
           type: string
           pattern: '^[A-Za-z\d_-]+$'
         currency:
-          $ref: '#/components/schemas/CurrencyEnum'
+          $ref: '#/components/schemas/CashCurrencyEnum'
         amount:
           type: number
           format: double
@@ -81,7 +81,7 @@ components:
             - PUT  # внесение ДС
             - GET  # снятие ДС
 
-    ErrorResponse:
+    CashErrorResponse:
       type: object
       required:
         - message
@@ -94,7 +94,7 @@ components:
           type: integer
           example: 503
 
-    ErrorListResponse:
+    CashErrorListResponse:
       type: object
       required:
         - message
@@ -108,7 +108,7 @@ components:
           type: integer
           example: 500
 
-    OperationResponse:
+    CashOperationResponse:
       type: object
       required:
         - operationStatus
@@ -124,7 +124,7 @@ components:
           items:
             type: string
 
-    CurrencyEnum:
+    CashCurrencyEnum:
       type: string
       enum:
         - CNY

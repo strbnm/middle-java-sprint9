@@ -7,4 +7,5 @@ include 'exchange-service'
 include 'exchange-generator'
 include 'blocker-service'
 include 'accounts-service'
+include 'cash-service'
 

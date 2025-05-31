@@ -17,6 +17,7 @@ dependencies {
     implementation project(':exchange-service')
     implementation project(':exchange-generator')
     implementation project(':blocker-service')
+    implementation project(':cash-service')
 }
 
 
