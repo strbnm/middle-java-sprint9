@@ -1,6 +1,9 @@
 package ru.strbnm.blocker_service.service.filter;
 
+import java.math.BigDecimal;
 import java.util.List;
+
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import reactor.core.publisher.Mono;
@@ -10,6 +13,7 @@ import ru.strbnm.blocker_service.domain.CurrencyEnum;
 import ru.strbnm.blocker_service.domain.TransferTransactionRequest;
 import ru.strbnm.blocker_service.dto.CheckResult;
 
+@Slf4j
 @Configuration
 public class TransactionFilterConfig {
 
@@ -18,6 +22,7 @@ public class TransactionFilterConfig {
     return new TransactionFilterChainBuilder()
         .addFilter(
             (request, chain) -> {
+              log.debug("Фильтр превышение допустимой суммы снятия наличных: {}", request);
               if (request instanceof CashTransactionRequest cashReq
                   && CorrespondentEnum.fromValue("cash").equals(cashReq.getTarget())
                   && exceedsCashLimit(cashReq.getAmount(), cashReq.getCurrencyCode())) {
@@ -26,7 +31,18 @@ public class TransactionFilterConfig {
               return chain.next(request);
             })
         .addFilter(
+                (request, chain) -> {
+                  log.debug("Фильтр : {}", request);
+                  if (request instanceof CashTransactionRequest cashReq
+                          && CorrespondentEnum.fromValue("cash").equals(cashReq.getTarget())
+                          && exceedsCashLimit(cashReq.getAmount(), cashReq.getCurrencyCode())) {
+                    return Mono.just(CheckResult.blocked("Превышена допустимая сумма снятия наличных"));
+                  }
+                  return chain.next(request);
+                })
+        .addFilter(
             (request, chain) -> {
+              log.debug("Фильтр Недопустимая операция для сервиса переводов: {}", request);
               if (request instanceof TransferTransactionRequest transferReq
                   && (CorrespondentEnum.fromValue("cash")
                           .equals(transferReq.getTo().getTarget())
@@ -39,6 +55,7 @@ public class TransactionFilterConfig {
             })
         .addFilter(
             (request, chain) -> {
+              log.debug("Фильтр Недопустимая операция для сервиса обналичивания денег: {}", request);
               if (request instanceof CashTransactionRequest cashReq
                   && CorrespondentEnum.fromValue("account")
                       .equals(cashReq.getTarget())
@@ -51,6 +68,7 @@ public class TransactionFilterConfig {
             })
         .addFilter(
             (request, chain) -> {
+              log.debug("Фильтр Превышена допустимая сумма перевода другим лицам: {}", request);
               if (request instanceof TransferTransactionRequest transferReq
                   && !Boolean.TRUE.equals(transferReq.getIsToYourself())
                   && exceedsTransferLimit(
@@ -63,19 +81,19 @@ public class TransactionFilterConfig {
         .build();
   }
 
-  private boolean exceedsCashLimit(Double amount, CurrencyEnum currency) {
+  private boolean exceedsCashLimit(BigDecimal amount, CurrencyEnum currency) {
     return switch (currency) {
-      case CurrencyEnum.RUB -> amount > 150_000;
-      case CurrencyEnum.USD -> amount > 1_500;
-      case CurrencyEnum.CNY -> amount > 15_000;
+      case CurrencyEnum.RUB -> amount.compareTo(new BigDecimal("150000")) > 0;
+      case CurrencyEnum.USD -> amount.compareTo(new BigDecimal("1500")) > 0;
+      case CurrencyEnum.CNY -> amount.compareTo(new BigDecimal("15000")) > 0;
     };
   }
 
-  private boolean exceedsTransferLimit(Double amount, CurrencyEnum currency) {
+  private boolean exceedsTransferLimit(BigDecimal amount, CurrencyEnum currency) {
     return switch (currency) {
-      case CurrencyEnum.RUB -> amount > 600_000;
-      case CurrencyEnum.USD -> amount > 6_000;
-      case CurrencyEnum.CNY -> amount > 60_000;
+      case CurrencyEnum.RUB -> amount.compareTo(new BigDecimal("600000")) > 0;
+      case CurrencyEnum.USD -> amount.compareTo(new BigDecimal("6000")) > 0;
+      case CurrencyEnum.CNY -> amount.compareTo(new BigDecimal("60000")) > 0;
     };
   }
 }
