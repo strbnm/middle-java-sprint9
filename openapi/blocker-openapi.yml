@@ -49,7 +49,7 @@ components:
   schemas:
     CashTransactionRequest:
       type: object
-      required: [ transactionId, currencyCode, from, to, amount, operationType ]
+      required: [ transactionId, currencyCode, source, target, amount, operationType ]
       properties:
         transactionId:
           type: integer

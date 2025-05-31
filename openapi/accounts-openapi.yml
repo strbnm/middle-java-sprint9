@@ -377,11 +377,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/AccountInfoRow'
-        errors:
-          type: array
-          description: Список ошибок при создании или обновлении пользователя
-          items:
-            type: string
 
     AccountInfoRow:
       type: object
