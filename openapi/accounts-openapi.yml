@@ -24,31 +24,31 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OperationResponse'
+                $ref: '#/components/schemas/AccountOperationResponse'
         '400':
           description: Ошибочный запрос
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorListResponse'
+                $ref: '#/components/schemas/AccountErrorListResponse'
         '409':
           description: Пользователь с таким login уже существует
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/AccountErrorResponse'
         '422':
           description: Ошибки в процессе обработки перевода
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OperationResponse'
+                $ref: '#/components/schemas/AccountOperationResponse'
         '500':
           description: Внутренняя ошибка сервера
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/AccountErrorResponse'
     get:
       summary: Получение списка пользователей
       description: Возвращает список всех пользователей (логин и имя)
@@ -67,13 +67,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorListResponse'
+                $ref: '#/components/schemas/AccountErrorListResponse'
         '500':
           description: Внутренняя ошибка сервера
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/AccountErrorResponse'
   /api/v1/users/{login}:
     get:
       summary: Получение информации о пользователе по login
@@ -95,13 +95,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorListResponse'
+                $ref: '#/components/schemas/AccountErrorListResponse'
         '500':
           description: Внутренняя ошибка сервера
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/AccountErrorResponse'
     put:
       summary: Обновление данных пользователя
       description: Обновляет данные пользователя
@@ -122,31 +122,31 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OperationResponse'
+                $ref: '#/components/schemas/AccountOperationResponse'
         '400':
           description: Ошибочный запрос
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorListResponse'
+                $ref: '#/components/schemas/AccountErrorListResponse'
         '404':
           description: Пользователь с указанным login не найден
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/AccountErrorResponse'
         '422':
           description: Ошибки в процессе обновления пользователя
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OperationResponse'
+                $ref: '#/components/schemas/AccountOperationResponse'
         '500':
           description: Внутренняя ошибка сервера
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/AccountErrorResponse'
   /api/v1/users/{login}/password:
     patch:
       summary: Обновление пароля пользователя
@@ -168,31 +168,31 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OperationResponse'
+                $ref: '#/components/schemas/AccountOperationResponse'
         '400':
           description: Ошибочный запрос
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorListResponse'
+                $ref: '#/components/schemas/AccountErrorListResponse'
         '404':
           description: Пользователь с указанным login не найден
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/AccountErrorResponse'
         '422':
           description: Ошибки в процессе обновления пароля
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OperationResponse'
+                $ref: '#/components/schemas/AccountOperationResponse'
         '500':
           description: Внутренняя ошибка сервера
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/AccountErrorResponse'
   /api/v1/users/{login}/transfer:
     post:
       summary: Операция перевода денег между счетами (своими или на счет другого пользователя)
@@ -214,31 +214,31 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OperationResponse'
+                $ref: '#/components/schemas/AccountOperationResponse'
         '400':
           description: Ошибочный запрос
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorListResponse'
+                $ref: '#/components/schemas/AccountErrorListResponse'
         '404':
           description: Пользователь с указанным login не найден
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/AccountErrorResponse'
         '422':
           description: Ошибки в процессе обработки перевода
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OperationResponse'
+                $ref: '#/components/schemas/AccountOperationResponse'
         '500':
           description: Внутренняя ошибка сервера
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/AccountErrorResponse'
   /api/v1/users/{login}/cash:
     post:
       summary: Операция перевода внесения/снятие наличных денежных средств
@@ -260,31 +260,31 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OperationResponse'
+                $ref: '#/components/schemas/AccountOperationResponse'
         '400':
           description: Ошибочный запрос
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorListResponse'
+                $ref: '#/components/schemas/AccountErrorListResponse'
         '404':
           description: Пользователь с указанным login не найден
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/AccountErrorResponse'
         '422':
           description: Ошибки в процессе обработки перевода
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OperationResponse'
+                $ref: '#/components/schemas/AccountOperationResponse'
         '500':
           description: Внутренняя ошибка сервера
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/AccountErrorResponse'
 
 components:
   parameters:
@@ -326,7 +326,7 @@ components:
         accounts:
           type: array
           items:
-            $ref: '#/components/schemas/CurrencyEnum'
+            $ref: '#/components/schemas/AccountCurrencyEnum'
     UserPasswordRequest:
       type: object
       required:
@@ -382,7 +382,7 @@ components:
       type: object
       properties:
         currency:
-          $ref: '#/components/schemas/CurrencyEnum'
+          $ref: '#/components/schemas/AccountCurrencyEnum'
         value:
           type: number
           format: double
@@ -407,9 +407,9 @@ components:
         - toLogin
       properties:
         fromCurrency:
-          $ref: '#/components/schemas/CurrencyEnum'
+          $ref: '#/components/schemas/AccountCurrencyEnum'
         toCurrency:
-          $ref: '#/components/schemas/CurrencyEnum'
+          $ref: '#/components/schemas/AccountCurrencyEnum'
         fromAmount:
           type: number
           format: double
@@ -430,7 +430,7 @@ components:
         - action
       properties:
         currency:
-          $ref: '#/components/schemas/CurrencyEnum'
+          $ref: '#/components/schemas/AccountCurrencyEnum'
         amount:
           type: number
           format: double
@@ -441,7 +441,7 @@ components:
             - PUT  # внесение ДС
             - GET  # снятие ДС
 
-    ErrorResponse:
+    AccountErrorResponse:
       type: object
       required:
         - message
@@ -454,7 +454,7 @@ components:
           type: integer
           example: 500
 
-    ErrorListResponse:
+    AccountErrorListResponse:
       type: object
       required:
         - message
@@ -481,7 +481,7 @@ components:
           name:
             type: string
 
-    OperationResponse:
+    AccountOperationResponse:
       type: object
       required:
         - operationStatus
@@ -497,7 +497,7 @@ components:
           items:
             type: string
 
-    CurrencyEnum:
+    AccountCurrencyEnum:
       type: string
       enum:
         - CNY

@@ -8,18 +8,18 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.bind.support.WebExchangeBindException;
 import reactor.core.publisher.Mono;
-import ru.strbnm.blocker_service.domain.ErrorResponse;
+import ru.strbnm.blocker_service.domain.BlockerErrorResponse;
 
 @RestControllerAdvice
 public class ReactiveGlobalExceptionHandler {
 
     @ExceptionHandler(IllegalArgumentException.class)
-    public Mono<ResponseEntity<ErrorResponse>> handleIllegalArgument(IllegalArgumentException exception) {
-        return Mono.just(ResponseEntity.badRequest().body(new ErrorResponse(exception.getMessage(), 400)));
+    public Mono<ResponseEntity<BlockerErrorResponse>> handleIllegalArgument(IllegalArgumentException exception) {
+        return Mono.just(ResponseEntity.badRequest().body(new BlockerErrorResponse(exception.getMessage(), 400)));
     }
 
     @ExceptionHandler(WebExchangeBindException.class)
-    public Mono<ResponseEntity<ErrorResponse>> handleValidationException(WebExchangeBindException ex) {
+    public Mono<ResponseEntity<BlockerErrorResponse>> handleValidationException(WebExchangeBindException ex) {
         List<String> messages = ex.getAllErrors().stream()
                 .map(error -> {
                     if (error instanceof FieldError fieldError) {
@@ -33,6 +33,6 @@ public class ReactiveGlobalExceptionHandler {
 
         return Mono.just(ResponseEntity
                 .badRequest()
-                .body(new ErrorResponse(messages.toString(), 400)));
+                .body(new BlockerErrorResponse(messages.toString(), 400)));
     }
 }

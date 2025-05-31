@@ -11,21 +11,21 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.bind.support.WebExchangeBindException;
 import reactor.core.publisher.Mono;
-import ru.strbnm.accounts_service.domain.ErrorListResponse;
-import ru.strbnm.accounts_service.domain.ErrorResponse;
+import ru.strbnm.accounts_service.domain.AccountErrorListResponse;
+import ru.strbnm.accounts_service.domain.AccountErrorResponse;
 
 @Slf4j
 @RestControllerAdvice
 public class ReactiveGlobalExceptionHandler {
 
     @ExceptionHandler(IllegalArgumentException.class)
-    public Mono<ResponseEntity<ErrorResponse>> handleIllegalArgument(IllegalArgumentException exception) {
+    public Mono<ResponseEntity<AccountErrorResponse>> handleIllegalArgument(IllegalArgumentException exception) {
         log.error("Ошибка {}", exception.getMessage(), exception);
-        return Mono.just(ResponseEntity.badRequest().body(new ErrorResponse(exception.getMessage(), 400)));
+        return Mono.just(ResponseEntity.badRequest().body(new AccountErrorResponse(exception.getMessage(), 400)));
     }
 
     @ExceptionHandler(WebExchangeBindException.class)
-    public Mono<ResponseEntity<ErrorListResponse>> handleValidationException(WebExchangeBindException ex) {
+    public Mono<ResponseEntity<AccountErrorListResponse>> handleValidation(WebExchangeBindException ex) {
         log.error("Ошибка {}", ex.getMessage(), ex);
         List<String> messages = ex.getAllErrors().stream()
                 .map(error -> {
@@ -37,7 +37,7 @@ public class ReactiveGlobalExceptionHandler {
                 })
                 .filter(Objects::nonNull)
                 .toList();
-        ErrorListResponse response = new ErrorListResponse(400);
+        AccountErrorListResponse response = new AccountErrorListResponse(400);
         response.setMessages(messages);
         return Mono.just(ResponseEntity
                 .badRequest()
@@ -45,18 +45,17 @@ public class ReactiveGlobalExceptionHandler {
     }
 
     @ExceptionHandler(UserAlreadyExistsException.class)
-    public Mono<ResponseEntity<ErrorResponse>> handleIllegalArgument(UserAlreadyExistsException exception) {
+    public Mono<ResponseEntity<AccountErrorResponse>> handleUserAlreadyExists(UserAlreadyExistsException exception) {
         log.error("Ошибка {}", exception.getMessage(), exception);
-        return Mono.just(ResponseEntity.status(HttpStatus.CONFLICT).body(new ErrorResponse(exception.getMessage(), 409)));
+        return Mono.just(ResponseEntity.status(HttpStatus.CONFLICT).body(new AccountErrorResponse(exception.getMessage(), 409)));
     }
-
 
     @ExceptionHandler({
             AccountNotFoundForCurrencyException.class,
             UserNotFoundException.class
     })
-    public Mono<ResponseEntity<ErrorResponse>> handleIllegalArgument(UserOperationException exception) {
+    public Mono<ResponseEntity<AccountErrorResponse>> handleUserOperationException(UserOperationException exception) {
         log.error("Ошибка {}", exception.getMessage(), exception);
-        return Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(exception.getMessage(), 404)));
+        return Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).body(new AccountErrorResponse(exception.getMessage(), 404)));
     }
 }

@@ -5,11 +5,11 @@ info:
   version: 1.0.0
 
 paths:
-  /api/v1/check_transaction:
+  /api/v1/blocker/checkCashTransaction:
     post:
-      summary: Проверка денежной операции
-      description: Производит проверку денежной операции и возвращает флаг блокировки
-      operationId: checkTransaction
+      summary: Проверка денежной операции с наличными
+      description: Производит проверку денежной операции с наличными и возвращает флаг блокировки
+      operationId: checkCashTransaction
       tags:
         - Blocker Service
       requestBody:
@@ -17,14 +17,7 @@ paths:
         content:
           application/json:
             schema:
-              oneOf:
-                - $ref: '#/components/schemas/CashTransactionRequest'
-                - $ref: '#/components/schemas/TransferTransactionRequest'
-              discriminator:
-                propertyName: operationType
-                mapping:
-                  cash: CashTransactionRequest
-                  transfer: TransferTransactionRequest
+              $ref: '#/components/schemas/CheckCashTransactionRequest'
       responses:
         '200':
           description: Успешно
@@ -37,80 +30,92 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/BlockerErrorResponse'
         '500':
           description: Внутренняя ошибка сервера
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/BlockerErrorResponse'
+  /api/v1/blocker/checkTransferTransaction:
+    post:
+      summary: Проверка денежной операции перевода между счетами
+      description: Производит проверку денежной операции перевода между счетами и возвращает флаг блокировки
+      operationId: checkTransferTransaction
+      tags:
+        - Blocker Service
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CheckTransferTransactionRequest'
+      responses:
+        '200':
+          description: Успешно
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CheckTransactionResponse'
+        '400':
+          description: Ошибочный запрос
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BlockerErrorResponse'
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BlockerErrorResponse'
 
 components:
   schemas:
-    CashTransactionRequest:
+    CheckCashTransactionRequest:
       type: object
-      required: [ transactionId, currencyCode, source, target, amount, operationType ]
+      required: [ transactionId, currency, amount, actionType ]
       properties:
         transactionId:
           type: integer
           format: int64
           description: Идентификатор транзакции
           example: 10546379
-        currencyCode:
-          $ref: '#/components/schemas/CurrencyEnum'
-        source:
-          $ref: '#/components/schemas/CorrespondentEnum'
-        target:
-          $ref: '#/components/schemas/CorrespondentEnum'
+        currency:
+          $ref: '#/components/schemas/BlockerCurrencyEnum'
         amount:
           type: number
           format: double
           minimum: 0.0000001
-        operationType:
+        actionType:
           type: string
           description: Тип операции
-          pattern: ^(cash|transfer)$
-          example: cash
+          enum:
+            - PUT  # внесение ДС
+            - GET  # снятие ДС
+          example: GET
 
-    TransferTransactionRequest:
+    CheckTransferTransactionRequest:
       type: object
-      required: [ transactionId, from, to, amount, operationType, isToYourself ]
+      required: [ transactionId, fromCurrency, toCurrency, amount, isItself ]
       properties:
         transactionId:
           type: integer
           format: int64
           description: Идентификатор транзакции
           example: 10546379
-        from:
-          type: object
-          required: [ currencyCode, source ]
-          properties:
-            currencyCode:
-              $ref: '#/components/schemas/CurrencyEnum'
-            source:
-              $ref: '#/components/schemas/CorrespondentEnum'
-        to:
-          type: object
-          required: [ currencyCode, target ]
-          properties:
-            currencyCode:
-              $ref: '#/components/schemas/CurrencyEnum'
-            target:
-              $ref: '#/components/schemas/CorrespondentEnum'
+        fromCurrency:
+          $ref: '#/components/schemas/BlockerCurrencyEnum'
+        toCurrency:
+          $ref: '#/components/schemas/BlockerCurrencyEnum'
         amount:
           type: number
           format: double
           minimum: 0.0000001
-        operationType:
-          type: string
-          description: Тип операции
-          pattern: ^(cash|transfer)$
-          example: cash
-        isToYourself:
+        isItself:
           type: boolean
           description: Флаг перевода самому себе
           example: false
-
 
     CheckTransactionResponse:
       type: object
@@ -131,7 +136,7 @@ components:
           description: Причина блокировки
           example: Сумма перевода больше 600000 руб.
 
-    ErrorResponse:
+    BlockerErrorResponse:
       type: object
       required:
         - message
@@ -152,7 +157,7 @@ components:
         - cash
       example: account
 
-    CurrencyEnum:
+    BlockerCurrencyEnum:
       type: string
       enum:
         - USD

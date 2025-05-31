@@ -86,7 +86,7 @@ class UserServiceImplTest {
   }
 
   @Test
-  void createUserOk_shouldReturnOperationResponseWithSuccess() {
+  void createUserOk_shouldReturnAccountOperationResponseWithSuccess() {
     UserRequest createUserRequestSuccess =
         new UserRequest(
             "test_user4",
@@ -97,13 +97,13 @@ class UserServiceImplTest {
 
     StepVerifier.create(userService.createUser(createUserRequestSuccess))
         .assertNext(
-            operationResponse -> {
-              assertNotNull(operationResponse, "Объект не должен быть null.");
+            AccountOperationResponse -> {
+              assertNotNull(AccountOperationResponse, "Объект не должен быть null.");
               assertEquals(
-                  OperationResponse.OperationStatusEnum.SUCCESS,
-                  operationResponse.getOperationStatus(),
+                  AccountOperationResponse.OperationStatusEnum.SUCCESS,
+                  AccountOperationResponse.getOperationStatus(),
                   "Статус должен быть SUCCESS");
-              assertTrue(operationResponse.getErrors().isEmpty(), "Список ошибок должен быть пуст");
+              assertTrue(AccountOperationResponse.getErrors().isEmpty(), "Список ошибок должен быть пуст");
             })
         .verifyComplete();
 
@@ -132,7 +132,7 @@ class UserServiceImplTest {
   }
 
   @Test
-  void createUserInvalidFields_shouldReturnOperationResponseWithFailedAndErrors() {
+  void createUserInvalidFields_shouldReturnAccountOperationResponseWithFailedAndErrors() {
     UserRequest createUserRequestInvalidFields =
         new UserRequest(
             "test_user4",
@@ -143,14 +143,14 @@ class UserServiceImplTest {
 
     StepVerifier.create(userService.createUser(createUserRequestInvalidFields))
         .assertNext(
-            operationResponse -> {
-              assertNotNull(operationResponse, "Объект не должен быть null.");
+            AccountOperationResponse -> {
+              assertNotNull(AccountOperationResponse, "Объект не должен быть null.");
               assertEquals(
-                  OperationResponse.OperationStatusEnum.FAILED,
-                  operationResponse.getOperationStatus(),
+                  AccountOperationResponse.OperationStatusEnum.FAILED,
+                  AccountOperationResponse.getOperationStatus(),
                   "Статус должен быть FAILED");
               assertFalse(
-                  operationResponse.getErrors().isEmpty(), "Список ошибок не должен быть пуст");
+                  AccountOperationResponse.getErrors().isEmpty(), "Список ошибок не должен быть пуст");
             })
         .verifyComplete();
 
@@ -179,7 +179,7 @@ class UserServiceImplTest {
   }
 
   @Test
-  void updateUserOk_shouldReturnOperationResponseWithSuccess() {
+  void updateUserOk_shouldReturnAccountOperationResponseWithSuccess() {
     UserRequest updateUserRequestSuccess =
         new UserRequest(
             "test_user1",
@@ -188,25 +188,25 @@ class UserServiceImplTest {
             "sidorov@example.ru",
             LocalDate.parse("1999-01-01"));
     updateUserRequestSuccess.setAccounts(
-        List.of(CurrencyEnum.RUB, CurrencyEnum.CNY, CurrencyEnum.USD));
+        List.of(AccountCurrencyEnum.RUB, AccountCurrencyEnum.CNY, AccountCurrencyEnum.USD));
 
     // Счета до обновления
     StepVerifier.create(accountRepository.findUserCurrencyAccounts("test_user1"))
         .assertNext(
             account -> {
-              assertEquals(CurrencyEnum.CNY, account.getCurrency());
+              assertEquals(AccountCurrencyEnum.CNY, account.getCurrency());
               assertEquals(0, account.getValue().compareTo(new BigDecimal("20000.0")));
               assertTrue(account.getExists());
             })
         .assertNext(
             account -> {
-              assertEquals(CurrencyEnum.RUB, account.getCurrency());
+              assertEquals(AccountCurrencyEnum.RUB, account.getCurrency());
                 assertEquals(0, account.getValue().compareTo(new BigDecimal("150000.0")));
               assertTrue(account.getExists());
             })
         .assertNext(
             account -> {
-              assertEquals(CurrencyEnum.USD, account.getCurrency());
+              assertEquals(AccountCurrencyEnum.USD, account.getCurrency());
               assertEquals(BigDecimal.ZERO, account.getValue());
               assertFalse(account.getExists());
             })
@@ -214,13 +214,13 @@ class UserServiceImplTest {
 
     StepVerifier.create(userService.updateUser(updateUserRequestSuccess))
         .assertNext(
-            operationResponse -> {
-              assertNotNull(operationResponse, "Объект не должен быть null.");
+            AccountOperationResponse -> {
+              assertNotNull(AccountOperationResponse, "Объект не должен быть null.");
               assertEquals(
-                  OperationResponse.OperationStatusEnum.SUCCESS,
-                  operationResponse.getOperationStatus(),
+                  AccountOperationResponse.OperationStatusEnum.SUCCESS,
+                  AccountOperationResponse.getOperationStatus(),
                   "Статус должен быть SUCCESS");
-              assertTrue(operationResponse.getErrors().isEmpty(), "Список ошибок должен быть пуст");
+              assertTrue(AccountOperationResponse.getErrors().isEmpty(), "Список ошибок должен быть пуст");
             })
         .verifyComplete();
 
@@ -251,19 +251,19 @@ class UserServiceImplTest {
       StepVerifier.create(accountRepository.findUserCurrencyAccounts("test_user1"))
               .assertNext(
                       account -> {
-                          assertEquals(CurrencyEnum.CNY, account.getCurrency());
+                          assertEquals(AccountCurrencyEnum.CNY, account.getCurrency());
                           assertEquals(0, account.getValue().compareTo(new BigDecimal("20000.0")));
                           assertTrue(account.getExists());
                       })
               .assertNext(
                       account -> {
-                          assertEquals(CurrencyEnum.RUB, account.getCurrency());
+                          assertEquals(AccountCurrencyEnum.RUB, account.getCurrency());
                           assertEquals(0, account.getValue().compareTo(new BigDecimal("150000.0")));
                           assertTrue(account.getExists());
                       })
               .assertNext(
                       account -> {
-                          assertEquals(CurrencyEnum.USD, account.getCurrency());
+                          assertEquals(AccountCurrencyEnum.USD, account.getCurrency());
                           assertEquals(0, account.getValue().compareTo(BigDecimal.ZERO));
                           assertTrue(account.getExists());
                       })
@@ -271,7 +271,7 @@ class UserServiceImplTest {
   }
 
   @Test
-  void updateUserPartInvalidFields_shouldReturnOperationResponseWithFailedAndErrorsWithPartChangesInDatabase() {
+  void updateUserPartInvalidFields_shouldReturnAccountOperationResponseWithFailedAndErrorsWithPartChangesInDatabase() {
     UserRequest updateUserRequestInvalidFields =
         new UserRequest(
             "test_user2",
@@ -280,24 +280,24 @@ class UserServiceImplTest {
             "",
             LocalDate.parse("1993-05-21"));
       updateUserRequestInvalidFields.setAccounts(
-              List.of(CurrencyEnum.RUB));
+              List.of(AccountCurrencyEnum.RUB));
 
     StepVerifier.create(userService.updateUser(updateUserRequestInvalidFields))
         .assertNext(
-            operationResponse -> {
-              assertNotNull(operationResponse, "Объект не должен быть null.");
+            AccountOperationResponse -> {
+              assertNotNull(AccountOperationResponse, "Объект не должен быть null.");
               assertEquals(
-                  OperationResponse.OperationStatusEnum.FAILED,
-                  operationResponse.getOperationStatus(),
+                  AccountOperationResponse.OperationStatusEnum.FAILED,
+                  AccountOperationResponse.getOperationStatus(),
                   "Статус должен быть FAILED");
               assertFalse(
-                  operationResponse.getErrors().isEmpty(), "Список ошибок не должен быть пуст");
+                  AccountOperationResponse.getErrors().isEmpty(), "Список ошибок не должен быть пуст");
               assertEquals(List.of(
                       "Баланс на счету CNY не равен 0",
                       "Баланс на счету USD не равен 0",
                       "Заполните поле Фамилия Имя",
                       "Заполните электронную почту"
-              ), operationResponse.getErrors());
+              ), AccountOperationResponse.getErrors());
             })
         .verifyComplete();
 
@@ -329,21 +329,21 @@ class UserServiceImplTest {
               .assertNext(
                       account -> {
                           log.info("Счет CNY: {}", account);
-                          assertEquals(CurrencyEnum.CNY, account.getCurrency());
+                          assertEquals(AccountCurrencyEnum.CNY, account.getCurrency());
                           assertEquals(0, account.getValue().compareTo(new BigDecimal("12000.0")));
                           assertTrue(account.getExists());
                       })
               .assertNext(
                       account -> {
                           log.info("Счет RUB: {}", account);
-                          assertEquals(CurrencyEnum.RUB, account.getCurrency());
+                          assertEquals(AccountCurrencyEnum.RUB, account.getCurrency());
                           assertEquals(0, account.getValue().compareTo(BigDecimal.ZERO));
                           assertTrue(account.getExists());
                       })
               .assertNext(
                       account -> {
                           log.info("Счет USD: {}", account);
-                          assertEquals(CurrencyEnum.USD, account.getCurrency());
+                          assertEquals(AccountCurrencyEnum.USD, account.getCurrency());
                           assertEquals(0, account.getValue().compareTo(new BigDecimal("1000.0")));
                           assertTrue(account.getExists());
                       })
@@ -399,9 +399,9 @@ class UserServiceImplTest {
 
   @Test
   void getUserByLogin_shouldReturnUserDetailResponse() {
-      AccountInfoRow rubAccount = new AccountInfoRow(CurrencyEnum.RUB, BigDecimal.ZERO, false);
-      AccountInfoRow usdAccount = new AccountInfoRow(CurrencyEnum.USD, BigDecimal.ZERO, false);
-      AccountInfoRow cnyAccount = new AccountInfoRow(CurrencyEnum.CNY, new BigDecimal("5000.0"), true);
+      AccountInfoRow rubAccount = new AccountInfoRow(AccountCurrencyEnum.RUB, BigDecimal.ZERO, false);
+      AccountInfoRow usdAccount = new AccountInfoRow(AccountCurrencyEnum.USD, BigDecimal.ZERO, false);
+      AccountInfoRow cnyAccount = new AccountInfoRow(AccountCurrencyEnum.CNY, new BigDecimal("5000.0"), true);
       StepVerifier.create(userService.getUserByLogin("test_user3"))
               .assertNext(userDetailResponse -> {
                   assertNotNull(userDetailResponse, "Объект не должен быть null.");
@@ -444,37 +444,37 @@ class UserServiceImplTest {
     }
 
   @Test
-  void updateUserPasswordOk_shouldReturnOperationResponseWithSuccess() {
+  void updateUserPasswordOk_shouldReturnAccountOperationResponseWithSuccess() {
       UserPasswordRequest userPasswordRequestSuccess = new UserPasswordRequest(
               "test_user1", "$2a$12$DpyrJV1Ob2RR7WZnEEUsVOShUOexUQIg.J/lzad8FNYty6/BDByo6"
       );
       StepVerifier.create(userService.updateUserPassword(userPasswordRequestSuccess))
               .assertNext(
-                      operationResponse -> {
-                          assertNotNull(operationResponse, "Объект не должен быть null.");
+                      AccountOperationResponse -> {
+                          assertNotNull(AccountOperationResponse, "Объект не должен быть null.");
                           assertEquals(
-                                  OperationResponse.OperationStatusEnum.SUCCESS,
-                                  operationResponse.getOperationStatus(),
+                                  AccountOperationResponse.OperationStatusEnum.SUCCESS,
+                                  AccountOperationResponse.getOperationStatus(),
                                   "Статус должен быть SUCCESS");
-                          assertTrue(operationResponse.getErrors().isEmpty(), "Список ошибок должен быть пуст");
+                          assertTrue(AccountOperationResponse.getErrors().isEmpty(), "Список ошибок должен быть пуст");
                       })
               .verifyComplete();
   }
     @Test
-    void updateUserPasswordInvalidHash_shouldReturnOperationResponseWithFailed() {
+    void updateUserPasswordInvalidHash_shouldReturnAccountOperationResponseWithFailed() {
         UserPasswordRequest userPasswordRequestFailed = new UserPasswordRequest(
                 "test_user1", "b2RR7WZnEEUsVOShUOexUQIg.J/lzad8FNYty6/BDByo6"
         );
         StepVerifier.create(userService.updateUserPassword(userPasswordRequestFailed))
                 .assertNext(
-                        operationResponse -> {
-                            assertNotNull(operationResponse, "Объект не должен быть null.");
+                        AccountOperationResponse -> {
+                            assertNotNull(AccountOperationResponse, "Объект не должен быть null.");
                             assertEquals(
-                                    OperationResponse.OperationStatusEnum.FAILED,
-                                    operationResponse.getOperationStatus(),
+                                    AccountOperationResponse.OperationStatusEnum.FAILED,
+                                    AccountOperationResponse.getOperationStatus(),
                                     "Статус должен быть FAILED");
-                            assertFalse(operationResponse.getErrors().isEmpty(), "Список ошибок должен быть не пуст");
-                            assertEquals(List.of("Ошибка при сохранении изменений пароля. Операция отменена"), operationResponse.getErrors());
+                            assertFalse(AccountOperationResponse.getErrors().isEmpty(), "Список ошибок должен быть не пуст");
+                            assertEquals(List.of("Ошибка при сохранении изменений пароля. Операция отменена"), AccountOperationResponse.getErrors());
                         })
                 .verifyComplete();
     }
@@ -495,9 +495,9 @@ class UserServiceImplTest {
     }
 
   @Test
-  void cashOperationOk_shouldReturnOperationResponseWithSuccess() {
+  void cashOperationOk_shouldReturnAccountOperationResponseWithSuccess() {
       CashRequest cashRequestSuccess = new CashRequest(
-              CurrencyEnum.RUB,
+              AccountCurrencyEnum.RUB,
               new BigDecimal("10000.0"),
               CashRequest.ActionEnum.GET
       );
@@ -507,20 +507,20 @@ class UserServiceImplTest {
                           assertNotNull(userDetailResponse, "Объект не должен быть null.");
                           assertEquals(0, new BigDecimal("150000.0").compareTo(
                                   userDetailResponse.getAccounts().stream()
-                                  .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.RUB)
+                                  .filter(accountInfoRow -> accountInfoRow.getCurrency() == AccountCurrencyEnum.RUB)
                                   .map(AccountInfoRow::getValue)
                                   .findFirst().get()));
                       }).verifyComplete();
 
       StepVerifier.create(userService.cashOperation(cashRequestSuccess, "test_user1"))
               .assertNext(
-                      operationResponse -> {
-                          assertNotNull(operationResponse, "Объект не должен быть null.");
+                      AccountOperationResponse -> {
+                          assertNotNull(AccountOperationResponse, "Объект не должен быть null.");
                           assertEquals(
-                                  OperationResponse.OperationStatusEnum.SUCCESS,
-                                  operationResponse.getOperationStatus(),
+                                  AccountOperationResponse.OperationStatusEnum.SUCCESS,
+                                  AccountOperationResponse.getOperationStatus(),
                                   "Статус должен быть SUCCESS");
-                          assertTrue(operationResponse.getErrors().isEmpty(), "Список ошибок должен быть пуст");
+                          assertTrue(AccountOperationResponse.getErrors().isEmpty(), "Список ошибок должен быть пуст");
                       })
               .verifyComplete();
 
@@ -529,16 +529,16 @@ class UserServiceImplTest {
                   assertNotNull(userDetailResponse, "Объект не должен быть null.");
                   assertEquals(0, new BigDecimal("140000.0").compareTo(
                           userDetailResponse.getAccounts().stream()
-                                  .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.RUB)
+                                  .filter(accountInfoRow -> accountInfoRow.getCurrency() == AccountCurrencyEnum.RUB)
                                   .map(AccountInfoRow::getValue)
                                   .findFirst().get()));
               }).verifyComplete();
   }
 
     @Test
-    void cashOperationWithMissingAccount_shouldReturnOperationResponseWithFailed() {
+    void cashOperationWithMissingAccount_shouldReturnAccountOperationResponseWithFailed() {
         CashRequest cashRequestFailed = new CashRequest(
-                CurrencyEnum.USD,
+                AccountCurrencyEnum.USD,
                 new BigDecimal("10000.0"),
                 CashRequest.ActionEnum.GET
         );
@@ -548,21 +548,21 @@ class UserServiceImplTest {
                     assertNotNull(userDetailResponse, "Объект не должен быть null.");
                     assertFalse(
                             userDetailResponse.getAccounts().stream()
-                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.USD)
+                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == AccountCurrencyEnum.USD)
                                     .map(AccountInfoRow::getExists)
                                     .findFirst().get());
                 }).verifyComplete();
 
         StepVerifier.create(userService.cashOperation(cashRequestFailed, "test_user1"))
                 .assertNext(
-                        operationResponse -> {
-                            assertNotNull(operationResponse, "Объект не должен быть null.");
+                        AccountOperationResponse -> {
+                            assertNotNull(AccountOperationResponse, "Объект не должен быть null.");
                             assertEquals(
-                                    OperationResponse.OperationStatusEnum.FAILED,
-                                    operationResponse.getOperationStatus(),
+                                    AccountOperationResponse.OperationStatusEnum.FAILED,
+                                    AccountOperationResponse.getOperationStatus(),
                                     "Статус должен быть FAILED");
-                            assertFalse(operationResponse.getErrors().isEmpty(), "Список ошибок должен быть не пуст");
-                            assertEquals(List.of("У Вас отсутствует счет в выбранной валюте"), operationResponse.getErrors());
+                            assertFalse(AccountOperationResponse.getErrors().isEmpty(), "Список ошибок должен быть не пуст");
+                            assertEquals(List.of("У Вас отсутствует счет в выбранной валюте"), AccountOperationResponse.getErrors());
                         })
                 .verifyComplete();
 
@@ -572,16 +572,16 @@ class UserServiceImplTest {
                     assertNotNull(userDetailResponse, "Объект не должен быть null.");
                     assertFalse(
                             userDetailResponse.getAccounts().stream()
-                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.USD)
+                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == AccountCurrencyEnum.USD)
                                     .map(AccountInfoRow::getExists)
                                     .findFirst().get());
                 }).verifyComplete();
     }
 
     @Test
-    void cashOperationWithInsufficientFunds_shouldReturnOperationResponseWithFailed() {
+    void cashOperationWithInsufficientFunds_shouldReturnAccountOperationResponseWithFailed() {
         CashRequest cashRequestFailed = new CashRequest(
-                CurrencyEnum.CNY,
+                AccountCurrencyEnum.CNY,
                 new BigDecimal("20001.0"),
                 CashRequest.ActionEnum.GET
         );
@@ -591,21 +591,21 @@ class UserServiceImplTest {
                     assertNotNull(userDetailResponse, "Объект не должен быть null.");
                     assertEquals(0, new BigDecimal("20000.0").compareTo(
                             userDetailResponse.getAccounts().stream()
-                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.CNY)
+                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == AccountCurrencyEnum.CNY)
                                     .map(AccountInfoRow::getValue)
                                     .findFirst().get()));
                 }).verifyComplete();
 
         StepVerifier.create(userService.cashOperation(cashRequestFailed, "test_user1"))
                 .assertNext(
-                        operationResponse -> {
-                            assertNotNull(operationResponse, "Объект не должен быть null.");
+                        AccountOperationResponse -> {
+                            assertNotNull(AccountOperationResponse, "Объект не должен быть null.");
                             assertEquals(
-                                    OperationResponse.OperationStatusEnum.FAILED,
-                                    operationResponse.getOperationStatus(),
+                                    AccountOperationResponse.OperationStatusEnum.FAILED,
+                                    AccountOperationResponse.getOperationStatus(),
                                     "Статус должен быть FAILED");
-                            assertFalse(operationResponse.getErrors().isEmpty(), "Список ошибок должен быть не пуст");
-                            assertEquals(List.of("На счете недостаточно средств"), operationResponse.getErrors());
+                            assertFalse(AccountOperationResponse.getErrors().isEmpty(), "Список ошибок должен быть не пуст");
+                            assertEquals(List.of("На счете недостаточно средств"), AccountOperationResponse.getErrors());
                         })
                 .verifyComplete();
 
@@ -614,7 +614,7 @@ class UserServiceImplTest {
                     assertNotNull(userDetailResponse, "Объект не должен быть null.");
                     assertEquals(0, new BigDecimal("20000.0").compareTo(
                             userDetailResponse.getAccounts().stream()
-                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.CNY)
+                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == AccountCurrencyEnum.CNY)
                                     .map(AccountInfoRow::getValue)
                                     .findFirst().get()));
                 }).verifyComplete();
@@ -623,7 +623,7 @@ class UserServiceImplTest {
     @Test
     void cashOperationNotExistingUser_shouldReturnUserNotFoundError() {
         CashRequest cashRequestFailed = new CashRequest(
-                CurrencyEnum.CNY,
+                AccountCurrencyEnum.CNY,
                 new BigDecimal("20001.0"),
                 CashRequest.ActionEnum.GET
         );
@@ -638,10 +638,10 @@ class UserServiceImplTest {
     }
 
     @Test
-    void transferOperationOtherOk_shouldReturnOperationResponseWithSuccess() {
+    void transferOperationOtherOk_shouldReturnAccountOperationResponseWithSuccess() {
     TransferRequest transferRequestOtherSuccess = new TransferRequest(
-            CurrencyEnum.CNY,
-            CurrencyEnum.CNY,
+            AccountCurrencyEnum.CNY,
+            AccountCurrencyEnum.CNY,
             new BigDecimal("10000.0"),
             new BigDecimal("10000.0"),
             "test_user2"
@@ -652,7 +652,7 @@ class UserServiceImplTest {
                     assertNotNull(userDetailResponse, "Объект не должен быть null.");
                     assertEquals(0, new BigDecimal("20000.0").compareTo(
                             userDetailResponse.getAccounts().stream()
-                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.CNY)
+                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == AccountCurrencyEnum.CNY)
                                     .map(AccountInfoRow::getValue)
                                     .findFirst().get()));
                 }).verifyComplete();
@@ -662,20 +662,20 @@ class UserServiceImplTest {
                     assertNotNull(userDetailResponse, "Объект не должен быть null.");
                     assertEquals(0, new BigDecimal("12000.0").compareTo(
                             userDetailResponse.getAccounts().stream()
-                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.CNY)
+                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == AccountCurrencyEnum.CNY)
                                     .map(AccountInfoRow::getValue)
                                     .findFirst().get()));
                 }).verifyComplete();
 
         StepVerifier.create(userService.transferOperation(transferRequestOtherSuccess, "test_user1"))
                 .assertNext(
-                        operationResponse -> {
-                            assertNotNull(operationResponse, "Объект не должен быть null.");
+                        AccountOperationResponse -> {
+                            assertNotNull(AccountOperationResponse, "Объект не должен быть null.");
                             assertEquals(
-                                    OperationResponse.OperationStatusEnum.SUCCESS,
-                                    operationResponse.getOperationStatus(),
+                                    AccountOperationResponse.OperationStatusEnum.SUCCESS,
+                                    AccountOperationResponse.getOperationStatus(),
                                     "Статус должен быть SUCCESS");
-                            assertTrue(operationResponse.getErrors().isEmpty(), "Список ошибок должен быть пуст");
+                            assertTrue(AccountOperationResponse.getErrors().isEmpty(), "Список ошибок должен быть пуст");
                         })
                 .verifyComplete();
 
@@ -684,7 +684,7 @@ class UserServiceImplTest {
                     assertNotNull(userDetailResponse, "Объект не должен быть null.");
                     assertEquals(0, new BigDecimal("10000.0").compareTo(
                             userDetailResponse.getAccounts().stream()
-                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.CNY)
+                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == AccountCurrencyEnum.CNY)
                                     .map(AccountInfoRow::getValue)
                                     .findFirst().get()));
                 }).verifyComplete();
@@ -694,7 +694,7 @@ class UserServiceImplTest {
                     assertNotNull(userDetailResponse, "Объект не должен быть null.");
                     assertEquals(0, new BigDecimal("22000.0").compareTo(
                             userDetailResponse.getAccounts().stream()
-                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.CNY)
+                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == AccountCurrencyEnum.CNY)
                                     .map(AccountInfoRow::getValue)
                                     .findFirst().get()));
                 }).verifyComplete();
@@ -703,8 +703,8 @@ class UserServiceImplTest {
     @Test
     void transferOperationOtherWithMissingAccountIfself_shouldReturnAccountNotFoundForCurrencyException() {
         TransferRequest transferRequestOtherSuccess = new TransferRequest(
-                CurrencyEnum.USD,
-                CurrencyEnum.CNY,
+                AccountCurrencyEnum.USD,
+                AccountCurrencyEnum.CNY,
                 new BigDecimal("1000.0"),
                 new BigDecimal("10000.0"),
                 "test_user2"
@@ -716,7 +716,7 @@ class UserServiceImplTest {
                     assertNotNull(userDetailResponse, "Объект не должен быть null.");
                     assertFalse(
                             userDetailResponse.getAccounts().stream()
-                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.USD)
+                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == AccountCurrencyEnum.USD)
                                     .map(AccountInfoRow::getExists)
                                     .findFirst().get());
                 }).verifyComplete();
@@ -726,7 +726,7 @@ class UserServiceImplTest {
                     assertNotNull(userDetailResponse, "Объект не должен быть null.");
                     assertEquals(0, new BigDecimal("12000.0").compareTo(
                             userDetailResponse.getAccounts().stream()
-                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.CNY)
+                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == AccountCurrencyEnum.CNY)
                                     .map(AccountInfoRow::getValue)
                                     .findFirst().get()));
                 }).verifyComplete();
@@ -746,7 +746,7 @@ class UserServiceImplTest {
                     assertNotNull(userDetailResponse, "Объект не должен быть null.");
                     assertFalse(
                             userDetailResponse.getAccounts().stream()
-                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.USD)
+                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == AccountCurrencyEnum.USD)
                                     .map(AccountInfoRow::getExists)
                                     .findFirst().get());
                 }).verifyComplete();
@@ -756,7 +756,7 @@ class UserServiceImplTest {
                     assertNotNull(userDetailResponse, "Объект не должен быть null.");
                     assertEquals(0, new BigDecimal("12000.0").compareTo(
                             userDetailResponse.getAccounts().stream()
-                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.CNY)
+                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == AccountCurrencyEnum.CNY)
                                     .map(AccountInfoRow::getValue)
                                     .findFirst().get()));
                 }).verifyComplete();
@@ -765,8 +765,8 @@ class UserServiceImplTest {
     @Test
     void transferOperationOtherWithMissingAccountOther_shouldReturnAccountNotFoundForCurrencyException() {
         TransferRequest transferRequestOtherSuccess = new TransferRequest(
-                CurrencyEnum.CNY,
-                CurrencyEnum.RUB,
+                AccountCurrencyEnum.CNY,
+                AccountCurrencyEnum.RUB,
                 new BigDecimal("1000.0"),
                 new BigDecimal("10000.0"),
                 "test_user2"
@@ -778,7 +778,7 @@ class UserServiceImplTest {
                     assertNotNull(userDetailResponse, "Объект не должен быть null.");
                     assertFalse(
                             userDetailResponse.getAccounts().stream()
-                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.USD)
+                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == AccountCurrencyEnum.USD)
                                     .map(AccountInfoRow::getExists)
                                     .findFirst().get());
                 }).verifyComplete();
@@ -788,7 +788,7 @@ class UserServiceImplTest {
                     assertNotNull(userDetailResponse, "Объект не должен быть null.");
                     assertEquals(0, new BigDecimal("12000.0").compareTo(
                             userDetailResponse.getAccounts().stream()
-                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.CNY)
+                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == AccountCurrencyEnum.CNY)
                                     .map(AccountInfoRow::getValue)
                                     .findFirst().get()));
                 }).verifyComplete();
@@ -808,7 +808,7 @@ class UserServiceImplTest {
                     assertNotNull(userDetailResponse, "Объект не должен быть null.");
                     assertFalse(
                             userDetailResponse.getAccounts().stream()
-                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.USD)
+                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == AccountCurrencyEnum.USD)
                                     .map(AccountInfoRow::getExists)
                                     .findFirst().get());
                 }).verifyComplete();
@@ -818,7 +818,7 @@ class UserServiceImplTest {
                     assertNotNull(userDetailResponse, "Объект не должен быть null.");
                     assertEquals(0, new BigDecimal("12000.0").compareTo(
                             userDetailResponse.getAccounts().stream()
-                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.CNY)
+                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == AccountCurrencyEnum.CNY)
                                     .map(AccountInfoRow::getValue)
                                     .findFirst().get()));
                 }).verifyComplete();
@@ -826,10 +826,10 @@ class UserServiceImplTest {
 
 
     @Test
-    void transferOperationOtherWithInsufficientFunds_shouldReturnOperationResponseWithFailed() {
+    void transferOperationOtherWithInsufficientFunds_shouldReturnAccountOperationResponseWithFailed() {
         TransferRequest transferRequestOtherSuccess = new TransferRequest(
-                CurrencyEnum.CNY,
-                CurrencyEnum.CNY,
+                AccountCurrencyEnum.CNY,
+                AccountCurrencyEnum.CNY,
                 new BigDecimal("20001.0"),
                 new BigDecimal("10000.0"),
                 "test_user2"
@@ -840,7 +840,7 @@ class UserServiceImplTest {
                     assertNotNull(userDetailResponse, "Объект не должен быть null.");
                     assertEquals(0, new BigDecimal("20000.0").compareTo(
                             userDetailResponse.getAccounts().stream()
-                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.CNY)
+                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == AccountCurrencyEnum.CNY)
                                     .map(AccountInfoRow::getValue)
                                     .findFirst().get()));
                 }).verifyComplete();
@@ -850,21 +850,21 @@ class UserServiceImplTest {
                     assertNotNull(userDetailResponse, "Объект не должен быть null.");
                     assertEquals(0, new BigDecimal("12000.0").compareTo(
                             userDetailResponse.getAccounts().stream()
-                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.CNY)
+                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == AccountCurrencyEnum.CNY)
                                     .map(AccountInfoRow::getValue)
                                     .findFirst().get()));
                 }).verifyComplete();
 
         StepVerifier.create(userService.transferOperation(transferRequestOtherSuccess, "test_user1"))
                 .assertNext(
-                        operationResponse -> {
-                            assertNotNull(operationResponse, "Объект не должен быть null.");
+                        AccountOperationResponse -> {
+                            assertNotNull(AccountOperationResponse, "Объект не должен быть null.");
                             assertEquals(
-                                    OperationResponse.OperationStatusEnum.FAILED,
-                                    operationResponse.getOperationStatus(),
+                                    AccountOperationResponse.OperationStatusEnum.FAILED,
+                                    AccountOperationResponse.getOperationStatus(),
                                     "Статус должен быть FAILED");
-                            assertFalse(operationResponse.getErrors().isEmpty(), "Список ошибок должен быть не пуст");
-                            assertEquals(List.of("На счете недостаточно средств"), operationResponse.getErrors());
+                            assertFalse(AccountOperationResponse.getErrors().isEmpty(), "Список ошибок должен быть не пуст");
+                            assertEquals(List.of("На счете недостаточно средств"), AccountOperationResponse.getErrors());
                         })
                 .verifyComplete();
 
@@ -873,7 +873,7 @@ class UserServiceImplTest {
                     assertNotNull(userDetailResponse, "Объект не должен быть null.");
                     assertEquals(0, new BigDecimal("20000.0").compareTo(
                             userDetailResponse.getAccounts().stream()
-                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.CNY)
+                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == AccountCurrencyEnum.CNY)
                                     .map(AccountInfoRow::getValue)
                                     .findFirst().get()));
                 }).verifyComplete();
@@ -883,17 +883,17 @@ class UserServiceImplTest {
                     assertNotNull(userDetailResponse, "Объект не должен быть null.");
                     assertEquals(0, new BigDecimal("12000.0").compareTo(
                             userDetailResponse.getAccounts().stream()
-                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.CNY)
+                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == AccountCurrencyEnum.CNY)
                                     .map(AccountInfoRow::getValue)
                                     .findFirst().get()));
                 }).verifyComplete();
     }
 
     @Test
-    void transferOperationItselfOk_shouldReturnOperationResponseWithSuccess() {
+    void transferOperationItselfOk_shouldReturnAccountOperationResponseWithSuccess() {
         TransferRequest transferRequestOtherSuccess = new TransferRequest(
-                CurrencyEnum.CNY,
-                CurrencyEnum.RUB,
+                AccountCurrencyEnum.CNY,
+                AccountCurrencyEnum.RUB,
                 new BigDecimal("10000.0"),
                 new BigDecimal("100000.0"),
                 "test_user1"
@@ -904,25 +904,25 @@ class UserServiceImplTest {
                     assertNotNull(userDetailResponse, "Объект не должен быть null.");
                     assertEquals(0, new BigDecimal("20000.0").compareTo(
                             userDetailResponse.getAccounts().stream()
-                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.CNY)
+                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == AccountCurrencyEnum.CNY)
                                     .map(AccountInfoRow::getValue)
                                     .findFirst().get()));
                     assertEquals(0, new BigDecimal("150000.0").compareTo(
                             userDetailResponse.getAccounts().stream()
-                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.RUB)
+                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == AccountCurrencyEnum.RUB)
                                     .map(AccountInfoRow::getValue)
                                     .findFirst().get()));
                 }).verifyComplete();
 
         StepVerifier.create(userService.transferOperation(transferRequestOtherSuccess, "test_user1"))
                 .assertNext(
-                        operationResponse -> {
-                            assertNotNull(operationResponse, "Объект не должен быть null.");
+                        AccountOperationResponse -> {
+                            assertNotNull(AccountOperationResponse, "Объект не должен быть null.");
                             assertEquals(
-                                    OperationResponse.OperationStatusEnum.SUCCESS,
-                                    operationResponse.getOperationStatus(),
+                                    AccountOperationResponse.OperationStatusEnum.SUCCESS,
+                                    AccountOperationResponse.getOperationStatus(),
                                     "Статус должен быть SUCCESS");
-                            assertTrue(operationResponse.getErrors().isEmpty(), "Список ошибок должен быть пуст");
+                            assertTrue(AccountOperationResponse.getErrors().isEmpty(), "Список ошибок должен быть пуст");
                         })
                 .verifyComplete();
 
@@ -931,12 +931,12 @@ class UserServiceImplTest {
                     assertNotNull(userDetailResponse, "Объект не должен быть null.");
                     assertEquals(0, new BigDecimal("10000.0").compareTo(
                             userDetailResponse.getAccounts().stream()
-                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.CNY)
+                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == AccountCurrencyEnum.CNY)
                                     .map(AccountInfoRow::getValue)
                                     .findFirst().get()));
                     assertEquals(0, new BigDecimal("250000.0").compareTo(
                             userDetailResponse.getAccounts().stream()
-                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.RUB)
+                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == AccountCurrencyEnum.RUB)
                                     .map(AccountInfoRow::getValue)
                                     .findFirst().get()));
                 }).verifyComplete();
@@ -945,8 +945,8 @@ class UserServiceImplTest {
     @Test
     void transferOperationItselfWithMissingAccount_shouldReturnAccountNotFoundForCurrencyException() {
         TransferRequest transferRequestOtherSuccess = new TransferRequest(
-                CurrencyEnum.USD,
-                CurrencyEnum.CNY,
+                AccountCurrencyEnum.USD,
+                AccountCurrencyEnum.CNY,
                 new BigDecimal("1000.0"),
                 new BigDecimal("10000.0"),
                 "test_user1"
@@ -958,7 +958,7 @@ class UserServiceImplTest {
                     assertNotNull(userDetailResponse, "Объект не должен быть null.");
                     assertFalse(
                             userDetailResponse.getAccounts().stream()
-                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.USD)
+                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == AccountCurrencyEnum.USD)
                                     .map(AccountInfoRow::getExists)
                                     .findFirst().get());
                 }).verifyComplete();
@@ -978,7 +978,7 @@ class UserServiceImplTest {
                     assertNotNull(userDetailResponse, "Объект не должен быть null.");
                     assertFalse(
                             userDetailResponse.getAccounts().stream()
-                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.USD)
+                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == AccountCurrencyEnum.USD)
                                     .map(AccountInfoRow::getExists)
                                     .findFirst().get());
                 }).verifyComplete();
@@ -988,7 +988,7 @@ class UserServiceImplTest {
                     assertNotNull(userDetailResponse, "Объект не должен быть null.");
                     assertEquals(0, new BigDecimal("12000.0").compareTo(
                             userDetailResponse.getAccounts().stream()
-                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.CNY)
+                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == AccountCurrencyEnum.CNY)
                                     .map(AccountInfoRow::getValue)
                                     .findFirst().get()));
                 }).verifyComplete();
@@ -997,8 +997,8 @@ class UserServiceImplTest {
     @Test
     void transferOperationItselfWithMissingAccountOther_shouldReturnAccountNotFoundForCurrencyException() {
         TransferRequest transferRequestOtherSuccess = new TransferRequest(
-                CurrencyEnum.CNY,
-                CurrencyEnum.USD,
+                AccountCurrencyEnum.CNY,
+                AccountCurrencyEnum.USD,
                 new BigDecimal("1000.0"),
                 new BigDecimal("10000.0"),
                 "test_user1"
@@ -1010,7 +1010,7 @@ class UserServiceImplTest {
                     assertNotNull(userDetailResponse, "Объект не должен быть null.");
                     assertFalse(
                             userDetailResponse.getAccounts().stream()
-                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.USD)
+                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == AccountCurrencyEnum.USD)
                                     .map(AccountInfoRow::getExists)
                                     .findFirst().get());
                 }).verifyComplete();
@@ -1020,7 +1020,7 @@ class UserServiceImplTest {
                     assertNotNull(userDetailResponse, "Объект не должен быть null.");
                     assertEquals(0, new BigDecimal("12000.0").compareTo(
                             userDetailResponse.getAccounts().stream()
-                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.CNY)
+                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == AccountCurrencyEnum.CNY)
                                     .map(AccountInfoRow::getValue)
                                     .findFirst().get()));
                 }).verifyComplete();
@@ -1040,7 +1040,7 @@ class UserServiceImplTest {
                     assertNotNull(userDetailResponse, "Объект не должен быть null.");
                     assertFalse(
                             userDetailResponse.getAccounts().stream()
-                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.USD)
+                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == AccountCurrencyEnum.USD)
                                     .map(AccountInfoRow::getExists)
                                     .findFirst().get());
                 }).verifyComplete();
@@ -1050,7 +1050,7 @@ class UserServiceImplTest {
                     assertNotNull(userDetailResponse, "Объект не должен быть null.");
                     assertEquals(0, new BigDecimal("12000.0").compareTo(
                             userDetailResponse.getAccounts().stream()
-                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.CNY)
+                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == AccountCurrencyEnum.CNY)
                                     .map(AccountInfoRow::getValue)
                                     .findFirst().get()));
                 }).verifyComplete();
@@ -1058,10 +1058,10 @@ class UserServiceImplTest {
 
 
     @Test
-    void transferOperationItselfWithInsufficientFunds_shouldReturnOperationResponseWithFailed() {
+    void transferOperationItselfWithInsufficientFunds_shouldReturnAccountOperationResponseWithFailed() {
         TransferRequest transferRequestOtherSuccess = new TransferRequest(
-                CurrencyEnum.RUB,
-                CurrencyEnum.CNY,
+                AccountCurrencyEnum.RUB,
+                AccountCurrencyEnum.CNY,
                 new BigDecimal("150001.0"),
                 new BigDecimal("10000.0"),
                 "test_user1"
@@ -1072,26 +1072,26 @@ class UserServiceImplTest {
                     assertNotNull(userDetailResponse, "Объект не должен быть null.");
                     assertEquals(0, new BigDecimal("20000.0").compareTo(
                             userDetailResponse.getAccounts().stream()
-                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.CNY)
+                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == AccountCurrencyEnum.CNY)
                                     .map(AccountInfoRow::getValue)
                                     .findFirst().get()));
                     assertEquals(0, new BigDecimal("150000.0").compareTo(
                             userDetailResponse.getAccounts().stream()
-                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.RUB)
+                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == AccountCurrencyEnum.RUB)
                                     .map(AccountInfoRow::getValue)
                                     .findFirst().get()));
                 }).verifyComplete();
 
         StepVerifier.create(userService.transferOperation(transferRequestOtherSuccess, "test_user1"))
                 .assertNext(
-                        operationResponse -> {
-                            assertNotNull(operationResponse, "Объект не должен быть null.");
+                        AccountOperationResponse -> {
+                            assertNotNull(AccountOperationResponse, "Объект не должен быть null.");
                             assertEquals(
-                                    OperationResponse.OperationStatusEnum.FAILED,
-                                    operationResponse.getOperationStatus(),
+                                    AccountOperationResponse.OperationStatusEnum.FAILED,
+                                    AccountOperationResponse.getOperationStatus(),
                                     "Статус должен быть FAILED");
-                            assertFalse(operationResponse.getErrors().isEmpty(), "Список ошибок должен быть не пуст");
-                            assertEquals(List.of("На счете недостаточно средств"), operationResponse.getErrors());
+                            assertFalse(AccountOperationResponse.getErrors().isEmpty(), "Список ошибок должен быть не пуст");
+                            assertEquals(List.of("На счете недостаточно средств"), AccountOperationResponse.getErrors());
                         })
                 .verifyComplete();
 
@@ -1100,22 +1100,22 @@ class UserServiceImplTest {
                     assertNotNull(userDetailResponse, "Объект не должен быть null.");
                     assertEquals(0, new BigDecimal("20000.0").compareTo(
                             userDetailResponse.getAccounts().stream()
-                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.CNY)
+                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == AccountCurrencyEnum.CNY)
                                     .map(AccountInfoRow::getValue)
                                     .findFirst().get()));
                     assertEquals(0, new BigDecimal("150000.0").compareTo(
                             userDetailResponse.getAccounts().stream()
-                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.RUB)
+                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == AccountCurrencyEnum.RUB)
                                     .map(AccountInfoRow::getValue)
                                     .findFirst().get()));
                 }).verifyComplete();
     }
 
     @Test
-    void transferOperationItselfWithWithSameAccounts_shouldReturnOperationResponseWithFailed() {
+    void transferOperationItselfWithWithSameAccounts_shouldReturnAccountOperationResponseWithFailed() {
         TransferRequest transferRequestOtherSuccess = new TransferRequest(
-                CurrencyEnum.RUB,
-                CurrencyEnum.RUB,
+                AccountCurrencyEnum.RUB,
+                AccountCurrencyEnum.RUB,
                 new BigDecimal("10000.0"),
                 new BigDecimal("10000.0"),
                 "test_user1"
@@ -1126,21 +1126,21 @@ class UserServiceImplTest {
                     assertNotNull(userDetailResponse, "Объект не должен быть null.");
                     assertEquals(0, new BigDecimal("150000.0").compareTo(
                             userDetailResponse.getAccounts().stream()
-                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.RUB)
+                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == AccountCurrencyEnum.RUB)
                                     .map(AccountInfoRow::getValue)
                                     .findFirst().get()));
                 }).verifyComplete();
 
         StepVerifier.create(userService.transferOperation(transferRequestOtherSuccess, "test_user1"))
                 .assertNext(
-                        operationResponse -> {
-                            assertNotNull(operationResponse, "Объект не должен быть null.");
+                        AccountOperationResponse -> {
+                            assertNotNull(AccountOperationResponse, "Объект не должен быть null.");
                             assertEquals(
-                                    OperationResponse.OperationStatusEnum.FAILED,
-                                    operationResponse.getOperationStatus(),
+                                    AccountOperationResponse.OperationStatusEnum.FAILED,
+                                    AccountOperationResponse.getOperationStatus(),
                                     "Статус должен быть FAILED");
-                            assertFalse(operationResponse.getErrors().isEmpty(), "Список ошибок должен быть не пуст");
-                            assertEquals(List.of("Перевести можно только между разными счетами"), operationResponse.getErrors());
+                            assertFalse(AccountOperationResponse.getErrors().isEmpty(), "Список ошибок должен быть не пуст");
+                            assertEquals(List.of("Перевести можно только между разными счетами"), AccountOperationResponse.getErrors());
                         })
                 .verifyComplete();
 
@@ -1149,7 +1149,7 @@ class UserServiceImplTest {
                     assertNotNull(userDetailResponse, "Объект не должен быть null.");
                     assertEquals(0, new BigDecimal("150000.0").compareTo(
                             userDetailResponse.getAccounts().stream()
-                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.RUB)
+                                    .filter(accountInfoRow -> accountInfoRow.getCurrency() == AccountCurrencyEnum.RUB)
                                     .map(AccountInfoRow::getValue)
                                     .findFirst().get()));
                 }).verifyComplete();
@@ -1158,8 +1158,8 @@ class UserServiceImplTest {
     @Test
     void transferOperationNotExistingFromUser_shouldReturnUserNotFoundError() {
         TransferRequest transferRequestOtherSuccess = new TransferRequest(
-                CurrencyEnum.RUB,
-                CurrencyEnum.RUB,
+                AccountCurrencyEnum.RUB,
+                AccountCurrencyEnum.RUB,
                 new BigDecimal("10000.0"),
                 new BigDecimal("10000.0"),
                 "test_user1"
@@ -1178,8 +1178,8 @@ class UserServiceImplTest {
     @Test
     void transferOperationNotExistingToUser_shouldReturnUserNotFoundError() {
         TransferRequest transferRequestOtherSuccess = new TransferRequest(
-                CurrencyEnum.RUB,
-                CurrencyEnum.RUB,
+                AccountCurrencyEnum.RUB,
+                AccountCurrencyEnum.RUB,
                 new BigDecimal("10000.0"),
                 new BigDecimal("10000.0"),
                 "test_user4"

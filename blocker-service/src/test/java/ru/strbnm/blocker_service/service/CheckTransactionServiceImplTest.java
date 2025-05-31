@@ -22,16 +22,14 @@ public class CheckTransactionServiceImplTest {
 
   @Test
   void cashTransaction_exceedsRubLimit_shouldBeBlocked() {
-    CashTransactionRequest request =
-        new CashTransactionRequest(
+    CheckCashTransactionRequest request =
+        new CheckCashTransactionRequest(
             1L,
-            CurrencyEnum.RUB,
-            CorrespondentEnum.ACCOUNT,
-            CorrespondentEnum.CASH,
+            BlockerCurrencyEnum.RUB,
             new BigDecimal("200000"),
-            "cash");
+            CheckCashTransactionRequest.ActionTypeEnum.GET);
 
-    StepVerifier.create(checkTransactionService.checkTransaction(request))
+    StepVerifier.create(checkTransactionService.checkCashTransaction(request))
         .expectNextMatches(
             result -> {
               if (!result.isBlocked()) return false;
@@ -41,44 +39,19 @@ public class CheckTransactionServiceImplTest {
         .verifyComplete();
   }
 
-  @Test
-  void transferTransaction_toCashTarget_shouldBeBlocked() {
-    TransferTransactionRequest request =
-        new TransferTransactionRequest(
+  @ParameterizedTest
+  @CsvSource({"'RUB', '600001', false", "'CNY', '60001', false", "'USD', '6001', false"})
+  void transferTransaction_exceedsUsdLimit_shouldBeBlocked(
+      String currency, String amount, boolean isItself) {
+    CheckTransferTransactionRequest request =
+        new CheckTransferTransactionRequest(
             1L,
-            new TransferTransactionRequestFrom(CurrencyEnum.RUB, CorrespondentEnum.ACCOUNT),
-            new TransferTransactionRequestTo(CurrencyEnum.RUB, CorrespondentEnum.CASH),
-            new BigDecimal("1000.0"),
-            "cash",
-            false);
-
-    StepVerifier.create(checkTransactionService.checkTransaction(request))
-        .expectNextMatches(
-            result -> {
-              if (!result.isBlocked()) return false;
-              assert result.reason() != null;
-              return result.reason().contains("Недопустимая операция для сервиса переводов");
-            })
-        .verifyComplete();
-  }
-
-    @ParameterizedTest
-    @CsvSource({
-            "'RUB', '600001', false",
-            "'CNY', '60001', false",
-            "'USD', '6001', false"
-    })
-  void transferTransaction_exceedsUsdLimit_shouldBeBlocked(String currency, String amount, boolean isToYourself) {
-    TransferTransactionRequest request =
-        new TransferTransactionRequest(
-            1L,
-            new TransferTransactionRequestFrom(CurrencyEnum.fromValue(currency), CorrespondentEnum.ACCOUNT),
-            new TransferTransactionRequestTo(CurrencyEnum.fromValue(currency), CorrespondentEnum.ACCOUNT),
+            BlockerCurrencyEnum.fromValue(currency),
+            BlockerCurrencyEnum.fromValue(currency),
             new BigDecimal(amount),
-            "transfer",
-                isToYourself);
+            isItself);
 
-    StepVerifier.create(checkTransactionService.checkTransaction(request))
+    StepVerifier.create(checkTransactionService.checkTransferTransaction(request))
         .expectNextMatches(
             result -> {
               if (!result.isBlocked()) return false;
@@ -90,25 +63,23 @@ public class CheckTransactionServiceImplTest {
 
   @ParameterizedTest
   @CsvSource({
-    "'RUB', '150000', 'account', 'cash'",
-    "'CNY', '15000', 'account', 'cash'",
-    "'USD', '1500', 'account', 'cash'",
-      "'RUB', '1000000', 'cash', 'account'",
-      "'CNY', '1000000', 'cash', 'account'",
-      "'USD', '1000000', 'cash', 'account'"
+    "'RUB', '150000', 'GET'",
+    "'CNY', '15000', 'GET'",
+    "'USD', '1500', 'GET'",
+    "'RUB', '1000000', 'PUT'",
+    "'CNY', '1000000', 'PUT'",
+    "'USD', '1000000', 'PUT'"
   })
   void validCashTransaction_shouldBeAllowed(
-      String currency, String amount, String source, String target) {
-    CashTransactionRequest request =
-        new CashTransactionRequest(
+      String currency, String amount, String actionType) {
+    CheckCashTransactionRequest request =
+        new CheckCashTransactionRequest(
             1L,
-            CurrencyEnum.fromValue(currency),
-            CorrespondentEnum.fromValue(source),
-            CorrespondentEnum.fromValue(target),
+            BlockerCurrencyEnum.fromValue(currency),
             new BigDecimal(amount),
-            "cash");
+                CheckCashTransactionRequest.ActionTypeEnum.fromValue(actionType));
 
-    StepVerifier.create(checkTransactionService.checkTransaction(request))
+    StepVerifier.create(checkTransactionService.checkCashTransaction(request))
         .expectNext(CheckResult.allowed())
         .verifyComplete();
   }

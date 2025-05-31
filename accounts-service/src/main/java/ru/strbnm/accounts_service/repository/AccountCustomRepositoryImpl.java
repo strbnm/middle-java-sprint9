@@ -14,7 +14,7 @@ import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import ru.strbnm.accounts_service.domain.AccountInfoRow;
-import ru.strbnm.accounts_service.domain.CurrencyEnum;
+import ru.strbnm.accounts_service.domain.AccountCurrencyEnum;
 
 @Slf4j
 @Repository
@@ -42,7 +42,7 @@ public class AccountCustomRepositoryImpl implements AccountCustomRepository {
             .sql(query)
             .bind("login", login)
             .map(row -> new AccountInfoRow(
-                    CurrencyEnum.valueOf(row.get("currency", String.class)),
+                    AccountCurrencyEnum.valueOf(row.get("currency", String.class)),
                     row.get("balance", BigDecimal.class),
                     row.get("exists", Boolean.class)
             ))
@@ -50,10 +50,10 @@ public class AccountCustomRepositoryImpl implements AccountCustomRepository {
             .collectList()
             .flatMapMany(existingAccounts -> {
               // Список всех поддерживаемых валют
-              List<CurrencyEnum> allCurrencies = List.of(CurrencyEnum.values());
+              List<AccountCurrencyEnum> allCurrencies = List.of(AccountCurrencyEnum.values());
 
               // Собираем карту существующих валют -> AccountInfoRow
-              Map<CurrencyEnum, AccountInfoRow> accountMap = existingAccounts.stream()
+              Map<AccountCurrencyEnum, AccountInfoRow> accountMap = existingAccounts.stream()
                       .collect(Collectors.toMap(AccountInfoRow::getCurrency, Function.identity()));
               log.info(accountMap.toString());
               // Для каждой валюты создаём либо реальную запись, либо дефолтную

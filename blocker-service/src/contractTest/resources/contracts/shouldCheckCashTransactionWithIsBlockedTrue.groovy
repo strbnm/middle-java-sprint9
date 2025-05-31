@@ -3,17 +3,15 @@ package contracts
 import org.springframework.cloud.contract.spec.Contract
 
 Contract.make {
-    description "Когда POST /api/v1/check_transaction вызван, сервис должен проверить операцию типа cash и вернуть значение флага блокировки true"
+    description "Когда POST /api/v1/blocker/checkCashTransaction вызван, сервис должен проверить операцию типа cash и вернуть значение флага блокировки true"
     request {
         method 'POST'
-        url '/api/v1/check_transaction'
+        url '/api/v1/blocker/checkCashTransaction'
         body([
                 transactionId: 2,
-                currencyCode: 'USD',
-                source: 'account',
-                target: 'cash',
+                currency: 'USD',
                 amount: 2000.0,
-                operationType: 'cash'
+                actionType: 'GET'
         ])
 
         headers {

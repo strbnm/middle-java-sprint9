@@ -36,12 +36,12 @@ public abstract class BaseContractTest {
   private UserRequest updateUserRequestFailed;
   private UserPasswordRequest updatePasswordRequestSuccess;
   private UserPasswordRequest updatePasswordRequestFailed;
-  private OperationResponse successOperationResponse;
-  private OperationResponse createUserFailed;
-  private OperationResponse updateUserFailed;
-  private OperationResponse updateUserPasswordFailed;
-  private OperationResponse cashOperationFailed;
-  private OperationResponse transferOperationFailed;
+  private AccountOperationResponse successAccountOperationResponse;
+  private AccountOperationResponse createUserFailed;
+  private AccountOperationResponse updateUserFailed;
+  private AccountOperationResponse updateUserPasswordFailed;
+  private AccountOperationResponse cashOperationFailed;
+  private AccountOperationResponse transferOperationFailed;
   private CashRequest cashRequestSuccess;
   private CashRequest cashRequestFailed;
   private TransferRequest transferRequestSuccess;
@@ -83,7 +83,7 @@ public abstract class BaseContractTest {
             "",
             "test@example.ru",
             LocalDate.parse("2020-01-01"));
-    updateUserRequestSuccess.setAccounts(List.of(CurrencyEnum.RUB, CurrencyEnum.CNY));
+    updateUserRequestSuccess.setAccounts(List.of(AccountCurrencyEnum.RUB, AccountCurrencyEnum.CNY));
 
     updatePasswordRequestSuccess =
         new UserPasswordRequest(
@@ -93,11 +93,11 @@ public abstract class BaseContractTest {
         new UserPasswordRequest(
             "test_user1", "R7WZnEEUsVOShUOexUQIg.J/lzad8FNYty6/BDByo6");
 
-    cashRequestSuccess =  new CashRequest(CurrencyEnum.RUB, new BigDecimal("1000.0"), CashRequest.ActionEnum.PUT);
-    cashRequestFailed =  new CashRequest(CurrencyEnum.RUB, new BigDecimal("100000.0"), CashRequest.ActionEnum.GET);
+    cashRequestSuccess =  new CashRequest(AccountCurrencyEnum.RUB, new BigDecimal("1000.0"), CashRequest.ActionEnum.PUT);
+    cashRequestFailed =  new CashRequest(AccountCurrencyEnum.RUB, new BigDecimal("100000.0"), CashRequest.ActionEnum.GET);
 
-    transferRequestSuccess = new TransferRequest(CurrencyEnum.RUB, CurrencyEnum.RUB, new BigDecimal("1000.0"), new BigDecimal("1000.0"), "test_user2");
-    transferRequestFailed = new TransferRequest(CurrencyEnum.RUB, CurrencyEnum.RUB, new BigDecimal("1000.0"), new BigDecimal("1000.0"), "test_user1");
+    transferRequestSuccess = new TransferRequest(AccountCurrencyEnum.RUB, AccountCurrencyEnum.RUB, new BigDecimal("1000.0"), new BigDecimal("1000.0"), "test_user2");
+    transferRequestFailed = new TransferRequest(AccountCurrencyEnum.RUB, AccountCurrencyEnum.RUB, new BigDecimal("1000.0"), new BigDecimal("1000.0"), "test_user1");
 
     userDetailResponse =
         new UserDetailResponse(
@@ -109,44 +109,44 @@ public abstract class BaseContractTest {
             List.of("ROLE_CLIENT"));
     userDetailResponse.setAccounts(
         List.of(
-            new AccountInfoRow(CurrencyEnum.RUB, new BigDecimal("150000.0"), true),
-            new AccountInfoRow(CurrencyEnum.CNY, new BigDecimal("20000.0"), true),
-            new AccountInfoRow(CurrencyEnum.USD, BigDecimal.ZERO, false)));
+            new AccountInfoRow(AccountCurrencyEnum.RUB, new BigDecimal("150000.0"), true),
+            new AccountInfoRow(AccountCurrencyEnum.CNY, new BigDecimal("20000.0"), true),
+            new AccountInfoRow(AccountCurrencyEnum.USD, BigDecimal.ZERO, false)));
 
-    successOperationResponse =
-        new OperationResponse(OperationResponse.OperationStatusEnum.SUCCESS, List.of());
+    successAccountOperationResponse =
+        new AccountOperationResponse(AccountOperationResponse.OperationStatusEnum.SUCCESS, List.of());
 
     createUserFailed =
-        new OperationResponse(
-            OperationResponse.OperationStatusEnum.FAILED, List.of("Вам должно быть больше 18 лет"));
+        new AccountOperationResponse(
+            AccountOperationResponse.OperationStatusEnum.FAILED, List.of("Вам должно быть больше 18 лет"));
     updateUserFailed =
-        new OperationResponse(
-            OperationResponse.OperationStatusEnum.FAILED,
+        new AccountOperationResponse(
+            AccountOperationResponse.OperationStatusEnum.FAILED,
             List.of("Заполните поле Фамилия Имя", "Вам должно быть больше 18 лет"));
     updateUserPasswordFailed =
-        new OperationResponse(
-            OperationResponse.OperationStatusEnum.FAILED,
+        new AccountOperationResponse(
+            AccountOperationResponse.OperationStatusEnum.FAILED,
             List.of("Ошибка при сохранении изменений пароля. Операция отменена"));
     cashOperationFailed =
-        new OperationResponse(
-            OperationResponse.OperationStatusEnum.FAILED,
+        new AccountOperationResponse(
+            AccountOperationResponse.OperationStatusEnum.FAILED,
             List.of("На счете недостаточно средств"));
     
     transferOperationFailed =
-            new OperationResponse(
-                    OperationResponse.OperationStatusEnum.FAILED,
+            new AccountOperationResponse(
+                    AccountOperationResponse.OperationStatusEnum.FAILED,
                     List.of("Перевести можно только между разными счетами"));
 
     when(userService.createUser(createUserRequestSuccess))
-        .thenReturn(Mono.just(successOperationResponse));
+        .thenReturn(Mono.just(successAccountOperationResponse));
     when(userService.createUser(createUserRequestFailed)).thenReturn(Mono.just(createUserFailed));
 
     when(userService.updateUser(updateUserRequestSuccess))
-        .thenReturn(Mono.just(successOperationResponse));
+        .thenReturn(Mono.just(successAccountOperationResponse));
     when(userService.updateUser(updateUserRequestFailed)).thenReturn(Mono.just(updateUserFailed));
 
     when(userService.updateUserPassword(updatePasswordRequestSuccess))
-        .thenReturn(Mono.just(successOperationResponse));
+        .thenReturn(Mono.just(successAccountOperationResponse));
     when(userService.updateUserPassword(updatePasswordRequestFailed))
         .thenReturn(Mono.just(updateUserPasswordFailed));
 
@@ -162,10 +162,10 @@ public abstract class BaseContractTest {
                 new UserListResponseInner("test_user1", "Иванов Иван"),
                 new UserListResponseInner("test_user2", "Петров Петр")));
 
-    when(userService.cashOperation(cashRequestSuccess, "test_user1")).thenReturn(Mono.just(successOperationResponse));
+    when(userService.cashOperation(cashRequestSuccess, "test_user1")).thenReturn(Mono.just(successAccountOperationResponse));
     when(userService.cashOperation(cashRequestFailed, "test_user1")).thenReturn(Mono.just(cashOperationFailed));
 
-    when(userService.transferOperation(transferRequestSuccess, "test_user1")).thenReturn(Mono.just(successOperationResponse));
+    when(userService.transferOperation(transferRequestSuccess, "test_user1")).thenReturn(Mono.just(successAccountOperationResponse));
     when(userService.transferOperation(transferRequestFailed, "test_user1")).thenReturn(Mono.just(transferOperationFailed));
   }
 

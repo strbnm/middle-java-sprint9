@@ -20,12 +20,6 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
 public class WebSecurityConfig {
 
   @Bean
-  public PasswordEncoder passwordEncoder() {
-    return new BCryptPasswordEncoder();
-  }
-
-
-  @Bean
   SecurityWebFilterChain securityFilterChain(ServerHttpSecurity http) {
     return http.oauth2ResourceServer(
             resourceServer -> resourceServer.jwt(Customizer.withDefaults()))

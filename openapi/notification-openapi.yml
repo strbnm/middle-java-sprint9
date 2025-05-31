@@ -30,13 +30,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/NotificationErrorResponse'
         '500':
           description: Внутренняя ошибка сервера
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/NotificationErrorResponse'
 
 components:
   schemas:
@@ -65,7 +65,7 @@ components:
           example: transfer-service
           description: Название микросервиса-источника уведомления
 
-    ErrorResponse:
+    NotificationErrorResponse:
       type: object
       properties:
         message:

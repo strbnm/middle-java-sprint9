@@ -22,11 +22,11 @@ public class ContractVerifierTest extends BaseContractTest {
 			WebTestClientRequestSpecification request = given()
 					.header("Content-Type", "application/json")
 					.header("Accept", "application/json")
-					.body("{\"transactionId\":1,\"currencyCode\":\"RUB\",\"source\":\"account\",\"target\":\"cash\",\"amount\":1000.0,\"operationType\":\"cash\"}");
+					.body("{\"transactionId\":1,\"currency\":\"RUB\",\"amount\":1000.0,\"actionType\":\"GET\"}");
 
 		// when:
 			WebTestClientResponse response = given().spec(request)
-					.post("/api/v1/check_transaction");
+					.post("/api/v1/blocker/checkCashTransaction");
 
 		// then:
 			assertThat(response.statusCode()).isEqualTo(200);
@@ -45,11 +45,11 @@ public class ContractVerifierTest extends BaseContractTest {
 			WebTestClientRequestSpecification request = given()
 					.header("Content-Type", "application/json")
 					.header("Accept", "application/json")
-					.body("{\"transactionId\":2,\"currencyCode\":\"USD\",\"source\":\"account\",\"target\":\"cash\",\"amount\":2000.0,\"operationType\":\"cash\"}");
+					.body("{\"transactionId\":2,\"currency\":\"USD\",\"amount\":2000.0,\"actionType\":\"GET\"}");
 
 		// when:
 			WebTestClientResponse response = given().spec(request)
-					.post("/api/v1/check_transaction");
+					.post("/api/v1/blocker/checkCashTransaction");
 
 		// then:
 			assertThat(response.statusCode()).isEqualTo(200);
@@ -68,11 +68,11 @@ public class ContractVerifierTest extends BaseContractTest {
 			WebTestClientRequestSpecification request = given()
 					.header("Content-Type", "application/json")
 					.header("Accept", "application/json")
-					.body("{\"transactionId\":3,\"from\":{\"currencyCode\":\"RUB\",\"source\":\"account\"},\"to\":{\"currencyCode\":\"USD\",\"target\":\"account\"},\"amount\":1000.0,\"operationType\":\"transfer\",\"isToYourself\":false}");
+					.body("{\"transactionId\":3,\"fromCurrency\":\"RUB\",\"toCurrency\":\"RUB\",\"amount\":1000.0,\"isItself\":false}");
 
 		// when:
 			WebTestClientResponse response = given().spec(request)
-					.post("/api/v1/check_transaction");
+					.post("/api/v1/blocker/checkTransferTransaction");
 
 		// then:
 			assertThat(response.statusCode()).isEqualTo(200);
@@ -91,11 +91,11 @@ public class ContractVerifierTest extends BaseContractTest {
 			WebTestClientRequestSpecification request = given()
 					.header("Content-Type", "application/json")
 					.header("Accept", "application/json")
-					.body("{\"transactionId\":4,\"from\":{\"currencyCode\":\"USD\",\"source\":\"account\"},\"to\":{\"currencyCode\":\"USD\",\"target\":\"cash\"},\"amount\":2000.0,\"operationType\":\"transfer\",\"isToYourself\":false}");
+					.body("{\"transactionId\":4,\"fromCurrency\":\"USD\",\"toCurrency\":\"RUB\",\"amount\":6001.0,\"isItself\":false}");
 
 		// when:
 			WebTestClientResponse response = given().spec(request)
-					.post("/api/v1/check_transaction");
+					.post("/api/v1/blocker/checkTransferTransaction");
 
 		// then:
 			assertThat(response.statusCode()).isEqualTo(200);
@@ -105,7 +105,7 @@ public class ContractVerifierTest extends BaseContractTest {
 			DocumentContext parsedJson = JsonPath.parse(response.getBody().asString());
 			assertThatJson(parsedJson).field("['transactionId']").isEqualTo(4);
 			assertThatJson(parsedJson).field("['isBlocked']").isEqualTo(true);
-			assertThatJson(parsedJson).field("['reason']").isEqualTo("\u041D\u0435\u0434\u043E\u043F\u0443\u0441\u0442\u0438\u043C\u0430\u044F \u043E\u043F\u0435\u0440\u0430\u0446\u0438\u044F \u0434\u043B\u044F \u0441\u0435\u0440\u0432\u0438\u0441\u0430 \u043F\u0435\u0440\u0435\u0432\u043E\u0434\u043E\u0432");
+			assertThatJson(parsedJson).field("['reason']").isEqualTo("\u041F\u0440\u0435\u0432\u044B\u0448\u0435\u043D\u0430 \u0434\u043E\u043F\u0443\u0441\u0442\u0438\u043C\u0430\u044F \u0441\u0443\u043C\u043C\u0430 \u043F\u0435\u0440\u0435\u0432\u043E\u0434\u0430 \u0434\u0440\u0443\u0433\u0438\u043C \u043B\u0438\u0446\u0430\u043C");
 	}
 
 }

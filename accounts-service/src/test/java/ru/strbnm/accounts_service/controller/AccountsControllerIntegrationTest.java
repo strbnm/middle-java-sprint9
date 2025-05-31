@@ -81,12 +81,12 @@ class AccountsControllerIntegrationTest {
                 .exchange()
                 .expectStatus()
                 .isOk()
-                .expectBody(OperationResponse.class)
+                .expectBody(AccountOperationResponse.class)
                 .value(
-                        operationResponse -> {
-                            assertNotNull(operationResponse);
-                            assertEquals(OperationResponse.OperationStatusEnum.SUCCESS, operationResponse.getOperationStatus());
-                            assertTrue(operationResponse.getErrors().isEmpty());
+                        AccountOperationResponse -> {
+                            assertNotNull(AccountOperationResponse);
+                            assertEquals(AccountOperationResponse.OperationStatusEnum.SUCCESS, AccountOperationResponse.getOperationStatus());
+                            assertTrue(AccountOperationResponse.getErrors().isEmpty());
                         });
         // Сумма на счете на 10000 руб. меньше
         webTestClient
@@ -102,7 +102,7 @@ class AccountsControllerIntegrationTest {
                             assertNotNull(userDetailResponse);
                             assertEquals(0, new BigDecimal("140000.0").compareTo(
                                     userDetailResponse.getAccounts().stream()
-                                            .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.RUB)
+                                            .filter(accountInfoRow -> accountInfoRow.getCurrency() == AccountCurrencyEnum.RUB)
                                             .map(AccountInfoRow::getValue)
                                             .findFirst().get()));
                         });
@@ -119,13 +119,13 @@ class AccountsControllerIntegrationTest {
                 .exchange()
                 .expectStatus()
                 .isEqualTo(422)
-                .expectBody(OperationResponse.class)
+                .expectBody(AccountOperationResponse.class)
                 .value(
-                        operationResponse -> {
-                            assertNotNull(operationResponse);
-                            assertEquals(OperationResponse.OperationStatusEnum.FAILED, operationResponse.getOperationStatus());
-                            assertFalse(operationResponse.getErrors().isEmpty());
-                            assertEquals(List.of("На счете недостаточно средств"), operationResponse.getErrors());
+                        AccountOperationResponse -> {
+                            assertNotNull(AccountOperationResponse);
+                            assertEquals(AccountOperationResponse.OperationStatusEnum.FAILED, AccountOperationResponse.getOperationStatus());
+                            assertFalse(AccountOperationResponse.getErrors().isEmpty());
+                            assertEquals(List.of("На счете недостаточно средств"), AccountOperationResponse.getErrors());
                         });
 
         // Сумма на счете не изменилась
@@ -142,7 +142,7 @@ class AccountsControllerIntegrationTest {
                             assertNotNull(userDetailResponse);
                             assertEquals(0, new BigDecimal("150000.0").compareTo(
                                     userDetailResponse.getAccounts().stream()
-                                            .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.RUB)
+                                            .filter(accountInfoRow -> accountInfoRow.getCurrency() == AccountCurrencyEnum.RUB)
                                             .map(AccountInfoRow::getValue)
                                             .findFirst().get()));
                         });
@@ -159,12 +159,12 @@ class AccountsControllerIntegrationTest {
                 .exchange()
                 .expectStatus()
                 .isNotFound()
-                .expectBody(ErrorResponse.class)
+                .expectBody(AccountErrorResponse.class)
                 .value(
-                        errorResponse -> {
-                            assertNotNull(errorResponse);
-                            assertEquals(404, errorResponse.getStatusCode());
-                            assertEquals(errorResponse.getMessage(), "Пользователь с логином test_user4 не существует");
+                        AccountErrorResponse -> {
+                            assertNotNull(AccountErrorResponse);
+                            assertEquals(404, AccountErrorResponse.getStatusCode());
+                            assertEquals(AccountErrorResponse.getMessage(), "Пользователь с логином test_user4 не существует");
                         });
     }
 
@@ -198,14 +198,14 @@ class AccountsControllerIntegrationTest {
                 .exchange()
                 .expectStatus()
                 .isCreated()
-                .expectBody(OperationResponse.class)
+                .expectBody(AccountOperationResponse.class)
                 .value(
-                        operationResponse -> {
-                            assertNotNull(operationResponse);
+                        AccountOperationResponse -> {
+                            assertNotNull(AccountOperationResponse);
                             assertEquals(
-                                    OperationResponse.OperationStatusEnum.SUCCESS,
-                                    operationResponse.getOperationStatus());
-                            assertTrue(operationResponse.getErrors().isEmpty());
+                                    AccountOperationResponse.OperationStatusEnum.SUCCESS,
+                                    AccountOperationResponse.getOperationStatus());
+                            assertTrue(AccountOperationResponse.getErrors().isEmpty());
                         });
 
         webTestClient
@@ -242,20 +242,20 @@ class AccountsControllerIntegrationTest {
                 .exchange()
                 .expectStatus()
                 .isEqualTo(409)
-                .expectBody(ErrorResponse.class)
+                .expectBody(AccountErrorResponse.class)
                 .value(
-                        errorResponse -> {
-                            assertNotNull(errorResponse);
-                            assertEquals(409, errorResponse.getStatusCode());
-                            assertEquals("Пользователь с таким логином уже существует: test_user3", errorResponse.getMessage());
+                        AccountErrorResponse -> {
+                            assertNotNull(AccountErrorResponse);
+                            assertEquals(409, AccountErrorResponse.getStatusCode());
+                            assertEquals("Пользователь с таким логином уже существует: test_user3", AccountErrorResponse.getMessage());
                         });
     }
 
     @Test
     void getUser() {
-        AccountInfoRow rubAccount = new AccountInfoRow(CurrencyEnum.RUB, BigDecimal.ZERO, false);
-        AccountInfoRow usdAccount = new AccountInfoRow(CurrencyEnum.USD, BigDecimal.ZERO, false);
-        AccountInfoRow cnyAccount = new AccountInfoRow(CurrencyEnum.CNY, new BigDecimal("5000.0"), true);
+        AccountInfoRow rubAccount = new AccountInfoRow(AccountCurrencyEnum.RUB, BigDecimal.ZERO, false);
+        AccountInfoRow usdAccount = new AccountInfoRow(AccountCurrencyEnum.USD, BigDecimal.ZERO, false);
+        AccountInfoRow cnyAccount = new AccountInfoRow(AccountCurrencyEnum.CNY, new BigDecimal("5000.0"), true);
         webTestClient
                 .mutateWith(mockJwt())
                 .get()
@@ -301,12 +301,12 @@ class AccountsControllerIntegrationTest {
                 .exchange()
                 .expectStatus()
                 .isNotFound()
-                .expectBody(ErrorResponse.class)
+                .expectBody(AccountErrorResponse.class)
                 .value(
-                        errorResponse -> {
-                            assertNotNull(errorResponse);
-                            assertEquals(404, errorResponse.getStatusCode());
-                            assertEquals("Пользователь с логином test_user4 не существует", errorResponse.getMessage());
+                        AccountErrorResponse -> {
+                            assertNotNull(AccountErrorResponse);
+                            assertEquals(404, AccountErrorResponse.getStatusCode());
+                            assertEquals("Пользователь с логином test_user4 не существует", AccountErrorResponse.getMessage());
                         });
     }
 
@@ -340,14 +340,14 @@ class AccountsControllerIntegrationTest {
         .exchange()
         .expectStatus()
         .isOk()
-        .expectBody(OperationResponse.class)
+        .expectBody(AccountOperationResponse.class)
         .value(
-            operationResponse -> {
-              assertNotNull(operationResponse);
+            AccountOperationResponse -> {
+              assertNotNull(AccountOperationResponse);
               assertEquals(
-                  OperationResponse.OperationStatusEnum.SUCCESS,
-                  operationResponse.getOperationStatus());
-              assertTrue(operationResponse.getErrors().isEmpty());
+                  AccountOperationResponse.OperationStatusEnum.SUCCESS,
+                  AccountOperationResponse.getOperationStatus());
+              assertTrue(AccountOperationResponse.getErrors().isEmpty());
             });
 
         // Остаток на счете 5000 юаней
@@ -364,7 +364,7 @@ class AccountsControllerIntegrationTest {
                             assertNotNull(userDetailResponse);
                             assertEquals(0, new BigDecimal("5000.0").compareTo(
                                     userDetailResponse.getAccounts().stream()
-                                            .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.CNY)
+                                            .filter(accountInfoRow -> accountInfoRow.getCurrency() == AccountCurrencyEnum.CNY)
                                             .map(AccountInfoRow::getValue)
                                             .findFirst().get()));
                         });
@@ -383,7 +383,7 @@ class AccountsControllerIntegrationTest {
                             assertNotNull(userDetailResponse);
                             assertEquals(0, new BigDecimal("27000.0").compareTo(
                                     userDetailResponse.getAccounts().stream()
-                                            .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.CNY)
+                                            .filter(accountInfoRow -> accountInfoRow.getCurrency() == AccountCurrencyEnum.CNY)
                                             .map(AccountInfoRow::getValue)
                                             .findFirst().get()));
                         });
@@ -401,14 +401,14 @@ class AccountsControllerIntegrationTest {
                 .exchange()
                 .expectStatus()
                 .isOk()
-                .expectBody(OperationResponse.class)
+                .expectBody(AccountOperationResponse.class)
                 .value(
-                        operationResponse -> {
-                            assertNotNull(operationResponse);
+                        AccountOperationResponse -> {
+                            assertNotNull(AccountOperationResponse);
                             assertEquals(
-                                    OperationResponse.OperationStatusEnum.SUCCESS,
-                                    operationResponse.getOperationStatus());
-                            assertTrue(operationResponse.getErrors().isEmpty());
+                                    AccountOperationResponse.OperationStatusEnum.SUCCESS,
+                                    AccountOperationResponse.getOperationStatus());
+                            assertTrue(AccountOperationResponse.getErrors().isEmpty());
                         });
 
         webTestClient
@@ -424,12 +424,12 @@ class AccountsControllerIntegrationTest {
                             assertNotNull(userDetailResponse);
                             assertEquals(0, new BigDecimal("50000.0").compareTo(
                                     userDetailResponse.getAccounts().stream()
-                                            .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.RUB)
+                                            .filter(accountInfoRow -> accountInfoRow.getCurrency() == AccountCurrencyEnum.RUB)
                                             .map(AccountInfoRow::getValue)
                                             .findFirst().get()));
                             assertEquals(0, new BigDecimal("30000.0").compareTo(
                                     userDetailResponse.getAccounts().stream()
-                                            .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.CNY)
+                                            .filter(accountInfoRow -> accountInfoRow.getCurrency() == AccountCurrencyEnum.CNY)
                                             .map(AccountInfoRow::getValue)
                                             .findFirst().get()));
                         });
@@ -447,12 +447,12 @@ class AccountsControllerIntegrationTest {
                 .exchange()
                 .expectStatus()
                 .isNotFound()
-                .expectBody(ErrorResponse.class)
+                .expectBody(AccountErrorResponse.class)
                 .value(
-                        errorResponse -> {
-                            assertNotNull(errorResponse);
-                            assertEquals(404, errorResponse.getStatusCode());
-                            assertEquals(errorResponse.getMessage(), "У Вас отсутствует счет в выбранной валюте");
+                        AccountErrorResponse -> {
+                            assertNotNull(AccountErrorResponse);
+                            assertEquals(404, AccountErrorResponse.getStatusCode());
+                            assertEquals(AccountErrorResponse.getMessage(), "У Вас отсутствует счет в выбранной валюте");
                         });
 
         // Остаток на счете 12000 юаней (без изменения)
@@ -469,7 +469,7 @@ class AccountsControllerIntegrationTest {
                             assertNotNull(userDetailResponse);
                             assertEquals(0, new BigDecimal("12000.0").compareTo(
                                     userDetailResponse.getAccounts().stream()
-                                            .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.CNY)
+                                            .filter(accountInfoRow -> accountInfoRow.getCurrency() == AccountCurrencyEnum.CNY)
                                             .map(AccountInfoRow::getValue)
                                             .findFirst().get()));
                         });
@@ -487,12 +487,12 @@ class AccountsControllerIntegrationTest {
                 .exchange()
                 .expectStatus()
                 .isNotFound()
-                .expectBody(ErrorResponse.class)
+                .expectBody(AccountErrorResponse.class)
                 .value(
-                        errorResponse -> {
-                            assertNotNull(errorResponse);
-                            assertEquals(404, errorResponse.getStatusCode());
-                            assertEquals(errorResponse.getMessage(), "У клиента Петров Петр отсутствует счет в выбранной валюте");
+                        AccountErrorResponse -> {
+                            assertNotNull(AccountErrorResponse);
+                            assertEquals(404, AccountErrorResponse.getStatusCode());
+                            assertEquals(AccountErrorResponse.getMessage(), "У клиента Петров Петр отсутствует счет в выбранной валюте");
                         });
 
         // Остаток на счете 150000 руб. (без изменения)
@@ -509,7 +509,7 @@ class AccountsControllerIntegrationTest {
                             assertNotNull(userDetailResponse);
                             assertEquals(0, new BigDecimal("150000.0").compareTo(
                                     userDetailResponse.getAccounts().stream()
-                                            .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.RUB)
+                                            .filter(accountInfoRow -> accountInfoRow.getCurrency() == AccountCurrencyEnum.RUB)
                                             .map(AccountInfoRow::getValue)
                                             .findFirst().get()));
                         });
@@ -538,7 +538,7 @@ class AccountsControllerIntegrationTest {
                         "Сидоров Иван",
                         "sidorov@example.ru",
                         LocalDate.parse("2000-01-01"));
-        updateUserRequestSuccess.setAccounts(List.of(CurrencyEnum.CNY, CurrencyEnum.RUB));
+        updateUserRequestSuccess.setAccounts(List.of(AccountCurrencyEnum.CNY, AccountCurrencyEnum.RUB));
         webTestClient
                 .mutateWith(mockJwt())
                 .put()
@@ -548,14 +548,14 @@ class AccountsControllerIntegrationTest {
                 .exchange()
                 .expectStatus()
                 .isOk()
-                .expectBody(OperationResponse.class)
+                .expectBody(AccountOperationResponse.class)
                 .value(
-                        operationResponse -> {
-                            assertNotNull(operationResponse);
+                        AccountOperationResponse -> {
+                            assertNotNull(AccountOperationResponse);
                             assertEquals(
-                                    OperationResponse.OperationStatusEnum.SUCCESS,
-                                    operationResponse.getOperationStatus());
-                            assertTrue(operationResponse.getErrors().isEmpty());
+                                    AccountOperationResponse.OperationStatusEnum.SUCCESS,
+                                    AccountOperationResponse.getOperationStatus());
+                            assertTrue(AccountOperationResponse.getErrors().isEmpty());
                         });
 
         webTestClient
@@ -573,7 +573,7 @@ class AccountsControllerIntegrationTest {
                             assertEquals("sidorov@example.ru", userDetailResponse.getEmail());
                             assertTrue(
                                     userDetailResponse.getAccounts().stream()
-                                            .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.RUB)
+                                            .filter(accountInfoRow -> accountInfoRow.getCurrency() == AccountCurrencyEnum.RUB)
                                             .map(AccountInfoRow::getExists)
                                             .findFirst().get());
                         });
@@ -588,7 +588,7 @@ class AccountsControllerIntegrationTest {
                         "Сидоров Иван",
                         "sidorov@example.ru",
                         LocalDate.parse("2000-01-01"));
-        updateUserRequestSuccess.setAccounts(List.of(CurrencyEnum.RUB));
+        updateUserRequestSuccess.setAccounts(List.of(AccountCurrencyEnum.RUB));
         webTestClient
                 .mutateWith(mockJwt())
                 .put()
@@ -598,15 +598,15 @@ class AccountsControllerIntegrationTest {
                 .exchange()
                 .expectStatus()
                 .isEqualTo(422)
-                .expectBody(OperationResponse.class)
+                .expectBody(AccountOperationResponse.class)
                 .value(
-                        operationResponse -> {
-                            assertNotNull(operationResponse);
+                        AccountOperationResponse -> {
+                            assertNotNull(AccountOperationResponse);
                             assertEquals(
-                                    OperationResponse.OperationStatusEnum.FAILED,
-                                    operationResponse.getOperationStatus());
-                            assertFalse(operationResponse.getErrors().isEmpty());
-                            assertEquals(List.of("Баланс на счету CNY не равен 0"), operationResponse.getErrors());
+                                    AccountOperationResponse.OperationStatusEnum.FAILED,
+                                    AccountOperationResponse.getOperationStatus());
+                            assertFalse(AccountOperationResponse.getErrors().isEmpty());
+                            assertEquals(List.of("Баланс на счету CNY не равен 0"), AccountOperationResponse.getErrors());
                         });
 
         webTestClient
@@ -624,7 +624,7 @@ class AccountsControllerIntegrationTest {
                             assertEquals("sidorov@example.ru", userDetailResponse.getEmail());
                             assertTrue(
                                     userDetailResponse.getAccounts().stream()
-                                            .filter(accountInfoRow -> accountInfoRow.getCurrency() == CurrencyEnum.RUB)
+                                            .filter(accountInfoRow -> accountInfoRow.getCurrency() == AccountCurrencyEnum.RUB)
                                             .map(AccountInfoRow::getExists)
                                             .findFirst().get());
                         });
@@ -644,14 +644,14 @@ class AccountsControllerIntegrationTest {
                 .exchange()
                 .expectStatus()
                 .isOk()
-                .expectBody(OperationResponse.class)
+                .expectBody(AccountOperationResponse.class)
                 .value(
-                        operationResponse -> {
-                            assertNotNull(operationResponse);
+                        AccountOperationResponse -> {
+                            assertNotNull(AccountOperationResponse);
                             assertEquals(
-                                    OperationResponse.OperationStatusEnum.SUCCESS,
-                                    operationResponse.getOperationStatus());
-                            assertTrue(operationResponse.getErrors().isEmpty());
+                                    AccountOperationResponse.OperationStatusEnum.SUCCESS,
+                                    AccountOperationResponse.getOperationStatus());
+                            assertTrue(AccountOperationResponse.getErrors().isEmpty());
                         });
 
         webTestClient
@@ -683,15 +683,15 @@ class AccountsControllerIntegrationTest {
                 .exchange()
                 .expectStatus()
                 .isEqualTo(422)
-                .expectBody(OperationResponse.class)
+                .expectBody(AccountOperationResponse.class)
                 .value(
-                        operationResponse -> {
-                            assertNotNull(operationResponse);
+                        AccountOperationResponse -> {
+                            assertNotNull(AccountOperationResponse);
                             assertEquals(
-                                    OperationResponse.OperationStatusEnum.FAILED,
-                                    operationResponse.getOperationStatus());
-                            assertFalse(operationResponse.getErrors().isEmpty());
-                            assertEquals(List.of("Ошибка при сохранении изменений пароля. Операция отменена"), operationResponse.getErrors());
+                                    AccountOperationResponse.OperationStatusEnum.FAILED,
+                                    AccountOperationResponse.getOperationStatus());
+                            assertFalse(AccountOperationResponse.getErrors().isEmpty());
+                            assertEquals(List.of("Ошибка при сохранении изменений пароля. Операция отменена"), AccountOperationResponse.getErrors());
                         });
 
         webTestClient

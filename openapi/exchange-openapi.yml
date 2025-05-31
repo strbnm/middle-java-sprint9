@@ -30,13 +30,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ExchangeErrorResponse'
         '500':
           description: Внутренняя ошибка сервера
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ExchangeErrorResponse'
   /api/v1/rates:
     post:
       summary: Регистрация новых курсов конвертации
@@ -62,13 +62,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ExchangeErrorResponse'
         '500':
           description: Внутренняя ошибка сервера
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ExchangeErrorResponse'
     get:
       summary: Получение курсов конвертации валют
       description: Возвращает значение текущего курса конвертации валют
@@ -87,7 +87,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ExchangeErrorResponse'
 
 components:
   schemas:
@@ -168,7 +168,7 @@ components:
       items:
         $ref: '#/components/schemas/Rate'
 
-    ErrorResponse:
+    ExchangeErrorResponse:
       type: object
       required:
         - message

@@ -24,7 +24,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OperationResponse'
+                $ref: '#/components/schemas/TransferOperationResponse'
         '400':
           description: Ошибочный запрос
           content:
@@ -48,7 +48,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OperationResponse'
+                $ref: '#/components/schemas/TransferOperationResponse'
         '503':
           description: Сервис или связанные сервисы временно не доступны
           content:
@@ -119,7 +119,7 @@ components:
           type: integer
           example: 500
 
-    OperationResponse:
+    TransferOperationResponse:
       type: object
       required:
         - operationStatus

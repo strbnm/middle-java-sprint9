@@ -3,23 +3,16 @@ package contracts
 import org.springframework.cloud.contract.spec.Contract
 
 Contract.make {
-    description "Когда POST /api/v1/check_transaction вызван, сервис должен проверить операцию типа transfer и вернуть значение флага блокировки true"
+    description "Когда POST /api/v1/blocker/checkTransferTransaction вызван, сервис должен проверить операцию типа transfer и вернуть значение флага блокировки true"
     request {
         method 'POST'
-        url '/api/v1/check_transaction'
+        url '/api/v1/blocker/checkTransferTransaction'
         body([
                 transactionId: 4,
-                from: [
-                        currencyCode: 'USD',
-                        source      : 'account'
-                ],
-                to: [
-                        currencyCode: 'USD',
-                        target      : 'cash'
-                ],
-                amount       : 2000.0,
-                operationType: 'transfer',
-                isToYourself: false
+                fromCurrency: 'USD',
+                toCurrency: 'RUB',
+                amount: 6001.0,
+                isItself: false
         ])
 
         headers {
@@ -35,7 +28,7 @@ Contract.make {
         body([
                 "transactionId": 4,
                 "isBlocked": true,
-                "reason": "Недопустимая операция для сервиса переводов"
+                "reason": "Превышена допустимая сумма перевода другим лицам"
         ])
     }
 }

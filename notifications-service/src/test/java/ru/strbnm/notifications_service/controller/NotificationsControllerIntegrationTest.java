@@ -13,7 +13,7 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import ru.strbnm.notifications_service.config.TestSecurityConfig;
-import ru.strbnm.notifications_service.domain.ErrorResponse;
+import ru.strbnm.notifications_service.domain.NotificationErrorResponse;
 import ru.strbnm.notifications_service.domain.NotificationRequest;
 import ru.strbnm.notifications_service.repository.NotificationRepository;
 
@@ -120,7 +120,7 @@ public class NotificationsControllerIntegrationTest {
                 .exchange()
                 .expectStatus()
                 .isBadRequest()
-                .expectBody(ErrorResponse.class)
+                .expectBody(NotificationErrorResponse.class)
                 .value(
                         response -> {
                             assert response != null;

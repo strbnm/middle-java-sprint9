@@ -24,16 +24,16 @@ public class AccountsController implements AccountsServiceApi {
     }
 
     @Override
-    public Mono<ResponseEntity<OperationResponse>> cashTransaction(String login, Mono<CashRequest> cashRequest, ServerWebExchange exchange) {
+    public Mono<ResponseEntity<AccountOperationResponse>> cashTransaction(String login, Mono<CashRequest> cashRequest, ServerWebExchange exchange) {
         return cashRequest.flatMap(
                 request -> userService.cashOperation(request, login))
-                .flatMap(this::returnOperationResponse);
+                .flatMap(this::returnAccountOperationResponse);
     }
 
     @Override
-    public Mono<ResponseEntity<OperationResponse>> createUser(Mono<UserRequest> userRequest, ServerWebExchange exchange) {
+    public Mono<ResponseEntity<AccountOperationResponse>> createUser(Mono<UserRequest> userRequest, ServerWebExchange exchange) {
         return userRequest.flatMap(userService::createUser)
-                .flatMap(this::returnOperationResponseCreated);
+                .flatMap(this::returnAccountOperationResponseCreated);
     }
 
     @Override
@@ -49,38 +49,38 @@ public class AccountsController implements AccountsServiceApi {
     }
 
     @Override
-    public Mono<ResponseEntity<OperationResponse>> transferTransaction(String login, Mono<TransferRequest> transferRequest, ServerWebExchange exchange) {
+    public Mono<ResponseEntity<AccountOperationResponse>> transferTransaction(String login, Mono<TransferRequest> transferRequest, ServerWebExchange exchange) {
         return transferRequest.flatMap(
                 request -> userService.transferOperation(request, login))
-                .flatMap(this::returnOperationResponse);
+                .flatMap(this::returnAccountOperationResponse);
     }
 
     @Override
-    public Mono<ResponseEntity<OperationResponse>> updateUser(String login, Mono<UserRequest> userRequest, ServerWebExchange exchange) {
+    public Mono<ResponseEntity<AccountOperationResponse>> updateUser(String login, Mono<UserRequest> userRequest, ServerWebExchange exchange) {
         return userRequest.flatMap(userService::updateUser)
-                .flatMap(this::returnOperationResponse);
+                .flatMap(this::returnAccountOperationResponse);
     }
 
     @Override
-    public Mono<ResponseEntity<OperationResponse>> updateUserPassword(String login, Mono<UserPasswordRequest> userPasswordRequest, ServerWebExchange exchange) {
+    public Mono<ResponseEntity<AccountOperationResponse>> updateUserPassword(String login, Mono<UserPasswordRequest> userPasswordRequest, ServerWebExchange exchange) {
         return userPasswordRequest.flatMap(userService::updateUserPassword)
-                .flatMap(this::returnOperationResponse);
+                .flatMap(this::returnAccountOperationResponse);
     }
 
 
-    private Mono<ResponseEntity<OperationResponse>> returnOperationResponse (OperationResponse operationResponse) {
-        if (operationResponse.getOperationStatus() == OperationResponse.OperationStatusEnum.FAILED) {
-            return Mono.just(ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(operationResponse));
+    private Mono<ResponseEntity<AccountOperationResponse>> returnAccountOperationResponse (AccountOperationResponse AccountOperationResponse) {
+        if (AccountOperationResponse.getOperationStatus() == AccountOperationResponse.OperationStatusEnum.FAILED) {
+            return Mono.just(ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(AccountOperationResponse));
         } else {
-            return Mono.just(ResponseEntity.ok().body(operationResponse));
+            return Mono.just(ResponseEntity.ok().body(AccountOperationResponse));
         }
     }
 
-    private Mono<ResponseEntity<OperationResponse>> returnOperationResponseCreated (OperationResponse operationResponse) {
-        if (operationResponse.getOperationStatus() == OperationResponse.OperationStatusEnum.FAILED) {
-            return Mono.just(ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(operationResponse));
+    private Mono<ResponseEntity<AccountOperationResponse>> returnAccountOperationResponseCreated (AccountOperationResponse AccountOperationResponse) {
+        if (AccountOperationResponse.getOperationStatus() == AccountOperationResponse.OperationStatusEnum.FAILED) {
+            return Mono.just(ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(AccountOperationResponse));
         } else {
-            return Mono.just(ResponseEntity.status(HttpStatus.CREATED).body(operationResponse));
+            return Mono.just(ResponseEntity.status(HttpStatus.CREATED).body(AccountOperationResponse));
         }
     }
 }
