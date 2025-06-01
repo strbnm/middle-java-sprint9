@@ -1,5 +1,5 @@
 openapi:
-  accountsService:
+  cashService:
     base-path: /
 
 spring:
