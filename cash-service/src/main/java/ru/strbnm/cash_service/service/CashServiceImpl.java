@@ -1,6 +1,9 @@
 package ru.strbnm.cash_service.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClientRequestException;
@@ -22,13 +25,16 @@ import ru.strbnm.cash_service.entity.CashTransactionInfo;
 import ru.strbnm.cash_service.entity.OutboxNotification;
 import ru.strbnm.cash_service.exception.AccountsServiceException;
 import ru.strbnm.cash_service.exception.BlockerServiceException;
+import ru.strbnm.cash_service.exception.CashOperationException;
 import ru.strbnm.cash_service.exception.UnavailabilityAccountsServiceException;
 import ru.strbnm.cash_service.repository.CashTransactionInfoRepository;
 import ru.strbnm.cash_service.repository.OutboxNotificationRepository;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
 
+@Slf4j
 @Service
 public class CashServiceImpl implements CashService {
 
@@ -36,10 +42,11 @@ public class CashServiceImpl implements CashService {
   private final BlockerServiceApi blockerServiceApi;
   private final CashTransactionInfoRepository cashTransactionInfoRepository;
   private final OutboxNotificationRepository outboxNotificationRepository;
+  private final ObjectMapper objectMapper = new ObjectMapper();
 
   @Autowired
   public CashServiceImpl(
-      AccountsServiceApi accountsServiceApi,
+      @Qualifier("accountsServiceApi") AccountsServiceApi accountsServiceApi,
       BlockerServiceApi blockerServiceApi,
       CashTransactionInfoRepository cashTransactionInfoRepository,
       OutboxNotificationRepository outboxNotificationRepository) {
@@ -51,6 +58,7 @@ public class CashServiceImpl implements CashService {
 
     @Override
     public Mono<CashOperationResponse> processCashTransaction(CashOperationRequest cashOperationRequest) {
+        log.info("Получен запрос: {}", cashOperationRequest);
         CashTransactionInfo cashTransactionInfo = buildCashTransactionInfo(cashOperationRequest);
 
         return cashTransactionInfoRepository.save(cashTransactionInfo)
@@ -71,7 +79,9 @@ public class CashServiceImpl implements CashService {
     }
 
     private Mono<CashOperationResponse> handleCheckTransaction(UserDetailResponse user, CheckTransactionResponse check, CashTransactionInfo info) {
-        if (check.getIsBlocked()) {
+      log.info("Ответ blocked-service: {}", check);
+      log.info("Пользователь: {}", user);
+      if (check.getIsBlocked()) {
             assert check.getReason() != null;
             return updateBlockedTransactionAndNotify(info, user, "Блокировка операции: " + check.getReason(),
                     List.of(check.getReason()));
@@ -88,10 +98,11 @@ public class CashServiceImpl implements CashService {
 
         return getAccountOperationResponse(request, user.getLogin())
                 .flatMap(response -> {
+                    log.info("Ответ сервиса аккаунтов: {}", response);
                     boolean isSuccess = response.getOperationStatus() == AccountOperationResponse.OperationStatusEnum.SUCCESS;
                     String msg = isSuccess
                             ? buildSuccessMessage(info)
-                            : "Отмена операции. Список ошибок: " + response.getErrors();
+                            : "Отмена операции c наличными. Список ошибок: " + response.getErrors();
 
                     info.setSuccess(isSuccess);
                     info.setUpdatedAt(Instant.now().getEpochSecond());
@@ -119,10 +130,11 @@ public class CashServiceImpl implements CashService {
         info.setBlocked(false);
         info.setSuccess(false);
         info.setUpdatedAt(Instant.now().getEpochSecond());
-
+        log.error("Ошибки в процессе обработки:", error);
         return cashTransactionInfoRepository.save(info)
                 .flatMap(saved -> {
-                    String message = "Ошибка при обработке операции: " + error.getMessage();
+                    if (error instanceof CashOperationException err) return Mono.error(err);
+                    String message = "Ошибка при обработке операции с наличными: " + error.getMessage();
                     return saveOutboxNotification(saved.getId(), info.getLogin(), message)
                             .then(getCashOperationResponse(CashOperationResponse.OperationStatusEnum.FAILED, List.of(message)));
                 });
@@ -154,8 +166,18 @@ public class CashServiceImpl implements CashService {
                                 .onRetryExhaustedThrow(
                                         (spec, signal) ->
                                                 new UnavailabilityAccountsServiceException("Сервис аккаунтов временно недоступен.")))
-                .onErrorResume(WebClientResponseException.class, ex -> Mono.error(
-                        new AccountsServiceException("Ошибка при обработке транзакции: " + ex.getMessage())));
+                .onErrorResume(WebClientResponseException.class, ex -> {
+                    if (ex.getStatusCode() == HttpStatus.UNPROCESSABLE_ENTITY) {
+                        try {
+                            AccountOperationResponse response = objectMapper
+                                    .readValue(ex.getResponseBodyAsString(), AccountOperationResponse.class);
+                            return Mono.just(response);
+                        } catch (IOException e) {
+                            return Mono.error(new AccountsServiceException("Не удалось прочитать тело ответа: " + e.getMessage()));
+                        }
+                    }
+                    return Mono.error(new AccountsServiceException("Ошибка при обработке транзакции: " + ex.getMessage()));
+                });
     }
 
     private Mono<CheckTransactionResponse> checkTransaction(CashTransactionInfo cashTransactionInfo) {
@@ -212,173 +234,4 @@ public class CashServiceImpl implements CashService {
         return Mono.just(new CashOperationResponse(status, errors));
     }
 
-//  @Override
-//  public Mono<CashOperationResponse> processCashTransaction(CashOperationRequest cashOperationRequest) {
-//    return cashTransactionInfoRepository.save(
-//                    buildCashTransactionInfo(cashOperationRequest)
-//            )
-//            .flatMap(savedInfo -> Mono.zip(getUserDetailResponseMono(savedInfo.getLogin()), checkTransaction(savedInfo))
-//                      .flatMap(tuple -> handleCheckTransaction(tuple.getT1(), tuple.getT2(), savedInfo))
-//
-//
-//
-//                        UserDetailResponse userDetailResponse = tuple.getT1();
-//                        CheckTransactionResponse checkTransactionResponse = tuple.getT2();
-//                        if (checkTransactionResponse.getIsBlocked()) {
-//                          savedInfo.setBlocked(true);
-//                          savedInfo.setSuccess(false);
-//                          savedInfo.setUpdatedAt(Instant.now().getEpochSecond());
-//                          return cashTransactionInfoRepository.save(savedInfo)
-//                                  .flatMap(
-//                                          updatedCashTransactionInfo -> {
-//                                            String msg = "Блокировка операции: " + checkTransactionResponse.getReason();
-//                                            return saveOutboxNotification(savedInfo.getId(), userDetailResponse.getEmail(), msg).
-//                                                    then(getCashOperationResponse(CashOperationResponse.OperationStatusEnum.FAILED, List.of(msg)));
-//                                          });
-//                        } else {
-//                            savedInfo.setBlocked(false);
-//                            savedInfo.setUpdatedAt(Instant.now().getEpochSecond());
-//                            Mono<CashTransactionInfo> cashTransactionMono = cashTransactionInfoRepository.save(savedInfo);
-//
-//                            CashRequest cashRequest = new CashRequest();
-//                            cashRequest.setCurrency(AccountCurrencyEnum.fromValue(savedInfo.getCurrency()));
-//                            cashRequest.setAction(CashRequest.ActionEnum.fromValue(savedInfo.getAction()));
-//                            cashRequest.setAmount(savedInfo.getAmount());
-//                            Mono<AccountOperationResponse> accountOperationResponseMono = getAccountOperationResponse(cashRequest, userDetailResponse.getLogin());
-//                            return Mono.zip(cashTransactionMono, accountOperationResponseMono)
-//                                    .flatMap(tuple1 -> {
-//                                        CashTransactionInfo updatedCashTransactionInfo = tuple1.getT1();
-//                                        AccountOperationResponse accountOperationResponse = tuple1.getT2();
-//                                        if (accountOperationResponse.getOperationStatus() == AccountOperationResponse.OperationStatusEnum.FAILED) {
-//                                            updatedCashTransactionInfo.setSuccess(false);
-//                                            updatedCashTransactionInfo.setUpdatedAt(Instant.now().getEpochSecond());
-//                                            return cashTransactionInfoRepository.save(updatedCashTransactionInfo)
-//                                                    .flatMap(finalCashTransactionInfo -> {
-//                                                        String msg = "Отмена операции. Список ошибок: " + accountOperationResponse.getErrors();
-//                                                        return saveOutboxNotification(finalCashTransactionInfo.getId(), userDetailResponse.getEmail(), msg).
-//                                                                then(getCashOperationResponse(CashOperationResponse.OperationStatusEnum.FAILED, accountOperationResponse.getErrors()));
-//                                                    });
-//                                        } else {
-//                                            updatedCashTransactionInfo.setSuccess(true);
-//                                            updatedCashTransactionInfo.setUpdatedAt(Instant.now().getEpochSecond());
-//                                            return cashTransactionInfoRepository.save(updatedCashTransactionInfo)
-//                                                    .flatMap(finalCashTransactionInfo -> {
-//                                                        String msg = "Успешная операция " + (finalCashTransactionInfo.getAction().equals("GET") ? "снятия наличных в размере " : "пополнения счета на сумму ") + finalCashTransactionInfo.getAmount() + finalCashTransactionInfo.getCurrency();
-//                                                        return saveOutboxNotification(finalCashTransactionInfo.getId(), userDetailResponse.getEmail(), msg).
-//                                                                then(getCashOperationResponse(CashOperationResponse.OperationStatusEnum.SUCCESS, List.of()));
-//                                                    });
-//                                        }
-//                                    });
-//
-//                        }
-//                      }
-//
-//    private Mono<CashOperationResponse> handleCheckTransaction(
-//            UserDetailResponse user,
-//            CheckTransactionResponse check,
-//            CashTransactionInfo savedInfo) {
-//        if (check.getIsBlocked()) {
-//            return updateTransactionAndNotify(info, user, true, false, "Блокировка операции: " + check.getReason(),
-//                    CashOperationResponse.OperationStatusEnum.FAILED, List.of(check.getReason()));
-//        }
-//
-//        info.setBlocked(false);
-//        return cashTransactionInfoRepository.save(info)
-//                .flatMap(updated -> performAccountOperation(updated, user));
-//    }
-//
-//
-//
-//
-//    private static CashTransactionInfo buildCashTransactionInfo(CashOperationRequest cashOperationRequest) {
-//        return CashTransactionInfo.builder()
-//                .login(cashOperationRequest.getLogin())
-//                .currency(cashOperationRequest.getCurrency().name())
-//                .amount(cashOperationRequest.getAmount())
-//                .action(cashOperationRequest.getAction().name())
-//                .build();
-//    }
-//
-//    private Mono<AccountOperationResponse> getAccountOperationResponse(CashRequest cashRequest, String login) {
-//      return accountsServiceApi.cashTransaction(login, cashRequest)
-//              .retryWhen(
-//                      Retry.max(1) // Повторить один раз при возникновении ошибки
-//                              .filter(
-//                                      throwable ->
-//                                              (throwable instanceof WebClientResponseException
-//                                                      && ((WebClientResponseException) throwable).getStatusCode()
-//                                                      == HttpStatus.INTERNAL_SERVER_ERROR)
-//                                                      || throwable instanceof WebClientRequestException)
-//                              .onRetryExhaustedThrow(
-//                                      (retryBackoffSpec, retrySignal) ->
-//                                              new UnavailabilityAccountsServiceException(
-//                                                      "Сервис аккаунтов временно недоступен.")))
-//              .onErrorResume(WebClientResponseException.class, ex -> Mono.error(
-//                      new AccountsServiceException(
-//                              "Ошибка при обработке транзакции: " + ex.getMessage()))
-//              );
-//    }
-//
-//    private Mono<CheckTransactionResponse> checkTransaction(CashTransactionInfo cashTransactionInfo) {
-//    CheckCashTransactionRequest cashTransactionRequest = new CheckCashTransactionRequest();
-//    cashTransactionRequest.setTransactionId(cashTransactionInfo.getId());
-//    cashTransactionRequest.setCurrency(BlockerCurrencyEnum.fromValue(cashTransactionInfo.getCurrency()));
-//    cashTransactionRequest.setAmount(cashTransactionInfo.getAmount());
-//    cashTransactionRequest.setActionType(CheckCashTransactionRequest.ActionTypeEnum.valueOf(cashTransactionInfo.getAction()));
-//    return getCheckTransactionResponse(cashTransactionRequest);
-//  }
-//
-//  private Mono<CheckTransactionResponse> getCheckTransactionResponse(CheckCashTransactionRequest cashTransactionRequest) {
-//    return blockerServiceApi.checkCashTransaction(cashTransactionRequest)
-//            .retryWhen(
-//                    Retry.max(1) // Повторить один раз при возникновении ошибки
-//                            .filter(
-//                                    throwable ->
-//                                            (throwable instanceof WebClientResponseException
-//                                                    && ((WebClientResponseException) throwable).getStatusCode()
-//                                                    == HttpStatus.INTERNAL_SERVER_ERROR)
-//                                                    || throwable instanceof WebClientRequestException)
-//                            .onRetryExhaustedThrow(
-//                                    (retryBackoffSpec, retrySignal) ->
-//                                            new UnavailabilityAccountsServiceException(
-//                                                    "Сервис аккаунтов временно недоступен.")))
-//            .onErrorResume(WebClientResponseException.class, ex -> Mono.error(
-//                    new BlockerServiceException(
-//                            "Ошибка при проверке транзакции: " + ex.getMessage()))
-//            );
-//  }
-//
-//  private Mono<UserDetailResponse> getUserDetailResponseMono(String login) {
-//    return accountsServiceApi.getUser(login)
-//            .retryWhen(
-//                    Retry.max(1) // Повторить один раз при возникновении ошибки
-//                            .filter(
-//                                    throwable ->
-//                                            (throwable instanceof WebClientResponseException
-//                                                    && ((WebClientResponseException) throwable).getStatusCode()
-//                                                    == HttpStatus.INTERNAL_SERVER_ERROR)
-//                                                    || throwable instanceof WebClientRequestException)
-//                            .onRetryExhaustedThrow(
-//                                    (retryBackoffSpec, retrySignal) ->
-//                                            new UnavailabilityAccountsServiceException(
-//                                                    "Сервис аккаунтов временно недоступен.")))
-//            .onErrorResume(WebClientResponseException.class, ex -> Mono.error(
-//                            new AccountsServiceException(
-//                                    "Ошибка при получения данных клиента: " + ex.getMessage()))
-//            );
-//  }
-//
-//  private Mono<Void> saveOutboxNotification(Long transactionId, String email, String message) {
-//    OutboxNotification outboxNotification = OutboxNotification.builder()
-//            .transactionId(transactionId)
-//            .email(email)
-//            .message(message)
-//            .build();
-//    return outboxNotificationRepository.save(outboxNotification).then();
-//  }
-//
-//  private Mono<CashOperationResponse> getCashOperationResponse(
-//          CashOperationResponse.OperationStatusEnum operationStatus, List<String> errors) {
-//    return Mono.just(new CashOperationResponse(operationStatus, errors));
-//  }
 }

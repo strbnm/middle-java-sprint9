@@ -10,21 +10,21 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.bind.support.WebExchangeBindException;
 import reactor.core.publisher.Mono;
-import ru.strbnm.cash_service.domain.ErrorListResponse;
-import ru.strbnm.cash_service.domain.ErrorResponse;
+import ru.strbnm.cash_service.domain.CashErrorListResponse;
+import ru.strbnm.cash_service.domain.CashErrorResponse;
 
 @Slf4j
 @RestControllerAdvice
 public class ReactiveGlobalExceptionHandler {
 
     @ExceptionHandler(IllegalArgumentException.class)
-    public Mono<ResponseEntity<ErrorResponse>> handleIllegalArgument(IllegalArgumentException exception) {
+    public Mono<ResponseEntity<CashErrorResponse>> handleIllegalArgument(IllegalArgumentException exception) {
         log.error("Ошибка {}", exception.getMessage(), exception);
-        return Mono.just(ResponseEntity.badRequest().body(new ErrorResponse(exception.getMessage(), 400)));
+        return Mono.just(ResponseEntity.badRequest().body(new CashErrorResponse(exception.getMessage(), 400)));
     }
 
     @ExceptionHandler(WebExchangeBindException.class)
-    public Mono<ResponseEntity<ErrorListResponse>> handleValidationException(WebExchangeBindException ex) {
+    public Mono<ResponseEntity<CashErrorListResponse>> handleValidationException(WebExchangeBindException ex) {
         log.error("Ошибка {}", ex.getMessage(), ex);
         List<String> messages = ex.getAllErrors().stream()
                 .map(error -> {
@@ -36,27 +36,20 @@ public class ReactiveGlobalExceptionHandler {
                 })
                 .filter(Objects::nonNull)
                 .toList();
-        ErrorListResponse response = new ErrorListResponse(400);
+        CashErrorListResponse response = new CashErrorListResponse(400);
         response.setMessages(messages);
         return Mono.just(ResponseEntity
                 .badRequest()
                 .body(response));
     }
 
-    @ExceptionHandler(AccountsServiceException.class)
-    public Mono<ResponseEntity<ErrorResponse>> handleAccountsServiceException(AccountsServiceException exception) {
-        log.error("Ошибка {}", exception.getMessage(), exception);
-        return Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(exception.getMessage(), 422)));
-    }
-
-
     @ExceptionHandler({
             UnavailabilityAccountsServiceException.class,
             UnavailabilityBlockerServiceException.class,
             UnavailabilityNotificationsServiceException.class
     })
-    public Mono<ResponseEntity<ErrorResponse>> handleCashOperationException(CashOperationException exception) {
+    public Mono<ResponseEntity<CashErrorResponse>> handleCashOperationException(CashOperationException exception) {
         log.error("Ошибка {}", exception.getMessage(), exception);
-        return Mono.just(ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(new ErrorResponse(exception.getMessage(), 503)));
+        return Mono.just(ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(new CashErrorResponse(exception.getMessage(), 503)));
     }
 }

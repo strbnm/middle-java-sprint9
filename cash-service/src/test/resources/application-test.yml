@@ -37,6 +37,10 @@ spring:
   rest:
     notifications-service:
       url: http://localhost:8080
+    blocker-service:
+      url: http://localhost:8081
+    accounts-service:
+      url: http://localhost:8082
 
 eureka:
   client:
