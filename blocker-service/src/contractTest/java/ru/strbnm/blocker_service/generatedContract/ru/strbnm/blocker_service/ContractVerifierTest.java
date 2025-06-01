@@ -17,12 +17,12 @@ import static io.restassured.module.webtestclient.RestAssuredWebTestClient.*;
 public class ContractVerifierTest extends BaseContractTest {
 
 	@Test
-	public void validate_shouldCheckCashTransactionWithIsBlockedFalse() throws Exception {
+	public void validate_shouldCheckCashTransactionOn100000RUBWithIsBlockedFalse() throws Exception {
 		// given:
 			WebTestClientRequestSpecification request = given()
 					.header("Content-Type", "application/json")
 					.header("Accept", "application/json")
-					.body("{\"transactionId\":1,\"currency\":\"RUB\",\"amount\":1000.0,\"actionType\":\"GET\"}");
+					.body("{\"transactionId\":1945450154,\"currency\":\"RUB\",\"amount\":100000.0,\"actionType\":\"GET\"}");
 
 		// when:
 			WebTestClientResponse response = given().spec(request)
@@ -34,7 +34,30 @@ public class ContractVerifierTest extends BaseContractTest {
 
 		// and:
 			DocumentContext parsedJson = JsonPath.parse(response.getBody().asString());
-			assertThatJson(parsedJson).field("['transactionId']").isEqualTo(1);
+			assertThatJson(parsedJson).field("['transactionId']").isEqualTo(1945450154);
+			assertThatJson(parsedJson).field("['isBlocked']").isEqualTo(false);
+			assertThatJson(parsedJson).field("['reason']").isNull();
+	}
+
+	@Test
+	public void validate_shouldCheckCashTransactionWithIsBlockedFalse() throws Exception {
+		// given:
+			WebTestClientRequestSpecification request = given()
+					.header("Content-Type", "application/json")
+					.header("Accept", "application/json")
+					.body("{\"transactionId\":556609902,\"currency\":\"RUB\",\"amount\":1000.0,\"actionType\":\"GET\"}");
+
+		// when:
+			WebTestClientResponse response = given().spec(request)
+					.post("/api/v1/blocker/checkCashTransaction");
+
+		// then:
+			assertThat(response.statusCode()).isEqualTo(200);
+			assertThat(response.header("Content-Type")).matches("application/json.*");
+
+		// and:
+			DocumentContext parsedJson = JsonPath.parse(response.getBody().asString());
+			assertThatJson(parsedJson).field("['transactionId']").isEqualTo(556609902);
 			assertThatJson(parsedJson).field("['isBlocked']").isEqualTo(false);
 			assertThatJson(parsedJson).field("['reason']").isNull();
 	}
@@ -45,7 +68,7 @@ public class ContractVerifierTest extends BaseContractTest {
 			WebTestClientRequestSpecification request = given()
 					.header("Content-Type", "application/json")
 					.header("Accept", "application/json")
-					.body("{\"transactionId\":2,\"currency\":\"USD\",\"amount\":2000.0,\"actionType\":\"GET\"}");
+					.body("{\"transactionId\":1280890701,\"currency\":\"USD\",\"amount\":2000.0,\"actionType\":\"GET\"}");
 
 		// when:
 			WebTestClientResponse response = given().spec(request)
@@ -57,7 +80,7 @@ public class ContractVerifierTest extends BaseContractTest {
 
 		// and:
 			DocumentContext parsedJson = JsonPath.parse(response.getBody().asString());
-			assertThatJson(parsedJson).field("['transactionId']").isEqualTo(2);
+			assertThatJson(parsedJson).field("['transactionId']").isEqualTo(1280890701);
 			assertThatJson(parsedJson).field("['isBlocked']").isEqualTo(true);
 			assertThatJson(parsedJson).field("['reason']").isEqualTo("\u041F\u0440\u0435\u0432\u044B\u0448\u0435\u043D\u0430 \u0434\u043E\u043F\u0443\u0441\u0442\u0438\u043C\u0430\u044F \u0441\u0443\u043C\u043C\u0430 \u0441\u043D\u044F\u0442\u0438\u044F \u043D\u0430\u043B\u0438\u0447\u043D\u044B\u0445");
 	}

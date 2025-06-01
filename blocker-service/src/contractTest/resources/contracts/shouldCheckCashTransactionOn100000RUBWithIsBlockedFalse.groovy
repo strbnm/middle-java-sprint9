@@ -3,14 +3,14 @@ package contracts
 import org.springframework.cloud.contract.spec.Contract
 
 Contract.make {
-    description "Когда POST /api/v1/blocker/checkCashTransaction вызван, сервис должен проверить операцию типа cash и вернуть значение флага блокировки true"
+    description "Когда POST /api/v1/blocker/checkCashTransaction вызван, сервис должен проверить операцию типа cash и вернуть значение флага блокировки false"
     request {
         method 'POST'
         url '/api/v1/blocker/checkCashTransaction'
         body([
                 transactionId: anyPositiveInt(),
-                currency: 'USD',
-                amount: 2000.0,
+                currency: 'RUB',
+                amount: 100000.0,
                 actionType: 'GET'
         ])
 
@@ -26,8 +26,8 @@ Contract.make {
         }
         body([
                 transactionId: fromRequest().body('$.transactionId'),
-                "isBlocked": true,
-                "reason": "Превышена допустимая сумма снятия наличных"
+                "isBlocked": false,
+                "reason": null
         ])
     }
 }
