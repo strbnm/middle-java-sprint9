@@ -1,5 +1,5 @@
 openapi:
-  accountsService:
+  cashService:
     base-path: /
 
 springdoc:
@@ -58,11 +58,11 @@ spring:
 
   rest:
     notifications-service:
-      url: http://localhost:8090/notifications-service
+      url: ${API_GATEWAY_URL}/notifications-service
     accounts-service:
-      url: http://localhost:8090/accounts-service
+      url: ${API_GATEWAY_URL}/accounts-service
     blocker-service:
-      url: http://localhost:8090/blocker-service
+      url: ${API_GATEWAY_URL}/blocker-service
 
   sql:
     init:
