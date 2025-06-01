@@ -118,11 +118,11 @@ services:
       notifications-service-db:
         condition: service_healthy
     healthcheck:
-      test: "curl --fail --silent localhost:8080/actuator/health | grep UP || exit 1"
-      interval: 20s
-      timeout: 5s
-      retries: 5
-      start_period: 40s
+      test: "curl --fail --silent ${API_GATEWAY_URL}/notifications-service/actuator/health | grep UP || exit 1"
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
     networks:
       - bank-net
 
@@ -176,6 +176,12 @@ services:
         condition: service_healthy
       exchange-service-db:
         condition: service_healthy
+    healthcheck:
+      test: "curl --fail --silent ${API_GATEWAY_URL}/exchange-service/actuator/health | grep UP || exit 1"
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
     networks:
       - bank-net
 
@@ -229,6 +235,14 @@ services:
         condition: service_healthy
       accounts-service-db:
         condition: service_healthy
+      notifications-service:
+        condition: service_healthy
+    healthcheck:
+      test: "curl --fail --silent ${API_GATEWAY_URL}/accounts-service/actuator/health | grep UP || exit 1"
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
     networks:
       - bank-net
 
@@ -256,6 +270,71 @@ services:
     networks:
       - bank-net
 
+  cash-service:
+    build:
+      context: ./cash-service
+    image: cash_service:1.0.0
+    container_name: cash-service
+    hostname: cash-service
+    environment:
+      <<: *common-env
+      SERVICE_DB_HOST: ${CASH_SERVICE_DB_HOST}
+      SERVICE_DB_USER: ${CASH_SERVICE_DB_USER}
+      SERVICE_DB_PASSWORD: ${CASH_SERVICE_DB_PASSWORD}
+    expose:
+      - "8080"
+    ports:
+      - "8087:8080"
+    depends_on:
+      spring-cloud-config-server:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+      cash-service-db:
+        condition: service_healthy
+      notifications-service:
+        condition: service_healthy
+      blocker-service:
+        condition: service_healthy
+      accounts-service:
+        condition: service_healthy
+    healthcheck:
+      test: "curl --fail --silent ${API_GATEWAY_URL}/cash-service/actuator/health | grep UP || exit 1"
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+    networks:
+      - bank-net
+
+  cash-service-db:
+    image: postgres:17.2
+    container_name: cash-service-db
+    hostname: cash-service-db
+    restart: "no"
+    volumes:
+      - cash_service_db_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: ${CASH_SERVICE_DB_USER}
+      POSTGRES_PASSWORD: ${CASH_SERVICE_DB_PASSWORD}
+      POSTGRES_DB: app_db
+    expose:
+      - "5432"
+    ports:
+      - "5441:5432"
+    healthcheck:
+      test: pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB
+      interval: 10s
+      timeout: 5s
+      start_period: 10s
+      retries: 5
+    networks:
+      - bank-net
+
   exchange-generator:
     build:
       context: ./exchange-generator
@@ -272,6 +351,8 @@ services:
       eureka-server:
         condition: service_healthy
       rabbitmq:
+        condition: service_healthy
+      exchange-service:
         condition: service_healthy
     networks:
       - bank-net
@@ -296,11 +377,11 @@ services:
       rabbitmq:
         condition: service_healthy
     healthcheck:
-      test: "curl --fail --silent localhost:8080/actuator/health | grep UP || exit 1"
-      interval: 20s
-      timeout: 5s
-      retries: 5
-      start_period: 40s
+      test: "curl --fail --silent ${API_GATEWAY_URL}/blocker-service/actuator/health | grep UP || exit 1"
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
     networks:
       - bank-net
 
@@ -393,3 +474,5 @@ volumes:
     name: exchange_service_db_data
   accounts_service_db_data:
     name: accounts_service_db_data
+  cash_service_db_data:
+    name: cash_service_db_data
