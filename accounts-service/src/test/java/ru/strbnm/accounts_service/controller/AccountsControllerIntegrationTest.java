@@ -83,10 +83,10 @@ class AccountsControllerIntegrationTest {
                 .isOk()
                 .expectBody(AccountOperationResponse.class)
                 .value(
-                        AccountOperationResponse -> {
-                            assertNotNull(AccountOperationResponse);
-                            assertEquals(AccountOperationResponse.OperationStatusEnum.SUCCESS, AccountOperationResponse.getOperationStatus());
-                            assertTrue(AccountOperationResponse.getErrors().isEmpty());
+                        accountOperationResponse -> {
+                            assertNotNull(accountOperationResponse);
+                            assertEquals(AccountOperationResponse.OperationStatusEnum.SUCCESS, accountOperationResponse.getOperationStatus());
+                            assertTrue(accountOperationResponse.getErrors().isEmpty());
                         });
         // Сумма на счете на 10000 руб. меньше
         webTestClient
@@ -121,11 +121,11 @@ class AccountsControllerIntegrationTest {
                 .isEqualTo(422)
                 .expectBody(AccountOperationResponse.class)
                 .value(
-                        AccountOperationResponse -> {
-                            assertNotNull(AccountOperationResponse);
-                            assertEquals(AccountOperationResponse.OperationStatusEnum.FAILED, AccountOperationResponse.getOperationStatus());
-                            assertFalse(AccountOperationResponse.getErrors().isEmpty());
-                            assertEquals(List.of("На счете недостаточно средств"), AccountOperationResponse.getErrors());
+                        accountOperationResponse -> {
+                            assertNotNull(accountOperationResponse);
+                            assertEquals(AccountOperationResponse.OperationStatusEnum.FAILED, accountOperationResponse.getOperationStatus());
+                            assertFalse(accountOperationResponse.getErrors().isEmpty());
+                            assertEquals(List.of("На счете недостаточно средств"), accountOperationResponse.getErrors());
                         });
 
         // Сумма на счете не изменилась
@@ -146,6 +146,31 @@ class AccountsControllerIntegrationTest {
                                             .map(AccountInfoRow::getValue)
                                             .findFirst().get()));
                         });
+    }
+
+    @Test
+    void cashTransactionFailedMissingCurrencyAccount() {
+    webTestClient
+        .mutateWith(mockJwt())
+        .post()
+        .uri("/api/v1/users/test_user1/cash")
+        .contentType(MediaType.APPLICATION_JSON)
+        .bodyValue("{\"currency\": \"USD\", \"amount\": 1000.0, \"action\": \"GET\"}")
+        .exchange()
+        .expectStatus()
+        .isEqualTo(422)
+        .expectBody(AccountOperationResponse.class)
+        .value(
+            accountOperationResponse -> {
+              assertNotNull(accountOperationResponse);
+              assertEquals(
+                  AccountOperationResponse.OperationStatusEnum.FAILED,
+                  accountOperationResponse.getOperationStatus());
+              assertFalse(accountOperationResponse.getErrors().isEmpty());
+              assertEquals(
+                  List.of("У Вас отсутствует счет в выбранной валюте"),
+                  accountOperationResponse.getErrors());
+            });
     }
 
     @Test
@@ -200,12 +225,12 @@ class AccountsControllerIntegrationTest {
                 .isCreated()
                 .expectBody(AccountOperationResponse.class)
                 .value(
-                        AccountOperationResponse -> {
-                            assertNotNull(AccountOperationResponse);
+                        accountOperationResponse -> {
+                            assertNotNull(accountOperationResponse);
                             assertEquals(
                                     AccountOperationResponse.OperationStatusEnum.SUCCESS,
-                                    AccountOperationResponse.getOperationStatus());
-                            assertTrue(AccountOperationResponse.getErrors().isEmpty());
+                                    accountOperationResponse.getOperationStatus());
+                            assertTrue(accountOperationResponse.getErrors().isEmpty());
                         });
 
         webTestClient
@@ -342,12 +367,12 @@ class AccountsControllerIntegrationTest {
         .isOk()
         .expectBody(AccountOperationResponse.class)
         .value(
-            AccountOperationResponse -> {
-              assertNotNull(AccountOperationResponse);
+            accountOperationResponse -> {
+              assertNotNull(accountOperationResponse);
               assertEquals(
                   AccountOperationResponse.OperationStatusEnum.SUCCESS,
-                  AccountOperationResponse.getOperationStatus());
-              assertTrue(AccountOperationResponse.getErrors().isEmpty());
+                  accountOperationResponse.getOperationStatus());
+              assertTrue(accountOperationResponse.getErrors().isEmpty());
             });
 
         // Остаток на счете 5000 юаней
@@ -403,12 +428,12 @@ class AccountsControllerIntegrationTest {
                 .isOk()
                 .expectBody(AccountOperationResponse.class)
                 .value(
-                        AccountOperationResponse -> {
-                            assertNotNull(AccountOperationResponse);
+                        accountOperationResponse -> {
+                            assertNotNull(accountOperationResponse);
                             assertEquals(
                                     AccountOperationResponse.OperationStatusEnum.SUCCESS,
-                                    AccountOperationResponse.getOperationStatus());
-                            assertTrue(AccountOperationResponse.getErrors().isEmpty());
+                                    accountOperationResponse.getOperationStatus());
+                            assertTrue(accountOperationResponse.getErrors().isEmpty());
                         });
 
         webTestClient
@@ -550,12 +575,12 @@ class AccountsControllerIntegrationTest {
                 .isOk()
                 .expectBody(AccountOperationResponse.class)
                 .value(
-                        AccountOperationResponse -> {
-                            assertNotNull(AccountOperationResponse);
+                        accountOperationResponse -> {
+                            assertNotNull(accountOperationResponse);
                             assertEquals(
                                     AccountOperationResponse.OperationStatusEnum.SUCCESS,
-                                    AccountOperationResponse.getOperationStatus());
-                            assertTrue(AccountOperationResponse.getErrors().isEmpty());
+                                    accountOperationResponse.getOperationStatus());
+                            assertTrue(accountOperationResponse.getErrors().isEmpty());
                         });
 
         webTestClient
@@ -600,13 +625,13 @@ class AccountsControllerIntegrationTest {
                 .isEqualTo(422)
                 .expectBody(AccountOperationResponse.class)
                 .value(
-                        AccountOperationResponse -> {
-                            assertNotNull(AccountOperationResponse);
+                        accountOperationResponse -> {
+                            assertNotNull(accountOperationResponse);
                             assertEquals(
                                     AccountOperationResponse.OperationStatusEnum.FAILED,
-                                    AccountOperationResponse.getOperationStatus());
-                            assertFalse(AccountOperationResponse.getErrors().isEmpty());
-                            assertEquals(List.of("Баланс на счету CNY не равен 0"), AccountOperationResponse.getErrors());
+                                    accountOperationResponse.getOperationStatus());
+                            assertFalse(accountOperationResponse.getErrors().isEmpty());
+                            assertEquals(List.of("Баланс на счету CNY не равен 0"), accountOperationResponse.getErrors());
                         });
 
         webTestClient
@@ -646,12 +671,12 @@ class AccountsControllerIntegrationTest {
                 .isOk()
                 .expectBody(AccountOperationResponse.class)
                 .value(
-                        AccountOperationResponse -> {
-                            assertNotNull(AccountOperationResponse);
+                        accountOperationResponse -> {
+                            assertNotNull(accountOperationResponse);
                             assertEquals(
                                     AccountOperationResponse.OperationStatusEnum.SUCCESS,
-                                    AccountOperationResponse.getOperationStatus());
-                            assertTrue(AccountOperationResponse.getErrors().isEmpty());
+                                    accountOperationResponse.getOperationStatus());
+                            assertTrue(accountOperationResponse.getErrors().isEmpty());
                         });
 
         webTestClient
@@ -685,13 +710,13 @@ class AccountsControllerIntegrationTest {
                 .isEqualTo(422)
                 .expectBody(AccountOperationResponse.class)
                 .value(
-                        AccountOperationResponse -> {
-                            assertNotNull(AccountOperationResponse);
+                        accountOperationResponse -> {
+                            assertNotNull(accountOperationResponse);
                             assertEquals(
                                     AccountOperationResponse.OperationStatusEnum.FAILED,
-                                    AccountOperationResponse.getOperationStatus());
-                            assertFalse(AccountOperationResponse.getErrors().isEmpty());
-                            assertEquals(List.of("Ошибка при сохранении изменений пароля. Операция отменена"), AccountOperationResponse.getErrors());
+                                    accountOperationResponse.getOperationStatus());
+                            assertFalse(accountOperationResponse.getErrors().isEmpty());
+                            assertEquals(List.of("Ошибка при сохранении изменений пароля. Операция отменена"), accountOperationResponse.getErrors());
                         });
 
         webTestClient

@@ -97,13 +97,13 @@ class UserServiceImplTest {
 
     StepVerifier.create(userService.createUser(createUserRequestSuccess))
         .assertNext(
-            AccountOperationResponse -> {
-              assertNotNull(AccountOperationResponse, "Объект не должен быть null.");
+            accountOperationResponse -> {
+              assertNotNull(accountOperationResponse, "Объект не должен быть null.");
               assertEquals(
                   AccountOperationResponse.OperationStatusEnum.SUCCESS,
-                  AccountOperationResponse.getOperationStatus(),
+                  accountOperationResponse.getOperationStatus(),
                   "Статус должен быть SUCCESS");
-              assertTrue(AccountOperationResponse.getErrors().isEmpty(), "Список ошибок должен быть пуст");
+              assertTrue(accountOperationResponse.getErrors().isEmpty(), "Список ошибок должен быть пуст");
             })
         .verifyComplete();
 
@@ -143,14 +143,14 @@ class UserServiceImplTest {
 
     StepVerifier.create(userService.createUser(createUserRequestInvalidFields))
         .assertNext(
-            AccountOperationResponse -> {
-              assertNotNull(AccountOperationResponse, "Объект не должен быть null.");
+            accountOperationResponse -> {
+              assertNotNull(accountOperationResponse, "Объект не должен быть null.");
               assertEquals(
                   AccountOperationResponse.OperationStatusEnum.FAILED,
-                  AccountOperationResponse.getOperationStatus(),
+                  accountOperationResponse.getOperationStatus(),
                   "Статус должен быть FAILED");
               assertFalse(
-                  AccountOperationResponse.getErrors().isEmpty(), "Список ошибок не должен быть пуст");
+                  accountOperationResponse.getErrors().isEmpty(), "Список ошибок не должен быть пуст");
             })
         .verifyComplete();
 
@@ -214,13 +214,13 @@ class UserServiceImplTest {
 
     StepVerifier.create(userService.updateUser(updateUserRequestSuccess))
         .assertNext(
-            AccountOperationResponse -> {
-              assertNotNull(AccountOperationResponse, "Объект не должен быть null.");
+            accountOperationResponse -> {
+              assertNotNull(accountOperationResponse, "Объект не должен быть null.");
               assertEquals(
                   AccountOperationResponse.OperationStatusEnum.SUCCESS,
-                  AccountOperationResponse.getOperationStatus(),
+                  accountOperationResponse.getOperationStatus(),
                   "Статус должен быть SUCCESS");
-              assertTrue(AccountOperationResponse.getErrors().isEmpty(), "Список ошибок должен быть пуст");
+              assertTrue(accountOperationResponse.getErrors().isEmpty(), "Список ошибок должен быть пуст");
             })
         .verifyComplete();
 
@@ -284,20 +284,20 @@ class UserServiceImplTest {
 
     StepVerifier.create(userService.updateUser(updateUserRequestInvalidFields))
         .assertNext(
-            AccountOperationResponse -> {
-              assertNotNull(AccountOperationResponse, "Объект не должен быть null.");
+            accountOperationResponse -> {
+              assertNotNull(accountOperationResponse, "Объект не должен быть null.");
               assertEquals(
                   AccountOperationResponse.OperationStatusEnum.FAILED,
-                  AccountOperationResponse.getOperationStatus(),
+                  accountOperationResponse.getOperationStatus(),
                   "Статус должен быть FAILED");
               assertFalse(
-                  AccountOperationResponse.getErrors().isEmpty(), "Список ошибок не должен быть пуст");
+                  accountOperationResponse.getErrors().isEmpty(), "Список ошибок не должен быть пуст");
               assertEquals(List.of(
                       "Баланс на счету CNY не равен 0",
                       "Баланс на счету USD не равен 0",
                       "Заполните поле Фамилия Имя",
                       "Заполните электронную почту"
-              ), AccountOperationResponse.getErrors());
+              ), accountOperationResponse.getErrors());
             })
         .verifyComplete();
 
@@ -450,13 +450,13 @@ class UserServiceImplTest {
       );
       StepVerifier.create(userService.updateUserPassword(userPasswordRequestSuccess))
               .assertNext(
-                      AccountOperationResponse -> {
-                          assertNotNull(AccountOperationResponse, "Объект не должен быть null.");
+                      accountOperationResponse -> {
+                          assertNotNull(accountOperationResponse, "Объект не должен быть null.");
                           assertEquals(
                                   AccountOperationResponse.OperationStatusEnum.SUCCESS,
-                                  AccountOperationResponse.getOperationStatus(),
+                                  accountOperationResponse.getOperationStatus(),
                                   "Статус должен быть SUCCESS");
-                          assertTrue(AccountOperationResponse.getErrors().isEmpty(), "Список ошибок должен быть пуст");
+                          assertTrue(accountOperationResponse.getErrors().isEmpty(), "Список ошибок должен быть пуст");
                       })
               .verifyComplete();
   }
@@ -467,14 +467,14 @@ class UserServiceImplTest {
         );
         StepVerifier.create(userService.updateUserPassword(userPasswordRequestFailed))
                 .assertNext(
-                        AccountOperationResponse -> {
-                            assertNotNull(AccountOperationResponse, "Объект не должен быть null.");
+                        accountOperationResponse -> {
+                            assertNotNull(accountOperationResponse, "Объект не должен быть null.");
                             assertEquals(
                                     AccountOperationResponse.OperationStatusEnum.FAILED,
-                                    AccountOperationResponse.getOperationStatus(),
+                                    accountOperationResponse.getOperationStatus(),
                                     "Статус должен быть FAILED");
-                            assertFalse(AccountOperationResponse.getErrors().isEmpty(), "Список ошибок должен быть не пуст");
-                            assertEquals(List.of("Ошибка при сохранении изменений пароля. Операция отменена"), AccountOperationResponse.getErrors());
+                            assertFalse(accountOperationResponse.getErrors().isEmpty(), "Список ошибок должен быть не пуст");
+                            assertEquals(List.of("Ошибка при сохранении изменений пароля. Операция отменена"), accountOperationResponse.getErrors());
                         })
                 .verifyComplete();
     }
@@ -514,13 +514,13 @@ class UserServiceImplTest {
 
       StepVerifier.create(userService.cashOperation(cashRequestSuccess, "test_user1"))
               .assertNext(
-                      AccountOperationResponse -> {
-                          assertNotNull(AccountOperationResponse, "Объект не должен быть null.");
+                      accountOperationResponse -> {
+                          assertNotNull(accountOperationResponse, "Объект не должен быть null.");
                           assertEquals(
                                   AccountOperationResponse.OperationStatusEnum.SUCCESS,
-                                  AccountOperationResponse.getOperationStatus(),
+                                  accountOperationResponse.getOperationStatus(),
                                   "Статус должен быть SUCCESS");
-                          assertTrue(AccountOperationResponse.getErrors().isEmpty(), "Список ошибок должен быть пуст");
+                          assertTrue(accountOperationResponse.getErrors().isEmpty(), "Список ошибок должен быть пуст");
                       })
               .verifyComplete();
 
@@ -555,14 +555,14 @@ class UserServiceImplTest {
 
         StepVerifier.create(userService.cashOperation(cashRequestFailed, "test_user1"))
                 .assertNext(
-                        AccountOperationResponse -> {
-                            assertNotNull(AccountOperationResponse, "Объект не должен быть null.");
+                        accountOperationResponse -> {
+                            assertNotNull(accountOperationResponse, "Объект не должен быть null.");
                             assertEquals(
                                     AccountOperationResponse.OperationStatusEnum.FAILED,
-                                    AccountOperationResponse.getOperationStatus(),
+                                    accountOperationResponse.getOperationStatus(),
                                     "Статус должен быть FAILED");
-                            assertFalse(AccountOperationResponse.getErrors().isEmpty(), "Список ошибок должен быть не пуст");
-                            assertEquals(List.of("У Вас отсутствует счет в выбранной валюте"), AccountOperationResponse.getErrors());
+                            assertFalse(accountOperationResponse.getErrors().isEmpty(), "Список ошибок должен быть не пуст");
+                            assertEquals(List.of("У Вас отсутствует счет в выбранной валюте"), accountOperationResponse.getErrors());
                         })
                 .verifyComplete();
 
@@ -598,14 +598,14 @@ class UserServiceImplTest {
 
         StepVerifier.create(userService.cashOperation(cashRequestFailed, "test_user1"))
                 .assertNext(
-                        AccountOperationResponse -> {
-                            assertNotNull(AccountOperationResponse, "Объект не должен быть null.");
+                        accountOperationResponse -> {
+                            assertNotNull(accountOperationResponse, "Объект не должен быть null.");
                             assertEquals(
                                     AccountOperationResponse.OperationStatusEnum.FAILED,
-                                    AccountOperationResponse.getOperationStatus(),
+                                    accountOperationResponse.getOperationStatus(),
                                     "Статус должен быть FAILED");
-                            assertFalse(AccountOperationResponse.getErrors().isEmpty(), "Список ошибок должен быть не пуст");
-                            assertEquals(List.of("На счете недостаточно средств"), AccountOperationResponse.getErrors());
+                            assertFalse(accountOperationResponse.getErrors().isEmpty(), "Список ошибок должен быть не пуст");
+                            assertEquals(List.of("На счете недостаточно средств"), accountOperationResponse.getErrors());
                         })
                 .verifyComplete();
 
@@ -669,13 +669,13 @@ class UserServiceImplTest {
 
         StepVerifier.create(userService.transferOperation(transferRequestOtherSuccess, "test_user1"))
                 .assertNext(
-                        AccountOperationResponse -> {
-                            assertNotNull(AccountOperationResponse, "Объект не должен быть null.");
+                        accountOperationResponse -> {
+                            assertNotNull(accountOperationResponse, "Объект не должен быть null.");
                             assertEquals(
                                     AccountOperationResponse.OperationStatusEnum.SUCCESS,
-                                    AccountOperationResponse.getOperationStatus(),
+                                    accountOperationResponse.getOperationStatus(),
                                     "Статус должен быть SUCCESS");
-                            assertTrue(AccountOperationResponse.getErrors().isEmpty(), "Список ошибок должен быть пуст");
+                            assertTrue(accountOperationResponse.getErrors().isEmpty(), "Список ошибок должен быть пуст");
                         })
                 .verifyComplete();
 
@@ -857,14 +857,14 @@ class UserServiceImplTest {
 
         StepVerifier.create(userService.transferOperation(transferRequestOtherSuccess, "test_user1"))
                 .assertNext(
-                        AccountOperationResponse -> {
-                            assertNotNull(AccountOperationResponse, "Объект не должен быть null.");
+                        accountOperationResponse -> {
+                            assertNotNull(accountOperationResponse, "Объект не должен быть null.");
                             assertEquals(
                                     AccountOperationResponse.OperationStatusEnum.FAILED,
-                                    AccountOperationResponse.getOperationStatus(),
+                                    accountOperationResponse.getOperationStatus(),
                                     "Статус должен быть FAILED");
-                            assertFalse(AccountOperationResponse.getErrors().isEmpty(), "Список ошибок должен быть не пуст");
-                            assertEquals(List.of("На счете недостаточно средств"), AccountOperationResponse.getErrors());
+                            assertFalse(accountOperationResponse.getErrors().isEmpty(), "Список ошибок должен быть не пуст");
+                            assertEquals(List.of("На счете недостаточно средств"), accountOperationResponse.getErrors());
                         })
                 .verifyComplete();
 
@@ -916,13 +916,13 @@ class UserServiceImplTest {
 
         StepVerifier.create(userService.transferOperation(transferRequestOtherSuccess, "test_user1"))
                 .assertNext(
-                        AccountOperationResponse -> {
-                            assertNotNull(AccountOperationResponse, "Объект не должен быть null.");
+                        accountOperationResponse -> {
+                            assertNotNull(accountOperationResponse, "Объект не должен быть null.");
                             assertEquals(
                                     AccountOperationResponse.OperationStatusEnum.SUCCESS,
-                                    AccountOperationResponse.getOperationStatus(),
+                                    accountOperationResponse.getOperationStatus(),
                                     "Статус должен быть SUCCESS");
-                            assertTrue(AccountOperationResponse.getErrors().isEmpty(), "Список ошибок должен быть пуст");
+                            assertTrue(accountOperationResponse.getErrors().isEmpty(), "Список ошибок должен быть пуст");
                         })
                 .verifyComplete();
 
@@ -1084,14 +1084,14 @@ class UserServiceImplTest {
 
         StepVerifier.create(userService.transferOperation(transferRequestOtherSuccess, "test_user1"))
                 .assertNext(
-                        AccountOperationResponse -> {
-                            assertNotNull(AccountOperationResponse, "Объект не должен быть null.");
+                        accountOperationResponse -> {
+                            assertNotNull(accountOperationResponse, "Объект не должен быть null.");
                             assertEquals(
                                     AccountOperationResponse.OperationStatusEnum.FAILED,
-                                    AccountOperationResponse.getOperationStatus(),
+                                    accountOperationResponse.getOperationStatus(),
                                     "Статус должен быть FAILED");
-                            assertFalse(AccountOperationResponse.getErrors().isEmpty(), "Список ошибок должен быть не пуст");
-                            assertEquals(List.of("На счете недостаточно средств"), AccountOperationResponse.getErrors());
+                            assertFalse(accountOperationResponse.getErrors().isEmpty(), "Список ошибок должен быть не пуст");
+                            assertEquals(List.of("На счете недостаточно средств"), accountOperationResponse.getErrors());
                         })
                 .verifyComplete();
 
@@ -1133,14 +1133,14 @@ class UserServiceImplTest {
 
         StepVerifier.create(userService.transferOperation(transferRequestOtherSuccess, "test_user1"))
                 .assertNext(
-                        AccountOperationResponse -> {
-                            assertNotNull(AccountOperationResponse, "Объект не должен быть null.");
+                        accountOperationResponse -> {
+                            assertNotNull(accountOperationResponse, "Объект не должен быть null.");
                             assertEquals(
                                     AccountOperationResponse.OperationStatusEnum.FAILED,
-                                    AccountOperationResponse.getOperationStatus(),
+                                    accountOperationResponse.getOperationStatus(),
                                     "Статус должен быть FAILED");
-                            assertFalse(AccountOperationResponse.getErrors().isEmpty(), "Список ошибок должен быть не пуст");
-                            assertEquals(List.of("Перевести можно только между разными счетами"), AccountOperationResponse.getErrors());
+                            assertFalse(accountOperationResponse.getErrors().isEmpty(), "Список ошибок должен быть не пуст");
+                            assertEquals(List.of("Перевести можно только между разными счетами"), accountOperationResponse.getErrors());
                         })
                 .verifyComplete();
 
