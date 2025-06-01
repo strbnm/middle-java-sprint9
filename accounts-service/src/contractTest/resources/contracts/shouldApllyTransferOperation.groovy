@@ -9,8 +9,8 @@ Contract.make {
         method 'POST'
         url '/api/v1/users/test_user1/transfer'
         body([
-                fromCurrency: "RUB",
-                toCurrency: "RUB",
+                fromCurrency: "CNY",
+                toCurrency: "CNY",
                 fromAmount: 1000.0,
                 toAmount: 1000.0,
                 toLogin: "test_user2"

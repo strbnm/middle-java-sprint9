@@ -2,8 +2,6 @@ package contracts
 
 import org.springframework.cloud.contract.spec.Contract
 
-import java.time.LocalDate
-
 Contract.make {
     description "Когда GET /api/v1/users/test_user1 вызван, сервис аккаунтов должен вернуть детальную информацию о пользователе" +
             " test_user1"

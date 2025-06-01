@@ -22,7 +22,7 @@ public class ContractVerifierTest extends BaseContractTest {
 			WebTestClientRequestSpecification request = given()
 					.header("Content-Type", "application/json")
 					.header("Accept", "application/json")
-					.body("{\"currency\":\"RUB\",\"amount\":1000.0,\"action\":\"PUT\"}");
+					.body("{\"currency\":\"RUB\",\"amount\":1000.0,\"action\":\"GET\"}");
 
 		// when:
 			WebTestClientResponse response = given().spec(request)
@@ -44,7 +44,7 @@ public class ContractVerifierTest extends BaseContractTest {
 			WebTestClientRequestSpecification request = given()
 					.header("Content-Type", "application/json")
 					.header("Accept", "application/json")
-					.body("{\"fromCurrency\":\"RUB\",\"toCurrency\":\"RUB\",\"fromAmount\":1000.0,\"toAmount\":1000.0,\"toLogin\":\"test_user2\"}");
+					.body("{\"fromCurrency\":\"CNY\",\"toCurrency\":\"CNY\",\"fromAmount\":1000.0,\"toAmount\":1000.0,\"toLogin\":\"test_user2\"}");
 
 		// when:
 			WebTestClientResponse response = given().spec(request)
@@ -83,7 +83,7 @@ public class ContractVerifierTest extends BaseContractTest {
 	}
 
 	@Test
-	public void validate_shouldGetUserByLogin() throws Exception {
+	public void validate_shouldGetUserByLogin1() throws Exception {
 		// given:
 			WebTestClientRequestSpecification request = given()
 					.header("Accept", "application/json");
@@ -112,6 +112,38 @@ public class ContractVerifierTest extends BaseContractTest {
 			assertThatJson(parsedJson).array("['accounts']").contains("['currency']").isEqualTo("USD");
 			assertThatJson(parsedJson).array("['accounts']").contains("['value']").isEqualTo(0.0);
 			assertThatJson(parsedJson).array("['accounts']").contains("['exists']").isEqualTo(false);
+	}
+
+	@Test
+	public void validate_shouldGetUserByLogin2() throws Exception {
+		// given:
+			WebTestClientRequestSpecification request = given()
+					.header("Accept", "application/json");
+
+		// when:
+			WebTestClientResponse response = given().spec(request)
+					.get("/api/v1/users/test_user2");
+
+		// then:
+			assertThat(response.statusCode()).isEqualTo(200);
+			assertThat(response.header("Content-Type")).matches("application/json.*");
+
+		// and:
+			DocumentContext parsedJson = JsonPath.parse(response.getBody().asString());
+			assertThatJson(parsedJson).field("['login']").isEqualTo("test_user2");
+			assertThatJson(parsedJson).field("['password']").isEqualTo("$2a$12$8iuXDswC26EzrjL0qWNOiuzwZi5/zGuuJY7gaEkoPnaIPZodfm.xi");
+			assertThatJson(parsedJson).field("['name']").isEqualTo("\u041F\u0435\u0442\u0440\u043E\u0432 \u041F\u0435\u0442\u0440");
+			assertThatJson(parsedJson).field("['email']").isEqualTo("petrov@example.ru");
+			assertThatJson(parsedJson).field("['birthdate']").isEqualTo("1990-05-21");
+			assertThatJson(parsedJson).array("['roles']").arrayField().isEqualTo("ROLE_CLIENT").value();
+			assertThatJson(parsedJson).array("['accounts']").contains("['currency']").isEqualTo("RUB");
+			assertThatJson(parsedJson).array("['accounts']").contains("['value']").isEqualTo(0.0);
+			assertThatJson(parsedJson).array("['accounts']").contains("['exists']").isEqualTo(false);
+			assertThatJson(parsedJson).array("['accounts']").contains("['currency']").isEqualTo("CNY");
+			assertThatJson(parsedJson).array("['accounts']").contains("['value']").isEqualTo(12000.0);
+			assertThatJson(parsedJson).array("['accounts']").contains("['exists']").isEqualTo(true);
+			assertThatJson(parsedJson).array("['accounts']").contains("['currency']").isEqualTo("USD");
+			assertThatJson(parsedJson).array("['accounts']").contains("['value']").isEqualTo(1000.0);
 	}
 
 	@Test

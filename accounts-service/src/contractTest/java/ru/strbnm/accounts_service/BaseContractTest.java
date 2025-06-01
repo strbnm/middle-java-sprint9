@@ -49,7 +49,8 @@ public abstract class BaseContractTest {
   private CashRequest cashRequestFailedMissingAccount;
   private TransferRequest transferRequestSuccess;
   private TransferRequest transferRequestFailed;
-  private UserDetailResponse userDetailResponse;
+  private UserDetailResponse userDetailResponse1;
+  private UserDetailResponse userDetailResponse2;
 
   @BeforeEach
   void setup() {
@@ -101,10 +102,10 @@ public abstract class BaseContractTest {
     cashRequestFailed =  new CashRequest(AccountCurrencyEnum.RUB, new BigDecimal("100000.0"), CashRequest.ActionEnum.GET);
     cashRequestFailedMissingAccount =  new CashRequest(AccountCurrencyEnum.USD, new BigDecimal("1000.0"), CashRequest.ActionEnum.GET);
 
-    transferRequestSuccess = new TransferRequest(AccountCurrencyEnum.RUB, AccountCurrencyEnum.RUB, new BigDecimal("1000.0"), new BigDecimal("1000.0"), "test_user2");
+    transferRequestSuccess = new TransferRequest(AccountCurrencyEnum.CNY, AccountCurrencyEnum.CNY, new BigDecimal("1000.0"), new BigDecimal("1000.0"), "test_user2");
     transferRequestFailed = new TransferRequest(AccountCurrencyEnum.RUB, AccountCurrencyEnum.RUB, new BigDecimal("1000.0"), new BigDecimal("1000.0"), "test_user1");
 
-    userDetailResponse =
+    userDetailResponse1 =
         new UserDetailResponse(
             "test_user1",
             "$2a$12$i3Mc.UTtmmFNgiqx0csrHe.dGbdVwXPbuEJ0T92InqlzX4YTzmwBa",
@@ -112,11 +113,25 @@ public abstract class BaseContractTest {
             "ivanov@example.ru",
             LocalDate.parse("2000-05-21"),
             List.of("ROLE_CLIENT"));
-    userDetailResponse.setAccounts(
+    userDetailResponse1.setAccounts(
         List.of(
             new AccountInfoRow(AccountCurrencyEnum.RUB, new BigDecimal("150000.0"), true),
             new AccountInfoRow(AccountCurrencyEnum.CNY, new BigDecimal("20000.0"), true),
             new AccountInfoRow(AccountCurrencyEnum.USD, BigDecimal.ZERO, false)));
+
+    userDetailResponse2 =
+            new UserDetailResponse(
+                    "test_user2",
+                    "$2a$12$8iuXDswC26EzrjL0qWNOiuzwZi5/zGuuJY7gaEkoPnaIPZodfm.xi",
+                    "Петров Петр",
+                    "petrov@example.ru",
+                    LocalDate.parse("1990-05-21"),
+                    List.of("ROLE_CLIENT"));
+    userDetailResponse2.setAccounts(
+            List.of(
+                    new AccountInfoRow(AccountCurrencyEnum.RUB, BigDecimal.ZERO, false),
+                    new AccountInfoRow(AccountCurrencyEnum.CNY, new BigDecimal("12000.0"), true),
+                    new AccountInfoRow(AccountCurrencyEnum.USD,  new BigDecimal("1000.0"), true)));
 
     successAccountOperationResponse =
         new AccountOperationResponse(AccountOperationResponse.OperationStatusEnum.SUCCESS, List.of());
@@ -159,7 +174,8 @@ public abstract class BaseContractTest {
     when(userService.updateUserPassword(updatePasswordRequestFailed))
         .thenReturn(Mono.just(updateUserPasswordFailed));
 
-    when(userService.getUserByLogin("test_user1")).thenReturn(Mono.just(userDetailResponse));
+    when(userService.getUserByLogin("test_user1")).thenReturn(Mono.just(userDetailResponse1));
+    when(userService.getUserByLogin("test_user2")).thenReturn(Mono.just(userDetailResponse2));
     when(userService.getUserByLogin("test_user4"))
         .thenReturn(
             Mono.error(
