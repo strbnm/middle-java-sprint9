@@ -26,6 +26,7 @@ import ru.strbnm.transfer_service.config.LiquibaseConfig;
 import ru.strbnm.transfer_service.domain.TransferCurrencyEnum;
 import ru.strbnm.transfer_service.domain.TransferOperationRequest;
 import ru.strbnm.transfer_service.domain.TransferOperationResponse;
+import ru.strbnm.transfer_service.entity.OutboxNotification;
 import ru.strbnm.transfer_service.repository.OutboxNotificationRepository;
 import ru.strbnm.transfer_service.repository.TransferTransactionInfoRepository;
 
@@ -114,22 +115,29 @@ class TransferServiceImplTest {
                     }
             ).verifyComplete();
 
-    StepVerifier.create(outboxNotificationRepository.findAll())
-        .assertNext(
-            outboxNotification -> {
-              assertNotNull(outboxNotification, "Объект не должен быть null");
-              assertEquals(1L, outboxNotification.getTransactionId());
-              assertEquals("ivanov@example.ru", outboxNotification.getEmail());
-              assertEquals("Успешный перевод 1000.0CNY клиенту Петров Петр", outboxNotification.getMessage());
-            })
-        .assertNext(
-                outboxNotification -> {
-                    assertNotNull(outboxNotification, "Объект не должен быть null");
-                    assertEquals(2L, outboxNotification.getTransactionId());
-                    assertEquals("petrov@example.ru", outboxNotification.getEmail());
-                    assertEquals("Получен перевод 1000.0CNY от клиента Иванов Иван", outboxNotification.getMessage());
-                })
-        .verifyComplete();
+      StepVerifier.create(outboxNotificationRepository.findAll().collectList())
+              .assertNext(outboxNotifications -> {
+                  assertEquals(2, outboxNotifications.size());
+                  assertTrue(
+                          outboxNotifications.containsAll(List.of(
+                                  OutboxNotification.builder()
+                                          .id(1L)
+                                          .transactionId(1L)
+                                          .email("ivanov@example.ru")
+                                          .message("Успешный перевод 1000.0CNY клиенту Петров Петр")
+                                          .isSent(false)
+                                          .build(),
+                                  OutboxNotification.builder()
+                                          .id(2L)
+                                          .transactionId(1L)
+                                          .email("petrov@example.ru")
+                                          .message("Получен перевод 1000.0CNY от клиента Иванов Иван")
+                                          .isSent(false)
+                                          .build()
+                          ))
+                  );
+              })
+              .verifyComplete();
   }
 
 //    @Test

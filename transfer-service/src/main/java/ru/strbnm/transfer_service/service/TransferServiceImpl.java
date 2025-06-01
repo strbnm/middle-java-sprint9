@@ -197,9 +197,8 @@ public class TransferServiceImpl implements TransferService {
                     return transferTransactionInfoRepository.save(info)
                             .flatMap(saved -> {
                                 if (saved.isSuccess()) {
-                                    return Mono.zip(
-                                                    saveOutboxNotification(saved.getId(), fromUser.getEmail(), fromUserMessage),
-                                                    saveOutboxNotification(saved.getId(), toUser.getEmail(), toUserMessage))
+                                    return saveOutboxNotification(saved.getId(), fromUser.getEmail(), fromUserMessage)
+                                            .then(saveOutboxNotification(saved.getId(), toUser.getEmail(), toUserMessage))
                                             .then(getTransferOperationResponse(TransferOperationResponse.OperationStatusEnum.SUCCESS, List.of()));
                                 } else {
                                     return saveOutboxNotification(saved.getId(), fromUser.getEmail(), fromUserMessage)
