@@ -1,0 +1,58 @@
+openapi:
+  transferService:
+    base-path: /
+
+spring:
+  application:
+    name: accounts-service
+  r2dbc:
+    url: r2dbc:h2:mem:///app_db;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=TRUE;DATABASE_TO_UPPER=false
+    username: sa
+    password:
+  properties:
+    loggingLevel: DEBUG
+
+  liquibase:
+    enabled: true
+    url: jdbc:h2:mem:app_db
+    user: sa
+    password:
+    change-log: classpath:db/changelog/db.changelog-master.xml
+    contexts: test
+    duplicate-file-mode: WARN
+
+  sql:
+    init:
+      mode: never
+
+  cloud:
+    config:
+      enabled: false
+
+  rabbitmq:
+    listener:
+      direct:
+        auto-startup: false
+
+  rest:
+    notifications-service:
+      url: http://localhost:8080
+    blocker-service:
+      url: http://localhost:8081
+    accounts-service:
+      url: http://localhost:8082
+    exchange-service:
+      url: http://localhost:8083
+
+eureka:
+  client:
+    enabled: false
+
+logging:
+  level:
+    org.springframework.r2dbc.core: DEBUG  # Логирование SQL-запросов
+    io.r2dbc.h2: DEBUG                     # Для H2
+
+application:
+  notification:
+    limit: 10

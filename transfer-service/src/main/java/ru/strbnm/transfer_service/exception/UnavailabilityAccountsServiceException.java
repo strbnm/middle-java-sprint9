@@ -1,0 +1,12 @@
+package ru.strbnm.transfer_service.exception;
+
+public class UnavailabilityAccountsServiceException extends CashOperationException {
+
+  public UnavailabilityAccountsServiceException(String message) {
+    super(message);
+  }
+
+  public UnavailabilityAccountsServiceException(String message, Throwable cause) {
+    super(message, cause);
+  }
+}

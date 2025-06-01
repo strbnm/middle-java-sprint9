@@ -11,13 +11,13 @@ paths:
       description: Осуществляет перевод денег между счетами
       operationId: transferTransaction
       tags:
-        - Accounts Service
+        - Transfer Service
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TransferRequest'
+              $ref: '#/components/schemas/TransferOperationRequest'
       responses:
         '200':
           description: Успешно
@@ -30,19 +30,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorListResponse'
+                $ref: '#/components/schemas/TransferErrorListResponse'
         '403':
           description: Операция заблокирована
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/TransferErrorResponse'
         '404':
           description: Пользователь с указанным login не найден
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/TransferErrorResponse'
         '422':
           description: Ошибки в процессе обработки перевода
           content:
@@ -54,19 +54,11 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/TransferErrorResponse'
 
 components:
-  parameters:
-    Login:
-      name: login
-      description: Идентификатор пользователя
-      in: path
-      required: true
-      schema:
-
   schemas:
-    TransferRequest:
+    TransferOperationRequest:
       type: object
       required:
         - fromLogin
@@ -80,19 +72,19 @@ components:
           pattern: '^[A-Za-z\d_-]+$'
           description: Логин пользователя осуществляющего перевод
         fromCurrency:
-          $ref: '#/components/schemas/CurrencyEnum'
+          $ref: '#/components/schemas/TransferCurrencyEnum'
         toLogin:
           type: string
           pattern: '^[A-Za-z\d_-]+$'
           description: Логин пользователя для перевода. При переводе самому себе совпадает с login
         toCurrency:
-          $ref: '#/components/schemas/CurrencyEnum'
+          $ref: '#/components/schemas/TransferCurrencyEnum'
         amount:
           type: number
           format: double
           description: Сумма перевода в валюте счета отправителя
 
-    ErrorResponse:
+    TransferErrorResponse:
       type: object
       required:
         - message
@@ -105,7 +97,7 @@ components:
           type: integer
           example: 500
 
-    ErrorListResponse:
+    TransferErrorListResponse:
       type: object
       required:
         - message
@@ -135,7 +127,7 @@ components:
           items:
             type: string
 
-    CurrencyEnum:
+    TransferCurrencyEnum:
       type: string
       enum:
         - CNY

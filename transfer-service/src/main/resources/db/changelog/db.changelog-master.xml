@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+    <changeSet id="1748369908395-1" author="strbnm" context="default,test">
+        <preConditions>
+            <not>
+                <tableExists tableName="transfer_transactions"/>
+            </not>
+        </preConditions>
+        <createTable tableName="transfer_transactions">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_transfer_transactions"/>
+            </column>
+            <column name="from_login" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="to_login" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="from_amount" type="DECIMAL(19,4)">
+                <constraints nullable="false" checkConstraint="from_amount > 0"/>
+            </column>
+            <column name="to_amount" type="DECIMAL(19,4)">
+                <constraints nullable="true" checkConstraint="to_amount > 0"/>
+            </column>
+            <column name="from_currency" type="VARCHAR(3)">
+                <constraints nullable="false" checkConstraint="currency IN ('RUB', 'CNY', 'USD')"/>
+            </column>
+            <column name="to_currency" type="VARCHAR(3)">
+                <constraints nullable="false" checkConstraint="currency IN ('RUB', 'CNY', 'USD')"/>
+            </column>
+            <column name="is_blocked" type="BOOLEAN">
+                <constraints nullable="true"/>
+            </column>
+            <column name="is_success" type="BOOLEAN">
+                <constraints nullable="true"/>
+            </column>
+            <column name="created_at" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="BIGINT">
+                <constraints nullable="true"/>
+            </column>
+        </createTable>
+        <rollback>
+            <dropTable tableName="transfer_transactions"/>
+        </rollback>
+    </changeSet>
+    <changeSet id="1748371527740-1" author="strbnm" context="default,test">
+        <preConditions>
+            <not>
+                <tableExists tableName="outbox_notifications"/>
+            </not>
+        </preConditions>
+        <createTable tableName="outbox_notifications">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_outbox_notifications"/>
+            </column>
+            <column name="transaction_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="email" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="message" type="VARCHAR(4000)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="BIGINT">
+                <constraints nullable="true"/>
+            </column>
+            <column name="is_sent" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <rollback>
+            <dropTable tableName="outbox_notifications"/>
+        </rollback>
+    </changeSet>
+    <changeSet id="1748371527740-2" author="strbnm" context="default,test">
+        <addForeignKeyConstraint baseColumnNames="transaction_id" baseTableName="outbox_notifications"
+                                 constraintName="FK_TRANSFER_TRANSACTION_OUTBOX_NOTIFICATION" referencedColumnNames="id"
+                                 referencedTableName="transfer_transactions" />
+        <rollback>
+            <dropForeignKeyConstraint baseTableName="outbox_notifications" constraintName="FK_TRANSFER_TRANSACTION_OUTBOX_NOTIFICATION" />
+        </rollback>
+    </changeSet>
+</databaseChangeLog>
