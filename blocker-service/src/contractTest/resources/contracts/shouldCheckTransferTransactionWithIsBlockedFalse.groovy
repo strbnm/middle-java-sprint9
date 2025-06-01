@@ -8,9 +8,9 @@ Contract.make {
         method 'POST'
         url '/api/v1/blocker/checkTransferTransaction'
         body([
-                transactionId: 3,
-                fromCurrency: 'RUB',
-                toCurrency: 'RUB',
+                transactionId: anyPositiveInt(),
+                fromCurrency: anyOf('RUB', 'CNY', 'USD'),
+                toCurrency: anyOf('RUB', 'CNY', 'USD'),
                 amount: 1000.0,
                 isItself: false
         ])
@@ -26,7 +26,7 @@ Contract.make {
             contentType(applicationJson())
         }
         body([
-                "transactionId": 3,
+                "transactionId": fromRequest().body('$.transactionId'),
                 "isBlocked": false,
                 "reason": null
         ])
