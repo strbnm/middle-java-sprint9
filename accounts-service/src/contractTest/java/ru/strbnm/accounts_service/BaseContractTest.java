@@ -41,9 +41,12 @@ public abstract class BaseContractTest {
   private AccountOperationResponse updateUserFailed;
   private AccountOperationResponse updateUserPasswordFailed;
   private AccountOperationResponse cashOperationFailed;
+  private AccountOperationResponse cashOperationFailedMissingAccount;
   private AccountOperationResponse transferOperationFailed;
-  private CashRequest cashRequestSuccess;
+  private CashRequest cashRequestSuccessPut;
+  private CashRequest cashRequestSuccessGet;
   private CashRequest cashRequestFailed;
+  private CashRequest cashRequestFailedMissingAccount;
   private TransferRequest transferRequestSuccess;
   private TransferRequest transferRequestFailed;
   private UserDetailResponse userDetailResponse;
@@ -93,8 +96,10 @@ public abstract class BaseContractTest {
         new UserPasswordRequest(
             "test_user1", "R7WZnEEUsVOShUOexUQIg.J/lzad8FNYty6/BDByo6");
 
-    cashRequestSuccess =  new CashRequest(AccountCurrencyEnum.RUB, new BigDecimal("1000.0"), CashRequest.ActionEnum.PUT);
+    cashRequestSuccessPut =  new CashRequest(AccountCurrencyEnum.RUB, new BigDecimal("1000.0"), CashRequest.ActionEnum.PUT);
+    cashRequestSuccessGet =  new CashRequest(AccountCurrencyEnum.RUB, new BigDecimal("1000.0"), CashRequest.ActionEnum.GET);
     cashRequestFailed =  new CashRequest(AccountCurrencyEnum.RUB, new BigDecimal("100000.0"), CashRequest.ActionEnum.GET);
+    cashRequestFailedMissingAccount =  new CashRequest(AccountCurrencyEnum.USD, new BigDecimal("1000.0"), CashRequest.ActionEnum.GET);
 
     transferRequestSuccess = new TransferRequest(AccountCurrencyEnum.RUB, AccountCurrencyEnum.RUB, new BigDecimal("1000.0"), new BigDecimal("1000.0"), "test_user2");
     transferRequestFailed = new TransferRequest(AccountCurrencyEnum.RUB, AccountCurrencyEnum.RUB, new BigDecimal("1000.0"), new BigDecimal("1000.0"), "test_user1");
@@ -131,7 +136,11 @@ public abstract class BaseContractTest {
         new AccountOperationResponse(
             AccountOperationResponse.OperationStatusEnum.FAILED,
             List.of("На счете недостаточно средств"));
-    
+    cashOperationFailedMissingAccount =
+        new AccountOperationResponse(
+            AccountOperationResponse.OperationStatusEnum.FAILED,
+            List.of("У Вас отсутствует счет в выбранной валюте"));
+
     transferOperationFailed =
             new AccountOperationResponse(
                     AccountOperationResponse.OperationStatusEnum.FAILED,
@@ -162,8 +171,10 @@ public abstract class BaseContractTest {
                 new UserListResponseInner("test_user1", "Иванов Иван"),
                 new UserListResponseInner("test_user2", "Петров Петр")));
 
-    when(userService.cashOperation(cashRequestSuccess, "test_user1")).thenReturn(Mono.just(successAccountOperationResponse));
+    when(userService.cashOperation(cashRequestSuccessPut, "test_user1")).thenReturn(Mono.just(successAccountOperationResponse));
+    when(userService.cashOperation(cashRequestSuccessGet, "test_user1")).thenReturn(Mono.just(successAccountOperationResponse));
     when(userService.cashOperation(cashRequestFailed, "test_user1")).thenReturn(Mono.just(cashOperationFailed));
+    when(userService.cashOperation(cashRequestFailedMissingAccount, "test_user1")).thenReturn(Mono.just(cashOperationFailedMissingAccount));
 
     when(userService.transferOperation(transferRequestSuccess, "test_user1")).thenReturn(Mono.just(successAccountOperationResponse));
     when(userService.transferOperation(transferRequestFailed, "test_user1")).thenReturn(Mono.just(transferOperationFailed));

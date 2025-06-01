@@ -179,6 +179,28 @@ public class ContractVerifierTest extends BaseContractTest {
 	}
 
 	@Test
+	public void validate_shouldReturn422WhenFailedApplyCashOperationWithMissingCurrencyAccount() throws Exception {
+		// given:
+			WebTestClientRequestSpecification request = given()
+					.header("Content-Type", "application/json")
+					.header("Accept", "application/json")
+					.body("{\"currency\":\"USD\",\"amount\":1000.0,\"action\":\"GET\"}");
+
+		// when:
+			WebTestClientResponse response = given().spec(request)
+					.post("/api/v1/users/test_user1/cash");
+
+		// then:
+			assertThat(response.statusCode()).isEqualTo(422);
+			assertThat(response.header("Content-Type")).matches("application/json.*");
+
+		// and:
+			DocumentContext parsedJson = JsonPath.parse(response.getBody().asString());
+			assertThatJson(parsedJson).field("['operationStatus']").isEqualTo("FAILED");
+			assertThatJson(parsedJson).array("['errors']").arrayField().isEqualTo("\u0423 \u0412\u0430\u0441 \u043E\u0442\u0441\u0443\u0442\u0441\u0442\u0432\u0443\u0435\u0442 \u0441\u0447\u0435\u0442 \u0432 \u0432\u044B\u0431\u0440\u0430\u043D\u043D\u043E\u0439 \u0432\u0430\u043B\u044E\u0442\u0435").value();
+	}
+
+	@Test
 	public void validate_shouldReturn422WhenFailedApplyTransferOperation() throws Exception {
 		// given:
 			WebTestClientRequestSpecification request = given()

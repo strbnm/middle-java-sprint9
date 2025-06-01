@@ -11,11 +11,6 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
 public class ContractTestSecurityConfig {
 
     @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
-
-    @Bean
     public SecurityWebFilterChain noSecurity(ServerHttpSecurity http) {
         return http
                 .authorizeExchange(exchanges -> exchanges.anyExchange().permitAll())

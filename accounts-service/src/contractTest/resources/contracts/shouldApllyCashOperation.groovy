@@ -11,7 +11,7 @@ Contract.make {
         body([
                 currency: "RUB",
                 amount: 1000.0,
-                action: "PUT"
+                action: anyOf("PUT", "GET")
         ])
 
         headers {
