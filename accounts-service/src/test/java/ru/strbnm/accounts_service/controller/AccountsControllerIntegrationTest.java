@@ -186,10 +186,10 @@ class AccountsControllerIntegrationTest {
                 .isNotFound()
                 .expectBody(AccountErrorResponse.class)
                 .value(
-                        AccountErrorResponse -> {
-                            assertNotNull(AccountErrorResponse);
-                            assertEquals(404, AccountErrorResponse.getStatusCode());
-                            assertEquals(AccountErrorResponse.getMessage(), "Пользователь с логином test_user4 не существует");
+                        accountErrorResponse -> {
+                            assertNotNull(accountErrorResponse);
+                            assertEquals(404, accountErrorResponse.getStatusCode());
+                            assertEquals(accountErrorResponse.getMessage(), "Пользователь с логином test_user4 не существует");
                         });
     }
 
@@ -269,10 +269,10 @@ class AccountsControllerIntegrationTest {
                 .isEqualTo(409)
                 .expectBody(AccountErrorResponse.class)
                 .value(
-                        AccountErrorResponse -> {
-                            assertNotNull(AccountErrorResponse);
-                            assertEquals(409, AccountErrorResponse.getStatusCode());
-                            assertEquals("Пользователь с таким логином уже существует: test_user3", AccountErrorResponse.getMessage());
+                        accountErrorResponse -> {
+                            assertNotNull(accountErrorResponse);
+                            assertEquals(409, accountErrorResponse.getStatusCode());
+                            assertEquals("Пользователь с таким логином уже существует: test_user3", accountErrorResponse.getMessage());
                         });
     }
 
@@ -328,10 +328,10 @@ class AccountsControllerIntegrationTest {
                 .isNotFound()
                 .expectBody(AccountErrorResponse.class)
                 .value(
-                        AccountErrorResponse -> {
-                            assertNotNull(AccountErrorResponse);
-                            assertEquals(404, AccountErrorResponse.getStatusCode());
-                            assertEquals("Пользователь с логином test_user4 не существует", AccountErrorResponse.getMessage());
+                        accountErrorResponse -> {
+                            assertNotNull(accountErrorResponse);
+                            assertEquals(404, accountErrorResponse.getStatusCode());
+                            assertEquals("Пользователь с логином test_user4 не существует", accountErrorResponse.getMessage());
                         });
     }
 
@@ -471,13 +471,13 @@ class AccountsControllerIntegrationTest {
                         "{\"fromCurrency\": \"USD\", \"toCurrency\": \"CNY\",\"fromAmount\": 1000.0, \"toAmount\": 10000.0,\"toLogin\": \"test_user2\"}")
                 .exchange()
                 .expectStatus()
-                .isNotFound()
-                .expectBody(AccountErrorResponse.class)
+                .isEqualTo(422)
+                .expectBody(AccountOperationResponse.class)
                 .value(
-                        AccountErrorResponse -> {
-                            assertNotNull(AccountErrorResponse);
-                            assertEquals(404, AccountErrorResponse.getStatusCode());
-                            assertEquals(AccountErrorResponse.getMessage(), "У Вас отсутствует счет в выбранной валюте");
+                        accountOperationResponse -> {
+                            assertNotNull(accountOperationResponse);
+                            assertEquals(AccountOperationResponse.OperationStatusEnum.FAILED, accountOperationResponse.getOperationStatus());
+                            assertEquals(List.of("У Вас отсутствует счет в выбранной валюте"), accountOperationResponse.getErrors());
                         });
 
         // Остаток на счете 12000 юаней (без изменения)
@@ -511,13 +511,13 @@ class AccountsControllerIntegrationTest {
                         "{\"fromCurrency\": \"RUB\", \"toCurrency\": \"RUB\",\"fromAmount\": 10000.0, \"toAmount\": 10000.0,\"toLogin\": \"test_user2\"}")
                 .exchange()
                 .expectStatus()
-                .isNotFound()
-                .expectBody(AccountErrorResponse.class)
+                .isEqualTo(422)
+                .expectBody(AccountOperationResponse.class)
                 .value(
-                        AccountErrorResponse -> {
-                            assertNotNull(AccountErrorResponse);
-                            assertEquals(404, AccountErrorResponse.getStatusCode());
-                            assertEquals(AccountErrorResponse.getMessage(), "У клиента Петров Петр отсутствует счет в выбранной валюте");
+                        accountOperationResponse -> {
+                            assertNotNull(accountOperationResponse);
+                            assertEquals(AccountOperationResponse.OperationStatusEnum.FAILED, accountOperationResponse.getOperationStatus());
+                            assertEquals(List.of("У клиента Петров Петр отсутствует счет в выбранной валюте"), accountOperationResponse.getErrors());
                         });
 
         // Остаток на счете 150000 руб. (без изменения)

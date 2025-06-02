@@ -13,6 +13,7 @@ import org.springframework.web.bind.support.WebExchangeBindException;
 import reactor.core.publisher.Mono;
 import ru.strbnm.accounts_service.domain.AccountErrorListResponse;
 import ru.strbnm.accounts_service.domain.AccountErrorResponse;
+import ru.strbnm.accounts_service.domain.AccountOperationResponse;
 
 @Slf4j
 @RestControllerAdvice
@@ -51,11 +52,23 @@ public class ReactiveGlobalExceptionHandler {
     }
 
     @ExceptionHandler({
-            AccountNotFoundForCurrencyException.class,
             UserNotFoundException.class
     })
     public Mono<ResponseEntity<AccountErrorResponse>> handleUserOperationException(UserOperationException exception) {
         log.error("Ошибка {}", exception.getMessage(), exception);
         return Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).body(new AccountErrorResponse(exception.getMessage(), 404)));
+    }
+
+    @ExceptionHandler({
+            AccountNotFoundForCurrencyException.class,
+    })
+    public Mono<ResponseEntity<AccountOperationResponse>> handleUserOperationException(AccountNotFoundForCurrencyException exception) {
+        log.error("Ошибка {}", exception.getMessage(), exception);
+        return Mono.just(
+                ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                        .body(
+                                new AccountOperationResponse(
+                                        AccountOperationResponse.OperationStatusEnum.FAILED,
+                                        List.of(exception.getMessage()))));
     }
 }

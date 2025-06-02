@@ -29,8 +29,8 @@ class NotificationsStubTest {
     @Test
     void shouldSendNotificationSuccessfully() {
         NotificationRequest notificationRequest = new NotificationRequest();
-        notificationRequest.setEmail("test@example.ru");
-        notificationRequest.setMessage("Пополнение счёта RUB на сумму 300.00 руб.");
+        notificationRequest.setEmail("ivanov@example.ru");
+        notificationRequest.setMessage("Информация аккаунта успешно обновлена.");
         notificationRequest.setApplication(NotificationRequest.ApplicationEnum.ACCOUNTS_SERVICE);
         StepVerifier.create(notificationsServiceApi.notificationCreate(notificationRequest))
             .expectNext("Success") // тело ответа, как указано в контракте

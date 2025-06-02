@@ -22,7 +22,7 @@ public class ContractVerifierTest extends BaseContractTest {
 			WebTestClientRequestSpecification request = given()
 					.header("Content-Type", "application/json")
 					.header("Accept", "application/json")
-					.body("{\"currency\":\"RUB\",\"amount\":1000.0,\"action\":\"GET\"}");
+					.body("{\"currency\":\"RUB\",\"amount\":1000.0,\"action\":\"PUT\"}");
 
 		// when:
 			WebTestClientResponse response = given().spec(request)
@@ -45,6 +45,28 @@ public class ContractVerifierTest extends BaseContractTest {
 					.header("Content-Type", "application/json")
 					.header("Accept", "application/json")
 					.body("{\"fromCurrency\":\"CNY\",\"toCurrency\":\"CNY\",\"fromAmount\":1000.0,\"toAmount\":1000.0,\"toLogin\":\"test_user2\"}");
+
+		// when:
+			WebTestClientResponse response = given().spec(request)
+					.post("/api/v1/users/test_user1/transfer");
+
+		// then:
+			assertThat(response.statusCode()).isEqualTo(200);
+			assertThat(response.header("Content-Type")).matches("application/json.*");
+
+		// and:
+			DocumentContext parsedJson = JsonPath.parse(response.getBody().asString());
+			assertThatJson(parsedJson).field("['operationStatus']").isEqualTo("SUCCESS");
+			assertThatJson(parsedJson).array("['errors']").isEmpty();
+	}
+
+	@Test
+	public void validate_shouldApllyTransferOperationRUB2UDSOther() throws Exception {
+		// given:
+			WebTestClientRequestSpecification request = given()
+					.header("Content-Type", "application/json")
+					.header("Accept", "application/json")
+					.body("{\"fromCurrency\":\"RUB\",\"toCurrency\":\"USD\",\"fromAmount\":1000.0,\"toAmount\":12.0,\"toLogin\":\"test_user2\"}");
 
 		// when:
 			WebTestClientResponse response = given().spec(request)
@@ -252,6 +274,50 @@ public class ContractVerifierTest extends BaseContractTest {
 			DocumentContext parsedJson = JsonPath.parse(response.getBody().asString());
 			assertThatJson(parsedJson).field("['operationStatus']").isEqualTo("FAILED");
 			assertThatJson(parsedJson).array("['errors']").arrayField().isEqualTo("\u041F\u0435\u0440\u0435\u0432\u0435\u0441\u0442\u0438 \u043C\u043E\u0436\u043D\u043E \u0442\u043E\u043B\u044C\u043A\u043E \u043C\u0435\u0436\u0434\u0443 \u0440\u0430\u0437\u043D\u044B\u043C\u0438 \u0441\u0447\u0435\u0442\u0430\u043C\u0438").value();
+	}
+
+	@Test
+	public void validate_shouldReturn422WhenFailedApplyTransferOperationWithInfluenceFunds() throws Exception {
+		// given:
+			WebTestClientRequestSpecification request = given()
+					.header("Content-Type", "application/json")
+					.header("Accept", "application/json")
+					.body("{\"fromCurrency\":\"RUB\",\"toCurrency\":\"CNY\",\"fromAmount\":200000.0,\"toAmount\":22000.0,\"toLogin\":\"test_user2\"}");
+
+		// when:
+			WebTestClientResponse response = given().spec(request)
+					.post("/api/v1/users/test_user1/transfer");
+
+		// then:
+			assertThat(response.statusCode()).isEqualTo(422);
+			assertThat(response.header("Content-Type")).matches("application/json.*");
+
+		// and:
+			DocumentContext parsedJson = JsonPath.parse(response.getBody().asString());
+			assertThatJson(parsedJson).field("['operationStatus']").isEqualTo("FAILED");
+			assertThatJson(parsedJson).array("['errors']").arrayField().isEqualTo("\u041D\u0430 \u0441\u0447\u0435\u0442\u0435 \u043D\u0435\u0434\u043E\u0441\u0442\u0430\u0442\u043E\u0447\u043D\u043E \u0441\u0440\u0435\u0434\u0441\u0442\u0432").value();
+	}
+
+	@Test
+	public void validate_shouldReturn422WhenFailedApplyTransferOperationWithMissingCurrencyAccount() throws Exception {
+		// given:
+			WebTestClientRequestSpecification request = given()
+					.header("Content-Type", "application/json")
+					.header("Accept", "application/json")
+					.body("{\"fromCurrency\":\"RUB\",\"toCurrency\":\"USD\",\"fromAmount\":1000.0,\"toAmount\":12.0,\"toLogin\":\"test_user1\"}");
+
+		// when:
+			WebTestClientResponse response = given().spec(request)
+					.post("/api/v1/users/test_user1/transfer");
+
+		// then:
+			assertThat(response.statusCode()).isEqualTo(422);
+			assertThat(response.header("Content-Type")).matches("application/json.*");
+
+		// and:
+			DocumentContext parsedJson = JsonPath.parse(response.getBody().asString());
+			assertThatJson(parsedJson).field("['operationStatus']").isEqualTo("FAILED");
+			assertThatJson(parsedJson).array("['errors']").arrayField().isEqualTo("\u0423 \u0412\u0430\u0441 \u043E\u0442\u0441\u0443\u0442\u0441\u0442\u0432\u0443\u0435\u0442 \u0441\u0447\u0435\u0442 \u0432 \u0432\u044B\u0431\u0440\u0430\u043D\u043D\u043E\u0439 \u0432\u0430\u043B\u044E\u0442\u0435").value();
 	}
 
 	@Test
