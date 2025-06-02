@@ -42,7 +42,7 @@ public class OutboxReactiveScheduler {
                     NotificationRequest notificationRequest = new NotificationRequest();
                     notificationRequest.setEmail(notification.getEmail());
                     notificationRequest.setMessage(notification.getMessage());
-                    notificationRequest.application(NotificationRequest.ApplicationEnum.ACCOUNTS_SERVICE);
+                    notificationRequest.application(NotificationRequest.ApplicationEnum.TRANSFER_SERVICE);
 
                     return notificationsServiceApi.notificationCreate(notificationRequest)
                             .retryWhen(

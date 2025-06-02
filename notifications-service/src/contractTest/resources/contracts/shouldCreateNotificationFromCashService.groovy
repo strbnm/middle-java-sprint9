@@ -8,9 +8,9 @@ Contract.make {
         method 'POST'
         url '/api/v1/notifications'
         body([
-                email: "test@example.ru",
-                message: "Пополнение счёта RUB на сумму 300.00 руб.",
-                application: anyOf("accounts-service", "cash-service", "transfer-service")
+                email: "ivanov@example.ru",
+                message: "Успешная операция пополнения счета на сумму 1000.0RUB",
+                application: "cash-service",
         ])
         headers {
             contentType('application/json')
