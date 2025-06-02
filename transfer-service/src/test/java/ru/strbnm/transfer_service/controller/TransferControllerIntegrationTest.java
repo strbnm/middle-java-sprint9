@@ -1,20 +1,30 @@
 package ru.strbnm.transfer_service.controller;
 
+import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.List;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.contract.stubrunner.spring.AutoConfigureStubRunner;
 import org.springframework.cloud.contract.stubrunner.spring.StubRunnerProperties;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
 import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
 import ru.strbnm.transfer_service.config.TestSecurityConfig;
+import ru.strbnm.transfer_service.domain.TransferCurrencyEnum;
+import ru.strbnm.transfer_service.domain.TransferOperationRequest;
+import ru.strbnm.transfer_service.domain.TransferOperationResponse;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.mockJwt;
 
 @ActiveProfiles("test")
 @SpringBootTest(
@@ -56,128 +66,114 @@ class TransferControllerIntegrationTest {
     }
   }
 
-//  @Test
-//  void cashTransactionSuccess() {
-//    CashOperationRequest cashOperationRequest = new CashOperationRequest(
-//            "test_user1",
-//            CashCurrencyEnum.RUB,
-//            new BigDecimal("1000.0"),
-//            CashOperationRequest.ActionEnum.GET
-//    );
-//    webTestClient
-//            .mutateWith(mockJwt())
-//            .post()
-//            .uri("/api/v1/cash")
-//            .contentType(MediaType.APPLICATION_JSON)
-//            .bodyValue(cashOperationRequest)
-//            .exchange()
-//            .expectStatus()
-//            .isOk()
-//            .expectBody(CashOperationResponse.class)
-//            .value(
-//                    cashOperationResponse -> {
-//                      assertNotNull(cashOperationResponse);
-//                      assertEquals(CashOperationResponse.OperationStatusEnum.SUCCESS, cashOperationResponse.getOperationStatus());
-//                      assertTrue(cashOperationResponse.getErrors().isEmpty());
-//                    });
-//  }
-//
-//  @Test
-//  void cashTransactionFailed_MissingCurrencyAccount() {
-//    CashOperationRequest cashOperationRequest = new CashOperationRequest(
-//            "test_user1",
-//            CashCurrencyEnum.USD,
-//            new BigDecimal("1000.0"),
-//            CashOperationRequest.ActionEnum.GET
-//    );
-//    webTestClient
-//            .mutateWith(mockJwt())
-//            .post()
-//            .uri("/api/v1/cash")
-//            .contentType(MediaType.APPLICATION_JSON)
-//            .bodyValue(cashOperationRequest)
-//            .exchange()
-//            .expectStatus()
-//            .isEqualTo(422)
-//            .expectBody(CashOperationResponse.class)
-//            .value(
-//                    cashOperationResponse -> {
-//                      assertNotNull(cashOperationResponse);
-//                      assertEquals(CashOperationResponse.OperationStatusEnum.FAILED, cashOperationResponse.getOperationStatus());
-//                      assertFalse(cashOperationResponse.getErrors().isEmpty());
-//                      assertEquals(List.of("У Вас отсутствует счет в выбранной валюте"), cashOperationResponse.getErrors());
-//                    });
-//  }
-//
-//    @Test
-//    void cashTransactionFailed_BlockerExceedLimitOperation() {
-//        CashOperationRequest cashOperationRequest = new CashOperationRequest(
-//                "test_user1",
-//                CashCurrencyEnum.USD,
-//                new BigDecimal("2000.0"),
-//                CashOperationRequest.ActionEnum.GET
-//        );
-//        webTestClient
-//                .mutateWith(mockJwt())
-//                .post()
-//                .uri("/api/v1/cash")
-//                .contentType(MediaType.APPLICATION_JSON)
-//                .bodyValue(cashOperationRequest)
-//                .exchange()
-//                .expectStatus()
-//                .isEqualTo(422)
-//                .expectBody(CashOperationResponse.class)
-//                .value(
-//                        cashOperationResponse -> {
-//                            assertNotNull(cashOperationResponse);
-//                            assertEquals(CashOperationResponse.OperationStatusEnum.FAILED, cashOperationResponse.getOperationStatus());
-//                            assertFalse(cashOperationResponse.getErrors().isEmpty());
-//                            assertEquals(List.of("Превышена допустимая сумма снятия наличных"), cashOperationResponse.getErrors());
-//                        });
-//    }
-//
-//    @Test
-//    void cashTransactionFailed_InsufficientFunds() {
-//        CashOperationRequest cashOperationRequest = new CashOperationRequest(
-//                "test_user1",
-//                CashCurrencyEnum.RUB,
-//                new BigDecimal("100000.0"),
-//                CashOperationRequest.ActionEnum.GET
-//        );
-//        webTestClient
-//                .mutateWith(mockJwt())
-//                .post()
-//                .uri("/api/v1/cash")
-//                .contentType(MediaType.APPLICATION_JSON)
-//                .bodyValue(cashOperationRequest)
-//                .exchange()
-//                .expectStatus()
-//                .isEqualTo(422)
-//                .expectBody(CashOperationResponse.class)
-//                .value(
-//                        cashOperationResponse -> {
-//                            assertNotNull(cashOperationResponse);
-//                            assertEquals(CashOperationResponse.OperationStatusEnum.FAILED, cashOperationResponse.getOperationStatus());
-//                            assertFalse(cashOperationResponse.getErrors().isEmpty());
-//                            assertEquals(List.of("На счете недостаточно средств"), cashOperationResponse.getErrors());
-//                        });
-//    }
-//
-//    @Test
-//    void cashTransactionNonUnauthorized() {
-//        CashOperationRequest cashOperationRequest = new CashOperationRequest(
-//                "test_user1",
-//                CashCurrencyEnum.RUB,
-//                new BigDecimal("1000.0"),
-//                CashOperationRequest.ActionEnum.GET
-//        );
-//        webTestClient
-//                .post()
-//                .uri("/api/v1/cash")
-//                .contentType(MediaType.APPLICATION_JSON)
-//                .bodyValue(cashOperationRequest)
-//                .exchange()
-//                .expectStatus()
-//                .isUnauthorized();
-//    }
+
+  @Test
+  void transferTransactionSuccess() {
+    TransferOperationRequest transferOperationRequest = new TransferOperationRequest(
+            "test_user1",
+            TransferCurrencyEnum.CNY,
+            "test_user2",
+            TransferCurrencyEnum.CNY,
+            new BigDecimal("1000.0")
+    );
+    webTestClient
+            .mutateWith(mockJwt())
+            .post()
+            .uri("/api/v1/transfer")
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(transferOperationRequest)
+            .exchange()
+            .expectStatus()
+            .isOk()
+            .expectBody(TransferOperationResponse.class)
+            .value(
+                    transferOperationResponse -> {
+                      assertNotNull(transferOperationResponse);
+                      assertEquals(TransferOperationResponse.OperationStatusEnum.SUCCESS, transferOperationResponse.getOperationStatus());
+                      assertTrue(transferOperationResponse.getErrors().isEmpty());
+                    });
+  }
+
+  @Test
+  void transferTransactionWithCurrencyExchangeSuccess() {
+    TransferOperationRequest transferOperationRequest = new TransferOperationRequest(
+            "test_user1",
+            TransferCurrencyEnum.RUB,
+            "test_user2",
+            TransferCurrencyEnum.USD,
+            new BigDecimal("1000.0")
+    );
+    webTestClient
+            .mutateWith(mockJwt())
+            .post()
+            .uri("/api/v1/transfer")
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(transferOperationRequest)
+            .exchange()
+            .expectStatus()
+            .isOk()
+            .expectBody(TransferOperationResponse.class)
+            .value(
+                    transferOperationResponse -> {
+                      assertNotNull(transferOperationResponse);
+                      assertEquals(TransferOperationResponse.OperationStatusEnum.SUCCESS, transferOperationResponse.getOperationStatus());
+                      assertTrue(transferOperationResponse.getErrors().isEmpty());
+                    });
+  }
+
+    @Test
+    void transferTransactionFailed_WhenTransferItselfBetweenSameAccounts() {
+        TransferOperationRequest transferOperationRequest = new TransferOperationRequest(
+                "test_user1",
+                TransferCurrencyEnum.RUB,
+                "test_user1",
+                TransferCurrencyEnum.RUB,
+                new BigDecimal("1000.0")
+        );
+        webTestClient
+                .mutateWith(mockJwt())
+                .post()
+                .uri("/api/v1/transfer")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(transferOperationRequest)
+                .exchange()
+                .expectStatus()
+                .isEqualTo(422)
+                .expectBody(TransferOperationResponse.class)
+                .value(
+                        transferOperationResponse -> {
+                            assertNotNull(transferOperationResponse);
+                            assertEquals(TransferOperationResponse.OperationStatusEnum.FAILED, transferOperationResponse.getOperationStatus());
+                            assertFalse(transferOperationResponse.getErrors().isEmpty());
+                            assertEquals(List.of("Перевести можно только между разными счетами"), transferOperationResponse.getErrors());
+                        });
+    }
+
+    @Test
+    void transferTransactionFailed_WhenTransferItselfMissingAccounts() {
+        TransferOperationRequest transferOperationRequest = new TransferOperationRequest(
+                "test_user1",
+                TransferCurrencyEnum.RUB,
+                "test_user1",
+                TransferCurrencyEnum.USD,
+                new BigDecimal("1000.0")
+        );
+        webTestClient
+                .mutateWith(mockJwt())
+                .post()
+                .uri("/api/v1/transfer")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(transferOperationRequest)
+                .exchange()
+                .expectStatus()
+                .isEqualTo(422)
+                .expectBody(TransferOperationResponse.class)
+                .value(
+                        transferOperationResponse -> {
+                            assertNotNull(transferOperationResponse);
+                            assertEquals(TransferOperationResponse.OperationStatusEnum.FAILED, transferOperationResponse.getOperationStatus());
+                            assertFalse(transferOperationResponse.getErrors().isEmpty());
+                            assertEquals(List.of("У Вас отсутствует счет в выбранной валюте"), transferOperationResponse.getErrors());
+                        });
+    }
 }

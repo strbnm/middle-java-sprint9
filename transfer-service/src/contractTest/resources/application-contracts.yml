@@ -1,0 +1,35 @@
+spring:
+  application:
+    name: transfer-service
+
+  cloud:
+    config:
+      enabled: false
+
+  security:
+    enabled: false
+
+  rabbitmq:
+    listener:
+      direct:
+        auto-startup: false
+
+  rest:
+    notifications-service:
+      url: http://localhost:8080
+    blocker-service:
+      url: http://localhost:8081
+    accounts-service:
+      url: http://localhost:8082
+    exchange-service:
+      url: http://localhost:8083
+
+eureka:
+  client:
+    enabled: false
+
+openapi:
+  transferService:
+    base-path: /
+
+

@@ -39,7 +39,8 @@ import ru.strbnm.transfer_service.repository.TransferTransactionInfoRepository;
 @AutoConfigureStubRunner(
         ids = {
                 "ru.strbnm:accounts-service:+:stubs:8082",
-                "ru.strbnm:blocker-service:+:stubs:8081"
+                "ru.strbnm:blocker-service:+:stubs:8081",
+                "ru.strbnm:exchange-service:+:stubs:8083"
         },
         stubsMode = StubRunnerProperties.StubsMode.LOCAL
 )
@@ -140,138 +141,177 @@ class TransferServiceImplTest {
               .verifyComplete();
   }
 
-//    @Test
-//    void processTransferTransactionFailed_MissingCurrencyAccount() {
-//        TransferOperationRequest cashOperationRequest = new TransferOperationRequest(
-//                "test_user1",
-//                CashCurrencyEnum.USD,
-//                new BigDecimal("1000.0"),
-//                TransferOperationRequest.ActionEnum.GET
-//        );
-//
-//        StepVerifier.create(transferService.processTransferTransaction(cashOperationRequest))
-//                .assertNext(
-//                        cashOperationResponse -> {
-//                            assertNotNull(cashOperationResponse, "Объект не должен быть null");
-//                            assertEquals(CashOperationResponse.OperationStatusEnum.FAILED, cashOperationResponse.getOperationStatus());
-//                            assertFalse(cashOperationResponse.getErrors().isEmpty());
-//                            assertEquals(List.of("У Вас отсутствует счет в выбранной валюте"), cashOperationResponse.getErrors());
-//                        }
-//                ).verifyComplete();
-//
-//        StepVerifier.create(transferTransactionInfoRepository.findAll())
-//                .assertNext(
-//                        cashTransactionInfo -> {
-//                            assertNotNull(cashTransactionInfo, "Объект не должен быть null");
-//                            assertEquals(1L, cashTransactionInfo.getId());
-//                            assertEquals("test_user1", cashTransactionInfo.getLogin());
-//                            assertEquals(CashCurrencyEnum.USD.name(), cashTransactionInfo.getCurrency());
-//                            assertEquals(0, new BigDecimal("1000.0").compareTo(cashTransactionInfo.getAmount()));
-//                            assertEquals(TransferOperationRequest.ActionEnum.GET.name(), cashTransactionInfo.getAction());
-//                            assertFalse(cashTransactionInfo.isBlocked());
-//                            assertFalse(cashTransactionInfo.isSuccess());
-//                        }
-//                ).verifyComplete();
-//
-//        StepVerifier.create(outboxNotificationRepository.findAll())
-//                .assertNext(
-//                        outboxNotification -> {
-//                            assertNotNull(outboxNotification, "Объект не должен быть null");
-//                            assertEquals(1L, outboxNotification.getTransactionId());
-//                            assertEquals("ivanov@example.ru", outboxNotification.getEmail());
-//                            assertEquals("Отмена операции c наличными. Список ошибок: [У Вас отсутствует счет в выбранной валюте]", outboxNotification.getMessage());
-//                        }
-//                ).verifyComplete();
-//    }
-//
-//    @Test
-//    void processTransferTransactionFailed_BlockerExceedLimitOperation() {
-//        TransferOperationRequest cashOperationRequest = new TransferOperationRequest(
-//                "test_user1",
-//                CashCurrencyEnum.USD,
-//                new BigDecimal("2000.0"),
-//                TransferOperationRequest.ActionEnum.GET
-//        );
-//
-//        StepVerifier.create(transferService.processTransferTransaction(cashOperationRequest))
-//                .assertNext(
-//                        cashOperationResponse -> {
-//                            assertNotNull(cashOperationResponse, "Объект не должен быть null");
-//                            assertEquals(CashOperationResponse.OperationStatusEnum.FAILED, cashOperationResponse.getOperationStatus());
-//                            assertFalse(cashOperationResponse.getErrors().isEmpty());
-//                            assertEquals(List.of("Превышена допустимая сумма снятия наличных"), cashOperationResponse.getErrors());
-//                        }
-//                ).verifyComplete();
-//
-//        StepVerifier.create(transferTransactionInfoRepository.findAll())
-//                .assertNext(
-//                        cashTransactionInfo -> {
-//                            assertNotNull(cashTransactionInfo, "Объект не должен быть null");
-//                            assertEquals(1L, cashTransactionInfo.getId());
-//                            assertEquals("test_user1", cashTransactionInfo.getLogin());
-//                            assertEquals(CashCurrencyEnum.USD.name(), cashTransactionInfo.getCurrency());
-//                            assertEquals(0, new BigDecimal("2000.0").compareTo(cashTransactionInfo.getAmount()));
-//                            assertEquals(TransferOperationRequest.ActionEnum.GET.name(), cashTransactionInfo.getAction());
-//                            assertTrue(cashTransactionInfo.isBlocked());
-//                            assertFalse(cashTransactionInfo.isSuccess());
-//                        }
-//                ).verifyComplete();
-//
-//        StepVerifier.create(outboxNotificationRepository.findAll())
-//                .assertNext(
-//                        outboxNotification -> {
-//                            assertNotNull(outboxNotification, "Объект не должен быть null");
-//                            assertEquals(1L, outboxNotification.getTransactionId());
-//                            assertEquals("ivanov@example.ru", outboxNotification.getEmail());
-//                            assertEquals("Блокировка операции: Превышена допустимая сумма снятия наличных", outboxNotification.getMessage());
-//                        }
-//                ).verifyComplete();
-//    }
-//
-//    @Test
-//    void processTransferTransactionFailed_InsufficientFunds() {
-//        TransferOperationRequest cashOperationRequest = new TransferOperationRequest(
-//                "test_user1",
-//                CashCurrencyEnum.RUB,
-//                new BigDecimal("100000.0"),
-//                TransferOperationRequest.ActionEnum.GET
-//        );
-//
-//        StepVerifier.create(transferService.processTransferTransaction(cashOperationRequest))
-//                .assertNext(
-//                        cashOperationResponse -> {
-//                            assertNotNull(cashOperationResponse, "Объект не должен быть null");
-//                            assertEquals(CashOperationResponse.OperationStatusEnum.FAILED, cashOperationResponse.getOperationStatus());
-//                            assertFalse(cashOperationResponse.getErrors().isEmpty());
-//                            assertEquals(List.of("На счете недостаточно средств"), cashOperationResponse.getErrors());
-//                        }
-//                ).verifyComplete();
-//
-//        StepVerifier.create(transferTransactionInfoRepository.findAll())
-//                .assertNext(
-//                        cashTransactionInfo -> {
-//                            assertNotNull(cashTransactionInfo, "Объект не должен быть null");
-//                            assertEquals(1L, cashTransactionInfo.getId());
-//                            assertEquals("test_user1", cashTransactionInfo.getLogin());
-//                            assertEquals(CashCurrencyEnum.RUB.name(), cashTransactionInfo.getCurrency());
-//                            assertEquals(0, new BigDecimal("100000.0").compareTo(cashTransactionInfo.getAmount()));
-//                            assertEquals(TransferOperationRequest.ActionEnum.GET.name(), cashTransactionInfo.getAction());
-//                            assertFalse(cashTransactionInfo.isBlocked());
-//                            assertFalse(cashTransactionInfo.isSuccess());
-//                        }
-//                ).verifyComplete();
-//
-//    StepVerifier.create(outboxNotificationRepository.findAll())
-//        .assertNext(
-//            outboxNotification -> {
-//              assertNotNull(outboxNotification, "Объект не должен быть null");
-//              assertEquals(1L, outboxNotification.getTransactionId());
-//              assertEquals("ivanov@example.ru", outboxNotification.getEmail());
-//              assertEquals(
-//                  "Отмена операции c наличными. Список ошибок: [На счете недостаточно средств]",
-//                  outboxNotification.getMessage());
-//            })
-//        .verifyComplete();
-//    }
+    @Test
+    void processTransferTransactionWithCurrencyExchangeSuccess() {
+        TransferOperationRequest transferOperationRequest = new TransferOperationRequest(
+                "test_user1",
+                TransferCurrencyEnum.RUB,
+                "test_user2",
+                TransferCurrencyEnum.USD,
+                new BigDecimal("1000.0")
+        );
 
+        StepVerifier.create(transferService.processTransferTransaction(transferOperationRequest))
+                .assertNext(
+                        transferOperationResponse -> {
+                            assertNotNull(transferOperationResponse, "Объект не должен быть null");
+                            assertEquals(TransferOperationResponse.OperationStatusEnum.SUCCESS, transferOperationResponse.getOperationStatus());
+                            assertTrue(transferOperationResponse.getErrors().isEmpty());
+                        }
+                ).verifyComplete();
+
+        StepVerifier.create(transferTransactionInfoRepository.findAll())
+                .assertNext(
+                        cashTransactionInfo -> {
+                            assertNotNull(cashTransactionInfo, "Объект не должен быть null");
+                            assertEquals(1L, cashTransactionInfo.getId());
+                            assertEquals("test_user1", cashTransactionInfo.getFromLogin());
+                            assertEquals("test_user2", cashTransactionInfo.getToLogin());
+                            assertEquals(TransferCurrencyEnum.RUB.name(), cashTransactionInfo.getFromCurrency());
+                            assertEquals(TransferCurrencyEnum.USD.name(), cashTransactionInfo.getToCurrency());
+                            assertEquals(0, new BigDecimal("1000.0").compareTo(cashTransactionInfo.getFromAmount()));
+                            assertEquals(0, new BigDecimal("12.0").compareTo(cashTransactionInfo.getToAmount()));
+                            assertFalse(cashTransactionInfo.isBlocked());
+                            assertTrue(cashTransactionInfo.isSuccess());
+                        }
+                ).verifyComplete();
+
+        StepVerifier.create(outboxNotificationRepository.findAll().collectList())
+                .assertNext(outboxNotifications -> {
+                    assertEquals(2, outboxNotifications.size());
+                    assertTrue(
+                            outboxNotifications.containsAll(List.of(
+                                    OutboxNotification.builder()
+                                            .id(1L)
+                                            .transactionId(1L)
+                                            .email("ivanov@example.ru")
+                                            .message("Успешный перевод 1000.0RUB клиенту Петров Петр")
+                                            .isSent(false)
+                                            .build(),
+                                    OutboxNotification.builder()
+                                            .id(2L)
+                                            .transactionId(1L)
+                                            .email("petrov@example.ru")
+                                            .message("Получен перевод 12.0USD от клиента Иванов Иван")
+                                            .isSent(false)
+                                            .build()
+                            ))
+                    );
+                })
+                .verifyComplete();
+    }
+
+    @Test
+    void processTransferTransactionFailed_WhenTransferItselfBetweenSameAccounts() {
+        TransferOperationRequest transferOperationRequest = new TransferOperationRequest(
+                "test_user1",
+                TransferCurrencyEnum.RUB,
+                "test_user1",
+                TransferCurrencyEnum.RUB,
+                new BigDecimal("1000.0")
+        );
+
+        StepVerifier.create(transferService.processTransferTransaction(transferOperationRequest))
+                .assertNext(
+                        transferOperationResponse -> {
+                            assertNotNull(transferOperationResponse, "Объект не должен быть null");
+                            assertEquals(TransferOperationResponse.OperationStatusEnum.FAILED, transferOperationResponse.getOperationStatus());
+                            assertFalse(transferOperationResponse.getErrors().isEmpty());
+                            assertEquals(List.of("Перевести можно только между разными счетами"), transferOperationResponse.getErrors());
+                        }
+                ).verifyComplete();
+
+        StepVerifier.create(transferTransactionInfoRepository.findAll())
+                .assertNext(
+                        cashTransactionInfo -> {
+                            assertNotNull(cashTransactionInfo, "Объект не должен быть null");
+                            assertEquals(1L, cashTransactionInfo.getId());
+                            assertEquals("test_user1", cashTransactionInfo.getFromLogin());
+                            assertEquals("test_user1", cashTransactionInfo.getToLogin());
+                            assertEquals(TransferCurrencyEnum.RUB.name(), cashTransactionInfo.getFromCurrency());
+                            assertEquals(TransferCurrencyEnum.RUB.name(), cashTransactionInfo.getToCurrency());
+                            assertEquals(0, new BigDecimal("1000.0").compareTo(cashTransactionInfo.getFromAmount()));
+                            assertEquals(0, new BigDecimal("1000.0").compareTo(cashTransactionInfo.getToAmount()));
+                            assertFalse(cashTransactionInfo.isBlocked());
+                            assertFalse(cashTransactionInfo.isSuccess());
+                        }
+                ).verifyComplete();
+
+        StepVerifier.create(outboxNotificationRepository.findAll().collectList())
+                .assertNext(outboxNotifications -> {
+                    log.info("Запись в БД: {}", outboxNotifications);
+                    assertEquals(1, outboxNotifications.size());
+                    assertTrue(
+                            outboxNotifications.contains(
+                                    OutboxNotification.builder()
+                                            .id(1L)
+                                            .transactionId(1L)
+                                            .email("ivanov@example.ru")
+                                            .message("Отмена перевода между счетами. Список ошибок: [Перевести можно только между разными счетами]")
+                                            .isSent(false)
+                                            .build()
+                            )
+                    );
+                })
+                .verifyComplete();
+    }
+
+    @Test
+    void processTransferTransactionFailed_WhenTransferItselfMissingAccounts() {
+        TransferOperationRequest transferOperationRequest = new TransferOperationRequest(
+                "test_user1",
+                TransferCurrencyEnum.RUB,
+                "test_user1",
+                TransferCurrencyEnum.USD,
+                new BigDecimal("1000.0")
+        );
+
+    StepVerifier.create(transferService.processTransferTransaction(transferOperationRequest))
+        .assertNext(
+            transferOperationResponse -> {
+              assertNotNull(transferOperationResponse, "Объект не должен быть null");
+              assertEquals(
+                  TransferOperationResponse.OperationStatusEnum.FAILED,
+                  transferOperationResponse.getOperationStatus());
+              assertFalse(transferOperationResponse.getErrors().isEmpty());
+              assertEquals(
+                  List.of("У Вас отсутствует счет в выбранной валюте"),
+                  transferOperationResponse.getErrors());
+            })
+        .verifyComplete();
+
+        StepVerifier.create(transferTransactionInfoRepository.findAll())
+                .assertNext(
+                        cashTransactionInfo -> {
+                            assertNotNull(cashTransactionInfo, "Объект не должен быть null");
+                            assertEquals(1L, cashTransactionInfo.getId());
+                            assertEquals("test_user1", cashTransactionInfo.getFromLogin());
+                            assertEquals("test_user1", cashTransactionInfo.getToLogin());
+                            assertEquals(TransferCurrencyEnum.RUB.name(), cashTransactionInfo.getFromCurrency());
+                            assertEquals(TransferCurrencyEnum.USD.name(), cashTransactionInfo.getToCurrency());
+                            assertEquals(0, new BigDecimal("1000.0").compareTo(cashTransactionInfo.getFromAmount()));
+                            assertEquals(0, new BigDecimal("12.0").compareTo(cashTransactionInfo.getToAmount()));
+                            assertFalse(cashTransactionInfo.isBlocked());
+                            assertFalse(cashTransactionInfo.isSuccess());
+                        }
+                ).verifyComplete();
+
+    StepVerifier.create(outboxNotificationRepository.findAll().collectList())
+        .assertNext(
+            outboxNotifications -> {
+              log.info("Запись в БД: {}", outboxNotifications);
+              assertEquals(1, outboxNotifications.size());
+              assertTrue(
+                  outboxNotifications.contains(
+                      OutboxNotification.builder()
+                          .id(1L)
+                          .transactionId(1L)
+                          .email("ivanov@example.ru")
+                          .message(
+                              "Отмена перевода между счетами. Список ошибок: [У Вас отсутствует счет в выбранной валюте]")
+                          .isSent(false)
+                          .build()));
+            })
+        .verifyComplete();
+    }
 }

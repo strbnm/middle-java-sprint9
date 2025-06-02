@@ -67,25 +67,33 @@ public class TransferServiceImpl implements TransferService {
         .save(transactionInfo)
         .flatMap(
             savedInfo -> {
-              if (savedInfo.getFromLogin().equals(savedInfo.getToLogin()) && !savedInfo.getFromCurrency().equals(savedInfo.getToCurrency())) {
-                return Mono.zip(
-                        getUserDetailResponseMono(savedInfo.getFromLogin()),
-                        checkTransaction(savedInfo))
-                    .flatMap(
-                        tuple ->
-                            handleCheckTransactionItself(tuple.getT1(), tuple.getT2(), savedInfo));
-              } else if (savedInfo.getFromLogin().equals(savedInfo.getToLogin())) {
-                  return getTransferOperationResponse(TransferOperationResponse.OperationStatusEnum.FAILED, List.of("Перевести можно только между разными счетами"));
+              if (savedInfo.getFromLogin().equals(savedInfo.getToLogin())) {
+                return performTransferOperationItself(savedInfo);
               } else {
-                return Mono.zip(
-                        getUserDetailResponseMono(savedInfo.getFromLogin()),
-                        getUserDetailResponseMono(savedInfo.getToLogin()),
-                        checkTransaction(savedInfo))
-                    .flatMap(
-                        tuple -> handleCheckTransactionOther(tuple.getT1(), tuple.getT2(), tuple.getT3(), savedInfo));
+                return performTransferOperationOther(savedInfo);
               }
             })
         .onErrorResume(e -> handleProcessingError(transactionInfo, e));
+    }
+
+    private Mono<TransferOperationResponse> performTransferOperationItself(TransferTransactionInfo savedInfo) {
+        return Mono.zip(
+                        getUserDetailResponseMono(savedInfo.getFromLogin()),
+                        checkTransaction(savedInfo))
+                .flatMap(
+                        tuple ->
+                                handleCheckTransactionItself(tuple.getT1(), tuple.getT2(), savedInfo));
+    }
+
+    private Mono<TransferOperationResponse> performTransferOperationOther(TransferTransactionInfo savedInfo) {
+        return Mono.zip(
+                        getUserDetailResponseMono(savedInfo.getFromLogin()),
+                        getUserDetailResponseMono(savedInfo.getToLogin()),
+                        checkTransaction(savedInfo))
+                .flatMap(
+                        tuple ->
+                                handleCheckTransactionOther(
+                                        tuple.getT1(), tuple.getT2(), tuple.getT3(), savedInfo));
     }
 
     private Mono<TransferOperationResponse> handleCheckTransactionOther(
@@ -137,8 +145,17 @@ public class TransferServiceImpl implements TransferService {
         info.setBlocked(false);
         info.setUpdatedAt(Instant.now().getEpochSecond());
         return transferTransactionInfoRepository.save(info)
-                .flatMap(this::performConvertOperation)
-                .flatMap(updatedWithToAmount -> performAccountsOperationItself(updatedWithToAmount, user));
+                .flatMap(savedInfo -> {
+                    if (savedInfo.getFromCurrency().equals(savedInfo.getToCurrency())) {
+                        savedInfo.setToAmount(savedInfo.getFromAmount());
+                        savedInfo.setUpdatedAt(Instant.now().getEpochSecond());
+                        return transferTransactionInfoRepository.save(info)
+                                .flatMap(updatedWithToAmount -> performAccountsOperationItself(updatedWithToAmount, user));
+                    } else {
+                     return performConvertOperation(savedInfo)
+                             .flatMap(updatedWithToAmount -> performAccountsOperationItself(updatedWithToAmount, user));
+                    }
+                });
     }
 
     private Mono<TransferTransactionInfo> performConvertOperation(TransferTransactionInfo info) {
@@ -156,7 +173,7 @@ public class TransferServiceImpl implements TransferService {
 
     private Mono<TransferOperationResponse> performAccountsOperationItself(TransferTransactionInfo info, UserDetailResponse user) {
         TransferRequest request = buildTransferRequest(info);
-
+        log.info("Запрос на перевод: {}", request);
         return getAccountOperationResponse(request, user.getLogin())
                 .flatMap(response -> {
                     log.info("Ответ сервиса аккаунтов: {}", response);
@@ -219,7 +236,7 @@ public class TransferServiceImpl implements TransferService {
                                                         || throwable instanceof WebClientRequestException)
                                 .onRetryExhaustedThrow(
                                         (spec, signal) ->
-                                                new UnavailabilityAccountsServiceException("Сервис аккаунтов временно недоступен.")))
+                                                new UnavailabilityAccountsServiceException("Сервис конвертации валют временно недоступен.")))
                 .onErrorResume(WebClientResponseException.class, ex ->
                         Mono.error(new AccountsServiceException("Ошибка при обработке транзакции: " + ex.getMessage())));
     }
@@ -263,6 +280,7 @@ public class TransferServiceImpl implements TransferService {
     }
 
     private Mono<AccountOperationResponse> getAccountOperationResponse(TransferRequest transferRequest, String login) {
+      log.info("Логин: {}. Запрос: {}", login, transferRequest);
         return accountsServiceApi.transferTransaction(login, transferRequest)
                 .retryWhen(
                         Retry.max(1)

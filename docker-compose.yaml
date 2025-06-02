@@ -335,6 +335,73 @@ services:
     networks:
       - bank-net
 
+  transfer-service:
+    build:
+      context: ./transfer-service
+    image: transfer_service:1.0.0
+    container_name: transfer-service
+    hostname: transfer-service
+    environment:
+      <<: *common-env
+      SERVICE_DB_HOST: ${TRANSFER_SERVICE_DB_HOST}
+      SERVICE_DB_USER: ${TRANSFER_SERVICE_DB_USER}
+      SERVICE_DB_PASSWORD: ${TRANSFER_SERVICE_DB_PASSWORD}
+    expose:
+      - "8080"
+    ports:
+      - "8088:8080"
+    depends_on:
+      spring-cloud-config-server:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+      cash-service-db:
+        condition: service_healthy
+      notifications-service:
+        condition: service_healthy
+      blocker-service:
+        condition: service_healthy
+      accounts-service:
+        condition: service_healthy
+      exchange-service:
+        condition: service_healthy
+    healthcheck:
+      test: "curl --fail --silent ${API_GATEWAY_URL}/transfer-service/actuator/health | grep UP || exit 1"
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+    networks:
+      - bank-net
+
+  transfer-service-db:
+    image: postgres:17.2
+    container_name: transfer-service-db
+    hostname: transfer-service-db
+    restart: "no"
+    volumes:
+      - transfer_service_db_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: ${TRANSFER_SERVICE_DB_USER}
+      POSTGRES_PASSWORD: ${TRANSFER_SERVICE_DB_PASSWORD}
+      POSTGRES_DB: app_db
+    expose:
+      - "5432"
+    ports:
+      - "5442:5432"
+    healthcheck:
+      test: pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB
+      interval: 10s
+      timeout: 5s
+      start_period: 10s
+      retries: 5
+    networks:
+      - bank-net
+
   exchange-generator:
     build:
       context: ./exchange-generator
@@ -476,3 +543,5 @@ volumes:
     name: accounts_service_db_data
   cash_service_db_data:
     name: cash_service_db_data
+  transfer_service_db_data:
+    name: transfer_service_db_data
