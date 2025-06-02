@@ -38,12 +38,96 @@ public class ContractVerifierTest extends BaseContractTest {
 	}
 
 	@Test
+	public void validate_shouldConvertAmountCNY2CNY() throws Exception {
+		// given:
+			WebTestClientRequestSpecification request = given()
+					.header("Content-Type", "application/json")
+					.header("Accept", "application/json")
+					.body("{\"from\":\"CNY\",\"to\":\"CNY\",\"amount\":1000.0}");
+
+		// when:
+			WebTestClientResponse response = given().spec(request)
+					.post("/api/v1/convert");
+
+		// then:
+			assertThat(response.statusCode()).isEqualTo(200);
+			assertThat(response.header("Content-Type")).matches("application/json.*");
+
+		// and:
+			DocumentContext parsedJson = JsonPath.parse(response.getBody().asString());
+			assertThatJson(parsedJson).field("['amount']").isEqualTo(1000.0);
+	}
+
+	@Test
+	public void validate_shouldConvertAmountRUB2CNY() throws Exception {
+		// given:
+			WebTestClientRequestSpecification request = given()
+					.header("Content-Type", "application/json")
+					.header("Accept", "application/json")
+					.body("{\"from\":\"RUB\",\"to\":\"CNY\",\"amount\":200000.0}");
+
+		// when:
+			WebTestClientResponse response = given().spec(request)
+					.post("/api/v1/convert");
+
+		// then:
+			assertThat(response.statusCode()).isEqualTo(200);
+			assertThat(response.header("Content-Type")).matches("application/json.*");
+
+		// and:
+			DocumentContext parsedJson = JsonPath.parse(response.getBody().asString());
+			assertThatJson(parsedJson).field("['amount']").isEqualTo(22000.0);
+	}
+
+	@Test
+	public void validate_shouldConvertAmountRUB2RUB() throws Exception {
+		// given:
+			WebTestClientRequestSpecification request = given()
+					.header("Content-Type", "application/json")
+					.header("Accept", "application/json")
+					.body("{\"from\":\"USD\",\"to\":\"USD\",\"amount\":1000.0}");
+
+		// when:
+			WebTestClientResponse response = given().spec(request)
+					.post("/api/v1/convert");
+
+		// then:
+			assertThat(response.statusCode()).isEqualTo(200);
+			assertThat(response.header("Content-Type")).matches("application/json.*");
+
+		// and:
+			DocumentContext parsedJson = JsonPath.parse(response.getBody().asString());
+			assertThatJson(parsedJson).field("['amount']").isEqualTo(1000.0);
+	}
+
+	@Test
+	public void validate_shouldConvertAmountUDS2USD() throws Exception {
+		// given:
+			WebTestClientRequestSpecification request = given()
+					.header("Content-Type", "application/json")
+					.header("Accept", "application/json")
+					.body("{\"from\":\"RUB\",\"to\":\"RUB\",\"amount\":1000.0}");
+
+		// when:
+			WebTestClientResponse response = given().spec(request)
+					.post("/api/v1/convert");
+
+		// then:
+			assertThat(response.statusCode()).isEqualTo(200);
+			assertThat(response.header("Content-Type")).matches("application/json.*");
+
+		// and:
+			DocumentContext parsedJson = JsonPath.parse(response.getBody().asString());
+			assertThatJson(parsedJson).field("['amount']").isEqualTo(1000.0);
+	}
+
+	@Test
 	public void validate_shouldCreateRates() throws Exception {
 		// given:
 			WebTestClientRequestSpecification request = given()
 					.header("Content-Type", "application/json")
 					.header("Accept", "application/json")
-					.body("{\"timestamp\":1421390701,\"rates\":[{\"title\":\"\u0414\u043E\u043B\u043B\u0430\u0440\",\"name\":\"USD\",\"value\":77705623},{\"title\":\"\u042E\u0430\u043D\u044C\",\"name\":\"CNY\",\"value\":-1650196105},{\"title\":\"\u0420\u0443\u0431\u043B\u044C\",\"name\":\"RUB\",\"value\":1.0}]}");
+					.body("{\"timestamp\":1912471764,\"rates\":[{\"title\":\"\u0414\u043E\u043B\u043B\u0430\u0440\",\"name\":\"USD\",\"value\":-1097862630},{\"title\":\"\u042E\u0430\u043D\u044C\",\"name\":\"CNY\",\"value\":-934988879},{\"title\":\"\u0420\u0443\u0431\u043B\u044C\",\"name\":\"RUB\",\"value\":1.0}]}");
 
 		// when:
 			WebTestClientResponse response = given().spec(request)

@@ -37,6 +37,10 @@ public abstract class BaseContractTest {
   public void setup() {
     RestAssuredWebTestClient.webTestClient(webTestClient);
     when(exchangeService.convert("RUB", "USD", BigDecimal.valueOf(1000.0))).thenReturn(Mono.just(BigDecimal.valueOf(12)));
+    when(exchangeService.convert("RUB", "RUB", BigDecimal.valueOf(1000.0))).thenReturn(Mono.just(BigDecimal.valueOf(1000)));
+    when(exchangeService.convert("USD", "USD", BigDecimal.valueOf(1000.0))).thenReturn(Mono.just(BigDecimal.valueOf(1000)));
+    when(exchangeService.convert("CNY", "CNY", BigDecimal.valueOf(1000.0))).thenReturn(Mono.just(BigDecimal.valueOf(1000)));
+    when(exchangeService.convert("RUB", "CNY", BigDecimal.valueOf(200000.0))).thenReturn(Mono.just(BigDecimal.valueOf(22000)));
     when(exchangeService.saveRates(any(ExchangeRateRequest.class))).thenReturn(Mono.empty());
     when(exchangeService.getRates()).thenReturn(Flux.just(
             Rate.builder()
