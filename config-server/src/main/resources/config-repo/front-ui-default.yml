@@ -1,0 +1,42 @@
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,refresh,busrefresh,busshutdown
+
+eureka:
+  client:
+    registerWithEureka: true
+    serviceUrl:
+      defaultZone: ${EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE}
+    healthcheck:
+      enabled: true
+
+spring:
+  application:
+    name: front-ui
+
+  rabbitmq:
+    host: rabbitmq
+    port: 5672
+    username: ${RABBITMQ_DEFAULT_USER}
+    password: ${RABBITMQ_DEFAULT_PASS}
+
+  rest:
+    cash-service:
+      url: ${API_GATEWAY_URL}/cash-service
+    transfer-service:
+      url: ${API_GATEWAY_URL}/transfer-service
+    accounts-service:
+      url: ${API_GATEWAY_URL}/accounts-service
+
+  thymeleaf:
+    check-template-location: true
+    prefix: classpath:/templates/
+    suffix: .html
+    mode: HTML
+    cache: false
+
+server:
+  servlet:
+    context-path: /

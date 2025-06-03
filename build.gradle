@@ -20,6 +20,7 @@ dependencies {
     implementation project(':blocker-service')
     implementation project(':cash-service')
     implementation project(':transfer-service')
+    implementation project(':front-ui')
 }
 
 

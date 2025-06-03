@@ -9,4 +9,5 @@ include 'blocker-service'
 include 'accounts-service'
 include 'cash-service'
 include 'transfer-service'
+include 'front-ui'
 

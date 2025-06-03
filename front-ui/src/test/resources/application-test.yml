@@ -1,0 +1,25 @@
+spring:
+  application:
+    name: front-ui
+
+  cloud:
+    config:
+      enabled: false
+
+  rabbitmq:
+    listener:
+      direct:
+        auto-startup: false
+
+  rest:
+    transfer-service:
+      url: http://localhost:8080
+    cash-service:
+      url: http://localhost:8081
+    accounts-service:
+      url: http://localhost:8082
+
+eureka:
+  client:
+    enabled: false
+

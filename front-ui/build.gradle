@@ -1,0 +1,140 @@
+import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+    implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6:3.1.3.RELEASE'
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+    implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'  // Для регистрации в Eureka и обнаружения других сервисов
+    implementation 'org.springframework.cloud:spring-cloud-starter-config'  // Для взаимодействия с Config Server
+    implementation 'org.springframework.cloud:spring-cloud-starter-bus-amqp'  // Для работы Spring Cloud Bus c RabbitMQ
+    implementation 'org.mapstruct:mapstruct:1.6.3'
+    annotationProcessor 'org.mapstruct:mapstruct-processor:1.6.3'
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'io.projectreactor:reactor-test:3.7.3'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testImplementation 'org.springframework.security:spring-security-test'
+    testImplementation 'io.rest-assured:spring-web-test-client:5.5.2'
+    testImplementation 'org.springframework.cloud:spring-cloud-starter-contract-stub-runner'
+}
+
+springBoot {
+    buildInfo()  // исполнение задачи по добавлению информации о сборке
+}
+
+bootJar {
+    launchScript()
+    // добавление атрибутов к манифесту
+    manifest {
+        attributes(
+                'Implementation-Title': 'Front UI',
+                'Build-Timestamp': System.currentTimeMillis(),
+                'Built-By': project.hasProperty('builtBy') ? project.property('builtBy') : 'default-builder'
+        )
+    }
+    // имя и версия создаваемого архива
+    archiveBaseName = 'front-ui'
+    archiveVersion = '1.0.0'
+}
+
+
+sourceSets.main.java.srcDir "$projectDir/build/generated/src/main/java"
+
+tasks.register('buildAccountsClient', GenerateTask) {
+    generatorName.set("java")
+    inputSpec.set("$rootDir/openapi/accounts-openapi.yml")
+    outputDir.set("$projectDir/build/generated")
+    modelPackage.set("ru.strbnm.front_ui.client.accounts.domain")
+    invokerPackage.set("ru.strbnm.front_ui.client.accounts")
+    apiPackage.set("ru.strbnm.front_ui.client.accounts.api")
+    configOptions.set([
+            hideGenerationTimestamp: "true",
+            library                : "webclient",
+            useJakartaEe           : "true",
+            useTags                : "true",
+            openApiNullable        : "false",
+            serializableModel      : "true",
+    ])
+    typeMappings.set(Double: "java.math.BigDecimal")
+}
+
+tasks.named('compileJava') {
+    dependsOn(tasks.buildAccountsClient)
+}
+
+tasks.register('buildCashClient', GenerateTask) {
+    generatorName.set("java")
+    inputSpec.set("$rootDir/openapi/cash-openapi.yml")
+    outputDir.set("$projectDir/build/generated")
+    modelPackage.set("ru.strbnm.front_ui.client.cash.domain")
+    invokerPackage.set("ru.strbnm.front_ui.client.cash")
+    apiPackage.set("ru.strbnm.front_ui.client.cash.api")
+    configOptions.set([
+            hideGenerationTimestamp: "true",
+            library                : "webclient",
+            useJakartaEe           : "true",
+            useTags                : "true",
+            openApiNullable        : "false",
+            serializableModel      : "true",
+    ])
+    typeMappings.set(Double: "java.math.BigDecimal")
+}
+
+tasks.named('compileJava') {
+    dependsOn(tasks.buildCashClient)
+}
+
+
+tasks.register('buildTransferClient', GenerateTask) {
+    generatorName.set("java")
+    inputSpec.set("$rootDir/openapi/transfer-openapi.yml")
+    outputDir.set("$projectDir/build/generated")
+    modelPackage.set("ru.strbnm.front_ui.client.transfer.domain")
+    invokerPackage.set("ru.strbnm.front_ui.client.transfer")
+    apiPackage.set("ru.strbnm.front_ui.client.transfer.api")
+    configOptions.set([
+            hideGenerationTimestamp: "true",
+            library                : "webclient",
+            useJakartaEe           : "true",
+            useTags                : "true",
+            openApiNullable        : "false",
+            serializableModel      : "true",
+    ])
+    typeMappings.set(Double: "java.math.BigDecimal")
+}
+
+tasks.named('compileJava') {
+    dependsOn(tasks.buildTransferClient)
+}
+
+tasks.register('buildExchangeClient', GenerateTask) {
+    generatorName.set("java")
+    inputSpec.set("$rootDir/openapi/exchange-openapi.yml")
+    outputDir.set("$projectDir/build/generated")
+    modelPackage.set("ru.strbnm.front_ui.client.exchange.domain")
+    invokerPackage.set("ru.strbnm.front_ui.client.exchange")
+    apiPackage.set("ru.strbnm.front_ui.client.exchange.api")
+    configOptions.set([
+            hideGenerationTimestamp: "true",
+            library                : "webclient",
+            useJakartaEe           : "true",
+            useTags                : "true",
+            openApiNullable        : "false",
+            serializableModel      : "true",
+    ])
+    typeMappings.set(Double: "java.math.BigDecimal")
+}
+
+tasks.named('compileJava') {
+    dependsOn(tasks.buildExchangeClient)
+}
