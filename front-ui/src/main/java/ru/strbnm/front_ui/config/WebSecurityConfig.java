@@ -33,7 +33,7 @@ public class WebSecurityConfig {
                         .csrfTokenRepository(CookieServerCsrfTokenRepository.withHttpOnlyFalse())
                 )
                 .authorizeExchange(exchange -> exchange
-                    .pathMatchers("/", "/signup/**", "/css/**", "/login").permitAll()
+                    .pathMatchers("/", "/signup", "/css/**", "/login").permitAll()
                     .anyExchange().authenticated()
                 )
                 .formLogin(Customizer.withDefaults())

@@ -452,6 +452,42 @@ services:
     networks:
       - bank-net
 
+  front-ui:
+    build:
+      context: ./front-ui
+    image: front-ui:1.0.0
+    container_name: front-ui
+    hostname: front-ui
+    environment:
+      <<: *common-env
+    expose:
+      - "8080"
+    ports:
+      - "8095:8080"
+    depends_on:
+      spring-cloud-config-server:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      accounts-service:
+        condition: service_healthy
+      transfer-service:
+        condition: service_healthy
+      cash-service:
+        condition: service_healthy
+      exchange-service:
+        condition: service_healthy
+    healthcheck:
+      test: "curl --fail --silent ${API_GATEWAY_URL}/bank-app/actuator/health | grep UP || exit 1"
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+    networks:
+      - bank-net
+
   rabbitmq:
     restart: always
     image: rabbitmq:3-management

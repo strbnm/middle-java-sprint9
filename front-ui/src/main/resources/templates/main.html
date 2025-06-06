@@ -1,12 +1,13 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
 
 <head>
-    <title>Корзина товаров</title>
+    <meta charset="UTF-8"/>
+    <title>Приложение Банк</title>
     <script language="JavaScript">
         setInterval(() => {
             var td = document.getElementById('exchange_rates');
-            fetch('http://localhost:8080/api/rates')
+            fetch('http://localhost:8090/exchange-service/api/v1/rates')
                 .then(response => response.json())
                 .then(json => {
                     var table = '<table style="width:100%;margin-left:auto;margin-right:auto;border-radius:2%;padding:10px;background-color:whitesmoke;">';
@@ -28,16 +29,17 @@
 </head>
 
 <body>
-<a href="/signup" style="float:right;">
+<a  th:href="@{/signup}" style="float:right;">
     <b>РЕГИСТРАЦИЯ &plus;</b>
 </a>
 <br>
-<a href="/logout" style="float:right;">
+<a sec:authorize="isAuthenticated()" th:href="@{/logout}" style="float:right;">
     <b>ВЫЙТИ &cudarrr;</b>
 </a>
 <table style="width:70%;margin-left:auto;margin-right:auto;">
     <tr><td style="padding:2px;">
-        <form method="post" th:action="${'/user/'+login+'/editPassword'}">
+        <form method="post" th:action="@{/user/{login}/editPassword(login=${login})}">
+<!--            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>-->
         <table style="width:100%;margin-left:auto;margin-right:auto;border-radius:2%;padding:10px;background-color:whitesmoke;">
             <tr>
                 <td style="font-weight:bold;">Логин</td>
@@ -55,14 +57,15 @@
                     </p>
                 </td>
                 <td style="text-align:right">
-                    <button>Изменить пароль</button>
+                    <button type="submit">Изменить пароль</button>
                 </td>
             </tr>
         </table>
         </form>
     </td>
     <tr><td style="padding:2px;">
-        <form method="post" th:action="${'/user/'+login+'/editUserAccounts'}">
+        <form method="post" th:action="@{/user/{login}/editUserAccounts(login=${login})}">
+<!--            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>-->
         <table style="width:100%;margin-left:auto;margin-right:auto;border-radius:2%;padding:10px;background-color:whitesmoke;">
             <tr th:if="${userAccountsErrors!=null}" th:each="userAccountsError : ${userAccountsErrors}">
                 <td style="color:red;" th:text="${userAccountsError}"/>
@@ -72,6 +75,13 @@
                 <td th:text="${name}"/>
                 <td>
                     <input name="name" type="text" style="width:100%"/>
+                </td>
+            </tr>
+            <tr>
+                <td style="font-weight:bold;">Электронная почта</td>
+                <td th:text="${email}"/>
+                <td>
+                    <input name="email" type="text" style="width:100%"/>
                 </td>
             </tr>
             <tr>
@@ -85,19 +95,20 @@
                 <td style="font-weight:bold;" th:text="${account.getCurrency().getTitle()}"/>
                 <td th:text="${account.isExists() ? (account.getValue()+' '+account.getCurrency().name()) : ''}"/>
                 <td style="text-align:right">
-                    <input name="account" type="checkbox" th:checked="${account.isExists()}" th:value="${account.getCurrency().name()}"/>
+                    <input name="accounts" type="checkbox" th:checked="${account.isExists()}" th:value="${account.getCurrency().name()}"/>
                 </td>
             </tr>
             <tr>
                 <td style="text-align:right" colspan="3">
-                    <button>Сохранить изменения</button>
+                    <button type="submit">Сохранить изменения</button>
                 </td>
             </tr>
         </table>
         </form>
     </td></tr>
     <tr><td style="padding:2px;">
-        <form method="post" th:action="${'/user/'+login+'/cash'}">
+        <form method="post" th:action="@{/user/{login}/cash(login=${login})}">
+<!--            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>-->
             <table style="width:100%;margin-left:auto;margin-right:auto;border-radius:2%;padding:10px;background-color:whitesmoke;">
                 <tr th:if="${cashErrors!=null}" th:each="cashError : ${cashErrors}">
                     <td style="color:red;" th:text="${cashError}"/>
@@ -111,19 +122,20 @@
                         </select>
                     </td>
                     <td>
-                        <input name="value" type="number" style="width:100%" required/>
+                        <input name="amount" type="number" step="any" style="width:100%" required/>
                     </td>
                     <td>
                     <td style="text-align:right">
-                        <button name="action" value="PUT">Положить</button>
-                        <button name="action" value="GET">Снять</button>
+                        <button type="submit" name="action" value="PUT">Положить</button>
+                        <button type="submit" name="action" value="GET">Снять</button>
                     </td>
                 </tr>
             </table>
         </form>
     </td></tr>
     <tr><td style="padding:2px;">
-        <form method="post" th:action="${'/user/'+login+'/transfer'}">
+        <form method="post" th:action="@{/user/{login}/transfer(login=${login})}">
+<!--            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>-->
             <table style="width:100%;margin-left:auto;margin-right:auto;border-radius:2%;padding:10px;background-color:whitesmoke;">
                 <tr th:if="${transferErrors!=null}" th:each="transferError : ${transferErrors}">
                     <td style="color:red;" th:text="${transferError}"/>
@@ -132,29 +144,30 @@
                     <td style="font-weight:bold;">Перевод себе</td>
                     <td>
                         Со счета
-                        <select name="from_currency">
+                        <select name="fromCurrency">
                             <option th:each="eachCurrency : ${currency}" th:value="${eachCurrency.name()}" th:text="${eachCurrency.getTitle()}"/>
                         </select>
                     </td>
                     <td>
                         На счет
-                        <select name="to_currency">
+                        <select name="toCurrency">
                             <option th:each="eachCurrency : ${currency}" th:value="${eachCurrency.name()}" th:text="${eachCurrency.getTitle()}"/>
                         </select>
                     </td>
                     <td>
-                        <input name="value" type="number" style="width:100%" required/>
+                        <input name="amount" type="number" step="any" style="width:100%" required/>
                     </td>
                     <td style="text-align:right">
-                        <input hidden name="to_login" th:value="${login}"/>
-                        <button>Перевести</button>
+                        <input hidden name="toLogin" th:value="${login}"/>
+                        <button type="submit">Перевести</button>
                     </td>
                 </tr>
             </table>
         </form>
     </td></tr>
     <tr><td style="padding:2px;">
-        <form method="post" th:action="${'/user/'+login+'/transfer'}">
+        <form method="post" th:action="@{/user/{login}/transfer(login=${login})}">
+<!--            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>-->
             <table style="width:100%;margin-left:auto;margin-right:auto;border-radius:2%;padding:10px;background-color:whitesmoke;">
                 <tr th:if="${transferOtherErrors!=null}" th:each="transferOtherError : ${transferOtherErrors}">
                     <td style="color:red;" th:text="${transferOtherError}"/>
@@ -163,27 +176,27 @@
                     <td style="font-weight:bold;">Перевод другому</td>
                     <td>
                         Со счета
-                        <select name="from_currency">
+                        <select name="fromCurrency">
                             <option th:each="eachCurrency : ${currency}" th:value="${eachCurrency.name()}" th:text="${eachCurrency.getTitle()}"/>
                         </select>
                     </td>
                     <td>
                         На счет
-                        <select name="to_currency">
+                        <select name="toCurrency">
                             <option th:each="eachCurrency : ${currency}" th:value="${eachCurrency.name()}" th:text="${eachCurrency.getTitle()}"/>
                         </select>
                     </td>
                     <td>
-                        <input name="value" type="number" required/>
+                        <input name="amount" type="number" step="any" required/>
                     </td>
                     <td>
                         Кому
-                        <select name="to_login">
+                        <select name="toLogin">
                             <option th:each="user : ${users}" th:value="${user.getLogin()}" th:text="${user.getName()}"/>
                         </select>
                     </td>
                     <td style="text-align:right">
-                        <button>Перевести</button>
+                        <button type="submit">Перевести</button>
                     </td>
                 </tr>
             </table>
