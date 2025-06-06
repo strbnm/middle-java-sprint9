@@ -210,10 +210,10 @@ class AccountsControllerIntegrationTest {
         UserRequest createUserRequestSuccess =
                 new UserRequest(
                         "test_user4",
-                        "$2a$12$i3Mc.UTtmmFNgiqx0csrHe.dGbdVwXPbuEJ0T92InqlzX4YTzmwBa",
                         "Сидоров Иван",
                         "sidorov@example.ru",
                         LocalDate.parse("2000-01-01"));
+        createUserRequestSuccess.setPassword("$2a$12$i3Mc.UTtmmFNgiqx0csrHe.dGbdVwXPbuEJ0T92InqlzX4YTzmwBa");
         webTestClient
                 .mutateWith(mockJwt())
                 .post()
@@ -254,10 +254,10 @@ class AccountsControllerIntegrationTest {
         UserRequest createUserRequestSuccess =
                 new UserRequest(
                         "test_user3",
-                        "$2a$12$i3Mc.UTtmmFNgiqx0csrHe.dGbdVwXPbuEJ0T92InqlzX4YTzmwBa",
                         "Сидоров Иван",
                         "sidorov@example.ru",
                         LocalDate.parse("2000-01-01"));
+        createUserRequestSuccess.setPassword("$2a$12$i3Mc.UTtmmFNgiqx0csrHe.dGbdVwXPbuEJ0T92InqlzX4YTzmwBa");
         webTestClient
                 .mutateWith(mockJwt())
                 .post()
@@ -559,10 +559,10 @@ class AccountsControllerIntegrationTest {
         UserRequest updateUserRequestSuccess =
                 new UserRequest(
                         "test_user3",
-                        "$2a$12$i3Mc.UTtmmFNgiqx0csrHe.dGbdVwXPbuEJ0T92InqlzX4YTzmwBa",
                         "Сидоров Иван",
                         "sidorov@example.ru",
                         LocalDate.parse("2000-01-01"));
+        updateUserRequestSuccess.setPassword("$2a$12$i3Mc.UTtmmFNgiqx0csrHe.dGbdVwXPbuEJ0T92InqlzX4YTzmwBa");
         updateUserRequestSuccess.setAccounts(List.of(AccountCurrencyEnum.CNY, AccountCurrencyEnum.RUB));
         webTestClient
                 .mutateWith(mockJwt())
@@ -609,10 +609,10 @@ class AccountsControllerIntegrationTest {
         UserRequest updateUserRequestSuccess =
                 new UserRequest(
                         "test_user3",
-                        "$2a$12$i3Mc.UTtmmFNgiqx0csrHe.dGbdVwXPbuEJ0T92InqlzX4YTzmwBa",
                         "Сидоров Иван",
                         "sidorov@example.ru",
                         LocalDate.parse("2000-01-01"));
+        updateUserRequestSuccess.setPassword("$2a$12$i3Mc.UTtmmFNgiqx0csrHe.dGbdVwXPbuEJ0T92InqlzX4YTzmwBa");
         updateUserRequestSuccess.setAccounts(List.of(AccountCurrencyEnum.RUB));
         webTestClient
                 .mutateWith(mockJwt())

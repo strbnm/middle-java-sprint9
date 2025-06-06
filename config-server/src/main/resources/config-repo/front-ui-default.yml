@@ -38,5 +38,16 @@ spring:
     cache: false
 
 server:
+  forward-headers-strategy: framework
   servlet:
-    context-path: /
+    context-path: /bank-app
+
+  reactive:
+    session:
+      cookie:
+        name: SESSION_${spring.application.name}
+
+
+logging:
+  level:
+    org.springframework.web.reactive.function.client.ExchangeFunctions: TRACE

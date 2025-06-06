@@ -36,31 +36,31 @@ public abstract class BaseContractTest {
 
       UserRequest createUserRequestSuccess = new UserRequest(
               "test_user1",
-              "$2a$12$i3Mc.UTtmmFNgiqx0csrHe.dGbdVwXPbuEJ0T92InqlzX4YTzmwBa",
               "Иванов Иван",
               "ivanov@example.ru",
               LocalDate.parse("2000-01-01"));
+      createUserRequestSuccess.setPassword("$2a$12$i3Mc.UTtmmFNgiqx0csrHe.dGbdVwXPbuEJ0T92InqlzX4YTzmwBa");
 
       UserRequest createUserRequestFailed = new UserRequest(
               "test_user1",
-              "$2a$12$i3Mc.UTtmmFNgiqx0csrHe.dGbdVwXPbuEJ0T92InqlzX4YTzmwBa",
               "Иванов Иван",
               "ivanov@example.ru",
               LocalDate.parse("2010-01-01"));
+      createUserRequestFailed.setPassword("$2a$12$i3Mc.UTtmmFNgiqx0csrHe.dGbdVwXPbuEJ0T92InqlzX4YTzmwBa");
 
       UserRequest updateUserRequestSuccess = new UserRequest(
               "test_user1",
-              "$2a$12$i3Mc.UTtmmFNgiqx0csrHe.dGbdVwXPbuEJ0T92InqlzX4YTzmwBa",
               "Иванов Иван",
               "test@example.ru",
               LocalDate.parse("1999-01-01"));
+      updateUserRequestSuccess.setPassword("$2a$12$i3Mc.UTtmmFNgiqx0csrHe.dGbdVwXPbuEJ0T92InqlzX4YTzmwBa");
 
         UserRequest updateUserRequestFailed = new UserRequest(
                 "test_user1",
-                "$2a$12$i3Mc.UTtmmFNgiqx0csrHe.dGbdVwXPbuEJ0T92InqlzX4YTzmwBa",
                 "",
                 "test@example.ru",
                 LocalDate.parse("2020-01-01"));
+        updateUserRequestFailed.setPassword("$2a$12$i3Mc.UTtmmFNgiqx0csrHe.dGbdVwXPbuEJ0T92InqlzX4YTzmwBa");
     updateUserRequestSuccess.setAccounts(List.of(AccountCurrencyEnum.RUB, AccountCurrencyEnum.CNY));
 
         UserPasswordRequest updatePasswordRequestSuccess = new UserPasswordRequest(

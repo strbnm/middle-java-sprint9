@@ -38,41 +38,42 @@ public class ExchangeGenerator {
     long timestamp = Instant.now().getEpochSecond();
 
     List<Rate> rates =
-        List.of(
-            new Rate("Рубль", "RUB", BigDecimal.ONE),
-            new Rate("Доллар", "USD", round(randomInRange(0.01, 0.02))),
-            new Rate("Юань", "CNY", round(randomInRange(0.1, 0.2))));
+            List.of(
+                    new Rate("Рубль", "RUB", BigDecimal.ONE),
+                    new Rate("Доллар", "USD", round(randomInRange(0.01, 0.02))),
+                    new Rate("Юань", "CNY", round(randomInRange(0.1, 0.2))));
 
     ExchangeRateRequest request = new ExchangeRateRequest(timestamp);
     request.setRates(rates);
 
     return exchangeServiceApi
-        .createRates(request)
-        .retryWhen(
-            Retry.max(1) // Повторить один раз при возникновении ошибки
-                .filter(
-                    throwable ->
-                        (throwable instanceof WebClientResponseException
-                                && ((WebClientResponseException) throwable).getStatusCode()
-                                    == HttpStatus.INTERNAL_SERVER_ERROR)
-                            || throwable instanceof WebClientRequestException)
-                .onRetryExhaustedThrow(
-                    (retryBackoffSpec, retrySignal) ->
-                        new UnavailabilityPaymentServiceException(
-                            "Сервис конвертации валют временно недоступен.")))
-        .onErrorResume(
-            WebClientResponseException.class,
-            ex -> Mono.error(
-                  new ExchangeRatePublicationException(
-                      "Ошибка при выполнении публикации курсов валют: " + ex.getMessage()))
-            );
+            .createRates(request)
+            .retryWhen(
+                    Retry.fixedDelay(Long.MAX_VALUE, Duration.ofSeconds(10)) // бесконечные повторы каждые 10 сек
+                            .filter(
+                                    throwable ->
+                                            (throwable instanceof WebClientResponseException
+                                                    && ((WebClientResponseException) throwable).getStatusCode()
+                                                    .is5xxServerError())
+                                                    || throwable instanceof WebClientRequestException)
+            )
+            .onErrorResume(
+                    ex -> {
+                      // Логируем и не прерываем весь поток
+                      System.err.println("Ошибка при публикации курсов валют: " + ex.getMessage());
+                      return Mono.empty();
+                    });
   }
+
 
   @PostConstruct
   public void scheduleRateGeneration() {
     Flux.interval(Duration.ofMinutes(2), Duration.ofSeconds(1))
             .flatMap(tick -> generateAndSendRates())
-            .subscribe();
+            .subscribe(
+                    success -> {},
+                    error -> System.err.println("Фатальная ошибка в генерации курсов: " + error.getMessage())
+            );
   }
 
   private BigDecimal round(double value) {

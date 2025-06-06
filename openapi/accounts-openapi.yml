@@ -301,7 +301,6 @@ components:
       type: object
       required:
         - login
-        - password
         - name
         - email
         - birthdate

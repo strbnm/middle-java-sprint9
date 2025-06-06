@@ -23,6 +23,7 @@ public class SecurityConfig {
                 .authorizeExchange(exchange -> exchange.anyExchange().permitAll())
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .oauth2Client(Customizer.withDefaults())
+                .anonymous(Customizer.withDefaults())
                 .build();
     }
 

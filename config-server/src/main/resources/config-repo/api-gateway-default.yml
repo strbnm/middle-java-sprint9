@@ -1,12 +1,9 @@
 logging:
   level:
     org.springframework.cloud.gateway: DEBUG
-    org.springframework.http.server.reactive: DEBUG
-    org.springframework.web.reactive.function.client.ExchangeFunctions: TRACE
+    org.springframework.web.reactive: DEBUG
     reactor.netty.http.client: DEBUG
     reactor.netty.http.server: DEBUG
-    org.springframework.security.oauth2.client: TRACE
-    org.springframework.security.oauth2.client.web.reactive.function.client.ServerOAuth2AuthorizedClientExchangeFilterFunction: TRACE
 server:
   port: 8080
 management:
@@ -37,23 +34,18 @@ spring:
         locator:
           enabled: true
       routes:
-        - id: front-ui-main
+        - id: front-ui-root
           uri: lb://FRONT-UI
           predicates:
-            - Path=/
-            - Path=/main
-            - Path=/signin
-            - Path=/signup
-            - Path=/logout
+            - Path=/bank-app/**
           filters:
-            - RewritePath=/(?<segment>.*), /$\{segment}
-
-        - id: front-ui-user
-          uri: lb://FRONT-UI
-          predicates:
-            - Path=/user/**
-          filters:
-            - RewritePath=/user/?(?<segment>.*), /$\{segment}
+            - RewritePath=/bank-app/?(?<segment>.*), /$\{segment}
+            - PreserveHostHeader
+            - SaveSession
+#            - AddResponseHeader=Content-Security-Policy, default-src 'self'; script-src 'self' 'unsafe-inline';
+            - AddResponseHeader=Referrer-Policy, strict-origin-when-cross-origin
+#            - AddResponseHeader=X-Content-Type-Options, nosniff
+            - AddResponseHeader=X-Frame-Options, DENY
 
         - id: accounts-service
           uri: lb://ACCOUNTS-SERVICE
@@ -62,6 +54,10 @@ spring:
           filters:
             - RewritePath=/accounts-service/?(?<segment>.*), /$\{segment}
             - TokenRelay=accounts-client
+            - name: CircuitBreaker
+              args:
+                name: accountsServiceCircuitBreaker
+                fallbackUri: forward:/fallback/accounts-service
 
         - id: cash-service
           uri: lb://CASH-SERVICE
@@ -70,6 +66,10 @@ spring:
           filters:
             - RewritePath=/cash-service/?(?<segment>.*), /$\{segment}
             - TokenRelay=cash-client
+            - name: CircuitBreaker
+              args:
+                name: cashServiceCircuitBreaker
+                fallbackUri: forward:/fallback/cash-service
 
         - id: blocker-service
           uri: lb://BLOCKER-SERVICE
@@ -78,6 +78,10 @@ spring:
           filters:
             - RewritePath=/blocker-service/?(?<segment>.*), /$\{segment}
             - TokenRelay=blocker-client
+            - name: CircuitBreaker
+              args:
+                name: blockerServiceCircuitBreaker
+                fallbackUri: forward:/fallback/blocker-service
 
         - id: exchange-service
           uri: lb://EXCHANGE-SERVICE
@@ -86,6 +90,10 @@ spring:
           filters:
             - RewritePath=/exchange-service/?(?<segment>.*), /$\{segment}
             - TokenRelay=exchange-client
+            - name: CircuitBreaker
+              args:
+                name: exchangeServiceCircuitBreaker
+                fallbackUri: forward:/fallback/exchange-service
 
         - id: exchange-generator
           uri: lb://EXCHANGE-GENERATOR
@@ -110,6 +118,24 @@ spring:
           filters:
             - RewritePath=/transfer-service/?(?<segment>.*), /$\{segment}
             - TokenRelay=transfer-client
+            - name: CircuitBreaker
+              args:
+                name: transferServiceCircuitBreaker
+                fallbackUri: forward:/fallback/transfer-service
+
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins:
+              - "http://localhost:8090"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+            allowedHeaders: "*"
+            allowCredentials: true
 
   security:
     oauth2:

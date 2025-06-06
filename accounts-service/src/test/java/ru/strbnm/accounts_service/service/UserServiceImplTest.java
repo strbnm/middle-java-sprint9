@@ -90,10 +90,10 @@ class UserServiceImplTest {
     UserRequest createUserRequestSuccess =
         new UserRequest(
             "test_user4",
-            "$2a$12$i3Mc.UTtmmFNgiqx0csrHe.dGbdVwXPbuEJ0T92InqlzX4YTzmwBa",
             "Сидоров Иван",
             "sidorov@example.ru",
             LocalDate.parse("2000-01-01"));
+    createUserRequestSuccess.setPassword("$2a$12$i3Mc.UTtmmFNgiqx0csrHe.dGbdVwXPbuEJ0T92InqlzX4YTzmwBa");
 
     StepVerifier.create(userService.createUser(createUserRequestSuccess))
         .assertNext(
@@ -136,10 +136,10 @@ class UserServiceImplTest {
     UserRequest createUserRequestInvalidFields =
         new UserRequest(
             "test_user4",
-            "$2a$12$i3Mc.UTtmmFNgiqx0csrHe.dGbdVwXPbuEJ0T92InqlzX4YTzmwBa",
             "",
             "",
             LocalDate.parse("2020-01-01"));
+    createUserRequestInvalidFields.setPassword("$2a$12$i3Mc.UTtmmFNgiqx0csrHe.dGbdVwXPbuEJ0T92InqlzX4YTzmwBa");
 
     StepVerifier.create(userService.createUser(createUserRequestInvalidFields))
         .assertNext(
@@ -163,10 +163,10 @@ class UserServiceImplTest {
     UserRequest createUserRequestConflict =
         new UserRequest(
             "test_user1",
-            "$2a$12$i3Mc.UTtmmFNgiqx0csrHe.dGbdVwXPbuEJ0T92InqlzX4YTzmwBa",
             "Иванов Иван",
             "ivanov@example.ru",
             LocalDate.parse("2000-01-01"));
+    createUserRequestConflict.setPassword("$2a$12$i3Mc.UTtmmFNgiqx0csrHe.dGbdVwXPbuEJ0T92InqlzX4YTzmwBa");
 
     StepVerifier.create(userService.createUser(createUserRequestConflict))
         .verifyErrorSatisfies(
@@ -183,10 +183,10 @@ class UserServiceImplTest {
     UserRequest updateUserRequestSuccess =
         new UserRequest(
             "test_user1",
-            "$2a$12$i3Mc.UTtmmFNgiqx0csrHe.dGbdVwXPbuEJ0T92InqlzX4YTzmwBa",
             "Сидоров Иван",
             "sidorov@example.ru",
             LocalDate.parse("1999-01-01"));
+    updateUserRequestSuccess.setPassword("$2a$12$i3Mc.UTtmmFNgiqx0csrHe.dGbdVwXPbuEJ0T92InqlzX4YTzmwBa");
     updateUserRequestSuccess.setAccounts(
         List.of(AccountCurrencyEnum.RUB, AccountCurrencyEnum.CNY, AccountCurrencyEnum.USD));
 
@@ -275,10 +275,10 @@ class UserServiceImplTest {
     UserRequest updateUserRequestInvalidFields =
         new UserRequest(
             "test_user2",
-            "$2a$12$i3Mc.UTtmmFNgiqx0csrHe.dGbdVwXPbuEJ0T92InqlzX4YTzmwBa",
             "",
             "",
             LocalDate.parse("1993-05-21"));
+    updateUserRequestInvalidFields.setPassword("$2a$12$i3Mc.UTtmmFNgiqx0csrHe.dGbdVwXPbuEJ0T92InqlzX4YTzmwBa");
       updateUserRequestInvalidFields.setAccounts(
               List.of(AccountCurrencyEnum.RUB));
 
@@ -355,10 +355,10 @@ class UserServiceImplTest {
     UserRequest updateUserRequestNotFound =
         new UserRequest(
             "test_user4",
-            "$2a$12$i3Mc.UTtmmFNgiqx0csrHe.dGbdVwXPbuEJ0T92InqlzX4YTzmwBa",
             "Иванов Иван",
             "ivanov@example.ru",
             LocalDate.parse("2000-01-01"));
+    updateUserRequestNotFound.setPassword("$2a$12$i3Mc.UTtmmFNgiqx0csrHe.dGbdVwXPbuEJ0T92InqlzX4YTzmwBa");
 
     StepVerifier.create(userService.updateUser(updateUserRequestNotFound))
         .verifyErrorSatisfies(
