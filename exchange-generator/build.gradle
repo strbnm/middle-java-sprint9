@@ -7,8 +7,6 @@ configurations {
 }
 
 dependencies {
-    implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'  // Для регистрации в Eureka и обнаружения других сервисов
-    implementation 'org.springframework.cloud:spring-cloud-starter-config'  // Для взаимодействия с Config Server
     implementation 'org.springframework.cloud:spring-cloud-starter-bus-amqp'  // Для работы Spring Cloud Bus c RabbitMQ
     implementation 'org.mapstruct:mapstruct:1.6.3'
     annotationProcessor 'org.mapstruct:mapstruct-processor:1.6.3'
@@ -16,6 +14,7 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok'
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.5'
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'io.projectreactor:reactor-test:3.7.3'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'

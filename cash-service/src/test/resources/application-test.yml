@@ -25,10 +25,6 @@ spring:
     init:
       mode: never
 
-  cloud:
-    config:
-      enabled: false
-
   rabbitmq:
     listener:
       direct:
@@ -41,10 +37,6 @@ spring:
       url: http://localhost:8081
     accounts-service:
       url: http://localhost:8082
-
-eureka:
-  client:
-    enabled: false
 
 logging:
   level:

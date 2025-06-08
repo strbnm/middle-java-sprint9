@@ -10,9 +10,6 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
     implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6:3.1.3.RELEASE'
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
-    implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
-    // Для регистрации в Eureka и обнаружения других сервисов
-    implementation 'org.springframework.cloud:spring-cloud-starter-config'  // Для взаимодействия с Config Server
     implementation 'org.springframework.cloud:spring-cloud-starter-bus-amqp'  // Для работы Spring Cloud Bus c RabbitMQ
     implementation 'org.mapstruct:mapstruct:1.6.3'
     annotationProcessor 'org.mapstruct:mapstruct-processor:1.6.3'

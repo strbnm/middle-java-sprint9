@@ -1,5 +1,3 @@
 spring:
   application:
     name: exchange-generator
-  config:
-    import: configserver:http://${CONFIG_SERVER_HOST:localhost}:${CONFIG_SERVER_PORT:8888}
