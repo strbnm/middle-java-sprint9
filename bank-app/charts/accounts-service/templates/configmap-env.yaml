@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "accounts-service.fullname" . }}
+  labels:
+    {{- include "accounts-service.labels" . | nindent 4 }}
+data:
+  {{- range $key, $value := .Values.config }}
+  {{ $key | upper }}: {{ $value | quote }}
+  {{- end }}
+
+  SERVER_PORT: {{ .Values.service.port }}
+  SERVICE_DB_HOST: {{ .Release.Name }}{{ .Chart.Name }}-db
+  SPRING_APPLICATION_NAME: {{ include "accounts-service.fullname" . }}
+  SPRING_REST_NOTIFICATIONS_SERVICE_URL: "http://notifications-service.bankapp.local"

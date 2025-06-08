@@ -1,0 +1,96 @@
+apiVersion: v2
+name: bank-app
+description: Umbrella chart for Bank Application
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
+
+dependencies:
+  # Subchart for Accounts Service
+  - name: accounts-service
+    version: "0.1.0"
+    repository: "file://./charts/accounts-service" # Local path reference
+
+  # Subchart for Cash Service
+  - name: cash-service
+    version: "0.1.0"
+    repository: "file://./charts/cash-service"  # Local path reference
+
+  # Subchart for Transfer Service
+  - name: transfer-service
+    version: "0.1.0"
+    repository: "file://./charts/transfer-service"  # Local path reference
+    
+  # Subchart for Blocker Service
+  - name: blocker-service
+    version: "0.1.0"
+    repository: "file://./charts/blocker-service"  # Local path reference
+
+  # Subchart for Exchange Service
+  - name: exchange-service
+    version: "0.1.0"
+    repository: "file://./charts/exchange-service"  # Local path reference
+
+  # Subchart for Exchange Generator
+  - name: exchange-generator
+    version: "0.1.0"
+    repository: "file://./charts/exchange-generator"  # Local path reference
+
+  # Subchart for Notifications Service
+  - name: notifications-service
+    version: "0.1.0"
+    repository: "file://./charts/notifications-service"  # Local path reference
+
+  # Subchart for Front UI
+  - name: front-ui
+    version: "0.1.0"
+    repository: "file://./charts/front-ui"  # Local path reference
+
+ # Dependency for Accounts DB (PostgreSQL)
+  - name: postgresql
+    version: "16.7.10"
+    repository: "file://./charts/postgresql"
+    alias: accounts-db
+    condition: accounts-db.enabled
+  
+  # Dependency for Cash DB (PostgreSQL)
+  - name: postgresql
+    version: "16.7.10" 
+    repository: "file://./charts/postgresql"
+    alias: cash-db 
+    condition: cash-db.enabled
+
+  # Dependency for Transfer DB (PostgreSQL)
+  - name: postgresql
+    version: "16.7.10"
+    repository: "file://./charts/postgresql"
+    alias: transfer-db 
+    condition: transfer-db.enabled
+
+  # Dependency for Exchange DB (PostgreSQL)
+  - name: postgresql
+    version: "16.7.10"
+    repository: "file://./charts/postgresql"
+    alias: exchange-db 
+    condition: exchange-db.enabled
+
+  # Dependency for Notifications DB (PostgreSQL)
+  - name: postgresql
+    version: "16.7.10"
+    repository: "file://./charts/postgresql"
+    alias: notifications-db 
+    condition: notifications-db.enabled
+
+  # Dependency for Keycloak
+  - name: keycloak
+    version: "24.7.3"
+    repository: "file://./charts/keycloak"
+    alias: keycloak
+    condition: keycloak.enabled
+    
+  # Dependency for RabbitMQ
+  - name: rabbitmq
+    version: "16.0.6"
+    repository: "file://./charts/rabbitmq"
+    alias: rabbitmq
+    condition: rabbitmq.enabled

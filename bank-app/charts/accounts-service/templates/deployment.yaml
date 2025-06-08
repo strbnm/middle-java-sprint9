@@ -1,0 +1,102 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "accounts-service.fullname" . }}
+  labels:
+    {{- include "accounts-service.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "accounts-service.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "accounts-service.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "accounts-service.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.port }} # Use the service port value from values.yaml
+              protocol: TCP
+          livenessProbe: # Example for Spring Boot Actuator
+            httpGet:
+              path: /actuator/health/liveness
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe: # Example for Spring Boot Actuator
+            httpGet:
+              path: /actuator/health/readiness
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 5
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: {{ .Chart.Name }}-volume
+              mountPath: /app/config      # Путь, куда смонтируется файл
+          envFrom:
+            - configMapRef:
+                  name: global-config
+            - configMapRef:
+                name: {{ include "accounts-service.fullname" . }}
+          env:
+            - name: SERVICE_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-{{ .Chart.Name }}-db
+                  key: password
+            - name: RABBITMQ_DEFAULT_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-rabbitmq
+                  key: password
+            {{- if and .Values.config .Values.config.oauth2 }}
+            {{- with .Values.config.oauth2 }}
+            {{- range . }}
+            - name: {{ .secret_name }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $.Release.Name }}_{{ .secret_name | lower }}
+                  key: password
+            {{- end }}
+            {{- end }}
+            {{- end }}
+      volumes:
+        - name: {{ .Chart.Name }}-volume
+          configMap:
+            name: {{ include "accounts-service.fullname" . }}-config
+            items:
+              - key: application.yml  # Имя ключа в ConfigMap
+                path: application.yml # Имя файла в контейнере
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }} 

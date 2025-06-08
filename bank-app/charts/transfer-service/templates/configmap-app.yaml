@@ -1,0 +1,72 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "transfer-service.fullname" . }}-config
+data:
+  application.yml: |
+    openapi:
+      service:
+        base-path: /
+    springdoc:
+      swagger-ui:
+        enabled: true
+    management:
+      endpoints:
+        web:
+          exposure:
+            include: health,info,prometheus,refresh,busrefresh,busshutdown
+        health:
+          probes:
+            enabled: true
+    spring:
+      rabbitmq:
+        host: ${RABBITMQ_HOST}
+        port: ${RABBITMQ_PORT}
+        username: ${RABBITMQ_DEFAULT_USER}
+        password: ${RABBITMQ_DEFAULT_PASS}
+      security:
+        oauth2:
+          resourceserver:
+            jwt:
+              issuer-uri: ${KEYCLOAK_ISSUER_URL}
+          client:
+            provider:
+              keycloak:
+                issuer-uri: ${KEYCLOAK_ISSUER_URL} # Адрес сервера авторизации для получения токена
+            {{- if and .Values.config .Values.config.oauth2 }}
+            registration:
+              {{- range .Values.config.oauth2 }}
+              {{ .client_id }}:
+                provider: keycloak
+                client-id: {{ .client_id }}
+                client-secret: {{ printf "${%s}" .secret_name }}
+                scope: {{ .scope }}
+                authorization-grant-type: client_credentials
+                clientAuthenticationMethod: client_secret_post
+              {{- end }}
+            {{- end }}
+      r2dbc:
+        url: r2dbc:postgresql://${SERVICE_DB_HOST}:5432/app_db
+        username: ${SERVICE_DB_USER}
+        password: ${SERVICE_DB_PASSWORD}
+        pool:
+          enabled: true                               # Включение пула соединений
+          initial-size: 10                            # Начальное количество соединений в пуле
+          max-size: 50                                # Максимальное количество соединений
+          max-idle-time: 30s                          # Время бездействия соединения перед закрытием
+          max-life-time: 10m                          # Максимальное время жизни соединения
+          validation-query: SELECT 1                  # SQL-запрос для проверки работоспособности соединения
+      liquibase:
+        enabled: true
+        url: jdbc:postgresql://${SERVICE_DB_HOST}:5432/app_db
+        user: ${SERVICE_DB_USER}
+        password: ${SERVICE_DB_PASSWORD}
+        change-log: classpath:db/changelog/db.changelog-master.xml
+        contexts: default
+      sql:
+        init:
+          mode: never
+
+    application:
+      notification:
+        limit: 10

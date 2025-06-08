@@ -1,0 +1,316 @@
+# Global values (if any)
+global:
+  domain: bankapp.local # Example domain for ingress
+  spring_config_import: "file:/app/config/application.yml"
+
+
+accounts-service:
+  replicaCount: 1
+  image:
+    # --- REVERTED TO LOCAL REPO ---
+    repository: accounts-service
+    tag: "1.0.0"
+    pullPolicy: IfNotPresent
+    # -----------------------------
+  service:
+    type: ClusterIP
+    port: 8080
+  ingress:
+    enabled: true
+    className: "nginx" # Specify your ingress controller class
+    host: accounts-service.bankapp.local
+    path: /
+    pathType: ImplementationSpecific
+  # Database connection details passed to customer-service configmap
+  config:
+    service_db_user: accounts_user
+    oauth2:
+      - client_id: notifications-client
+        scope: resource.readwrite
+        secret_name: OAUTH2_CLIENT_SECRET_NOTIFICATIONS
+
+cash-service:
+  replicaCount: 1
+  image:
+    # --- REVERTED TO LOCAL REPO ---
+    repository: cash-service # Removed registry prefix
+    tag: "1.0.0"
+    pullPolicy: IfNotPresent # Use IfNotPresent for local images
+    # -----------------------------
+  service:
+    type: ClusterIP
+    port: 8081
+  ingress:
+    enabled: true
+    className: "nginx"
+    host: cash-service.bankapp.local
+    path: /
+    pathType: ImplementationSpecific
+  config:
+    service_db_user: cash_user
+    oauth2:
+      - client_id: notifications-client
+        scope: resource.readwrite
+        secret_name: OAUTH2_CLIENT_SECRET_NOTIFICATIONS
+      - client_id: accounts-client
+        scope: resource.readwrite
+        secret_name: OAUTH2_CLIENT_SECRET_ACCOUNTS
+      - client_id: blocker-client
+        scope: resource.readwrite
+        secret_name: OAUTH2_CLIENT_SECRET_BLOCKER
+
+transfer-service:
+  replicaCount: 1
+  image:
+    # --- REVERTED TO LOCAL REPO ---
+    repository: transfer-service # Removed registry prefix
+    tag: "1.0.0"
+    pullPolicy: IfNotPresent # Use IfNotPresent for local images
+    # -----------------------------
+  service:
+    type: ClusterIP
+    port: 8082
+  ingress:
+    enabled: true
+    className: "nginx"
+    host: transfer-service.bankapp.local
+    path: /
+    pathType: ImplementationSpecific
+  config:
+    service_db_user: transfer_user
+    oauth2:
+      - client_id: notifications-client
+        scope: resource.readwrite
+        secret_name: OAUTH2_CLIENT_SECRET_NOTIFICATIONS
+      - client_id: accounts-client
+        scope: resource.readwrite
+        secret_name: OAUTH2_CLIENT_SECRET_ACCOUNTS
+      - client_id: blocker-client
+        scope: resource.readwrite
+        secret_name: OAUTH2_CLIENT_SECRET_BLOCKER
+      - client_id: exchange-client
+        scope: resource.readwrite
+        secret_name: OAUTH2_CLIENT_SECRET_EXCHANGE
+
+blocker-service:
+  replicaCount: 1
+  image:
+    # --- REVERTED TO LOCAL REPO ---
+    repository: blocker-service # Removed registry prefix
+    tag: "1.0.0"
+    pullPolicy: IfNotPresent # Use IfNotPresent for local images
+    # -----------------------------
+  service:
+    type: ClusterIP
+    port: 8083
+  ingress:
+    enabled: true
+    className: "nginx"
+    host: blocker-service.bankapp.local
+    path: /
+    pathType: ImplementationSpecific
+  config:
+
+exchange-service:
+  replicaCount: 1
+  image:
+    # --- REVERTED TO LOCAL REPO ---
+    repository: exchange-service # Removed registry prefix
+    tag: "1.0.0"
+    pullPolicy: IfNotPresent # Use IfNotPresent for local images
+    # -----------------------------
+  service:
+    type: ClusterIP
+    port: 8084
+  ingress:
+    enabled: true
+    className: "nginx"
+    host: exchange-service.bankapp.local
+    path: /
+    pathType: ImplementationSpecific
+  config:
+    service_db_user: exchange_user
+
+exchange-generator:
+  replicaCount: 1
+  image:
+    # --- REVERTED TO LOCAL REPO ---
+    repository: exchange-generator # Removed registry prefix
+    tag: "1.0.0"
+    pullPolicy: IfNotPresent # Use IfNotPresent for local images
+    # -----------------------------
+  service:
+    type: ClusterIP
+    port: 8085
+  ingress:
+    enabled: true
+    className: "nginx"
+    host: exchange-generator.bankapp.local
+    path: /
+    pathType: ImplementationSpecific
+  config:
+
+notifications-service:
+  replicaCount: 1
+  image:
+    # --- REVERTED TO LOCAL REPO ---
+    repository: notifications-service # Removed registry prefix
+    tag: "1.0.0"
+    pullPolicy: IfNotPresent # Use IfNotPresent for local images
+    # -----------------------------
+  service:
+    type: ClusterIP
+    port: 8086
+  ingress:
+    enabled: true
+    className: "nginx"
+    host: notifications-service.bankapp.local
+    path: /
+    pathType: ImplementationSpecific
+  config:
+    service_db_user: notifications_user
+
+front-ui:
+  replicaCount: 1
+  image:
+    # --- REVERTED TO LOCAL REPO ---
+    repository: front-ui # Removed registry prefix
+    tag: "1.0.0"
+    pullPolicy: IfNotPresent # Use IfNotPresent for local images
+    # -----------------------------
+  service:
+    type: ClusterIP
+    port: 8087
+  ingress:
+    enabled: true
+    className: "nginx"
+    hosts:
+      - host: front-ui.bankapp.local
+        paths:
+          - path: /
+            pathType: ImplementationSpecific
+  config:
+    oauth2:
+      - client_id: accounts-client
+        scope: resource.readwrite
+        secret_name: OAUTH2_CLIENT_SECRET_ACCOUNTS
+      - client_id: cash-client
+        scope: resource.readwrite
+        secret_name: OAUTH2_CLIENT_SECRET_CASH
+      - client_id: transfer-client
+        scope: resource.readwrite
+        secret_name: OAUTH2_CLIENT_SECRET_TRANSFER
+
+# Configuration for the accounts-db (PostgreSQL dependency)
+# Values here are prefixed according to the Bitnami PostgreSQL chart's structure
+# Check the Bitnami chart's values.yaml for all available options
+accounts-db:
+  enabled: true
+  # Override values from the official postgresql chart
+  auth:
+    database: app_db
+    username: accounts_user
+    # Use existingSecret or provide password (less secure for production)
+    # existingSecret: "{{ .Release.Name }}-customer-db-postgresql" # Name of the secret to use/create
+    password: "changeM3Accounts!" # Example: Not recommended for production
+  primary:
+    persistence:
+      enabled: true
+      size: 1Gi # Small size for example
+
+# Configuration for the cash-db (PostgreSQL dependency)
+cash-db:
+  enabled: true
+  # Override values from the official postgresql chart
+  auth:
+    database: app_db
+    username: cash_user
+    # Use existingSecret or provide password (less secure for production)
+    # existingSecret: "{{ .Release.Name }}-customer-db-postgresql" # Name of the secret to use/create
+    password: "changeM3Cash!" # Example: Not recommended for production
+  primary:
+    persistence:
+      enabled: true
+      size: 1Gi # Small size for example
+
+# Configuration for the transfer-db (PostgreSQL dependency)
+transfer-db:
+  enabled: true
+  # Override values from the official postgresql chart
+  auth:
+    database: app_db
+    username: transfer_user
+    # Use existingSecret or provide password (less secure for production)
+    # existingSecret: "{{ .Release.Name }}-customer-db-postgresql" # Name of the secret to use/create
+    password: "changeM3Transfer!" # Example: Not recommended for production
+  primary:
+    persistence:
+      enabled: true
+      size: 1Gi # Small size for example
+
+# Configuration for the exchange-db (PostgreSQL dependency)
+exchange-db:
+  enabled: true
+  # Override values from the official postgresql chart
+  auth:
+    database: app_db
+    username: exchange_user
+    # Use existingSecret or provide password (less secure for production)
+    # existingSecret: "{{ .Release.Name }}-customer-db-postgresql" # Name of the secret to use/create
+    password: "changeM3Exchange!" # Example: Not recommended for production
+  primary:
+    persistence:
+      enabled: true
+      size: 1Gi # Small size for example
+
+# Configuration for the notifications-db (PostgreSQL dependency)
+notifications-db:
+  enabled: true
+  # Override values from the official postgresql chart
+  auth:
+    database: app_db
+    username: notifications_user
+    # Use existingSecret or provide password (less secure for production)
+    # existingSecret: "{{ .Release.Name }}-customer-db-postgresql" # Name of the secret to use/create
+    password: "changeM3Notifications!" # Example: Not recommended for production
+  primary:
+    persistence:
+      enabled: true
+      size: 1Gi # Small size for example
+
+keycloak:
+  enabled: true
+  auth:
+    adminUser: admin
+    adminPassword: admin123
+
+  extraVolumes:
+    - name: realm-config
+      configMap:
+        name: my-realm-config
+
+  extraVolumeMounts:
+    - name: realm-config
+      mountPath: /opt/bitnami/keycloak/data/import
+      readOnly: true
+  extraStartupArgs: "--import-realm"
+  ingress:
+    enabled: true
+    ingressClassName: "nginx"
+    annotations: {}
+    hostname: "keycloak.bankapp.local"
+
+  issuer:
+    url: "http://keycloak.bankapp.local/realms/bank-app"
+
+rabbitmq:
+  enabled: true
+  ingress:
+    enabled: true
+    hostname: rabbitmq.bankapp.local
+    annotations: {}
+    ingressClassName: "nginx"
+  port: 5672
+  host: rabbitmq.bankapp.local
+  username: ampq_user
+

@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "cash-service.fullname" . }}
+  labels:
+    {{- include "cash-service.labels" . | nindent 4 }}
+data:
+  {{- range $key, $value := .Values.config }}
+  {{ $key | upper }}: {{ $value | quote }}
+  {{- end }}
+
+  SERVER_PORT: {{ .Values.service.port }}
+  SERVICE_DB_HOST: {{ .Release.Name }}{{ .Chart.Name }}-db
+  SPRING_APPLICATION_NAME: {{ include "cash-service.fullname" . }}
+  SPRING_REST_NOTIFICATIONS_SERVICE_URL: "http://notifications-service.bankapp.local"
+  SPRING_REST_ACCOUNTS_SERVICE_URL: "http://accounts-service.bankapp.local"
+  SPRING_REST_BLOCKER_SERVICE_URL: "http://blocker-service.bankapp.local"

@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "transfer-service.fullname" . }}
+  labels:
+    {{- include "transfer-service.labels" . | nindent 4 }}
+data:
+  {{- range $key, $value := .Values.config }}
+  {{ $key | upper }}: {{ $value | quote }}
+  {{- end }}
+
+  SERVER_PORT: {{ .Values.service.port }}
+  SPRING_APPLICATION_NAME: {{ include "transfer-service.fullname" . }}
+  SPRING_REST_NOTIFICATIONS_SERVICE_URL: "http://notifications-service.bankapp.local"
+  SPRING_REST_ACCOUNTS_SERVICE_URL: "http://accounts-service.bankapp.local"
+  SPRING_REST_BLOCKER_SERVICE_URL: "http://blocker-service.bankapp.local"
+  SPRING_REST_EXCHANGE_SERVICE_URL: "http://exchange-service.bankapp.local"
+  OAUTH2_CLIENT_ID: "transfer-client"
+  OAUTH2_CLIENT_SCOPE: "resource.readwrite"
