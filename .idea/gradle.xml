@@ -10,11 +10,8 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/accounts-service" />
-            <option value="$PROJECT_DIR$/api-gateway" />
             <option value="$PROJECT_DIR$/blocker-service" />
             <option value="$PROJECT_DIR$/cash-service" />
-            <option value="$PROJECT_DIR$/config-server" />
-            <option value="$PROJECT_DIR$/eureka-server" />
             <option value="$PROJECT_DIR$/exchange-generator" />
             <option value="$PROJECT_DIR$/exchange-service" />
             <option value="$PROJECT_DIR$/front-ui" />

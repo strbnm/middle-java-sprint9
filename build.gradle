@@ -11,9 +11,6 @@ plugins {
 }
 
 dependencies {
-    implementation project(':eureka-server')
-    implementation project(':config-server')
-    implementation project(':api-gateway')
     implementation project(':notifications-service')
     implementation project(':accounts-service')
     implementation project(':exchange-service')
