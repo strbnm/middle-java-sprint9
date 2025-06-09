@@ -1,0 +1,5 @@
+{
+  "name": "create_repositories",
+  "type": "groovy",
+  "content": "import org.sonatype.nexus.repository.storage.WritePolicy\nrepository.createMavenHosted('maven-releases', 'default', true, WritePolicy.ALLOW)\nrepository.createMavenHosted('maven-snapshots', 'default', true, WritePolicy.ALLOW)"
+}

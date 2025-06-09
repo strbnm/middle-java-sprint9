@@ -1,3 +1,5 @@
+import java.text.SimpleDateFormat
+
 plugins {
     id 'java'
     id 'groovy'
@@ -12,19 +14,43 @@ plugins {
 
 dependencies {
     implementation project(':notifications-service')
-    implementation project(':accounts-service')
     implementation project(':exchange-service')
-    implementation project(':exchange-generator')
     implementation project(':blocker-service')
+    implementation project(':exchange-generator')
+    implementation project(':accounts-service')
     implementation project(':cash-service')
     implementation project(':transfer-service')
     implementation project(':front-ui')
 }
 
 
+static def getBuildTimestamp() {
+    def date = new Date()
+    def format = new SimpleDateFormat("yyyyMMdd-HHmmss")
+    return format.format(date)
+}
+
+
 allprojects {
     group = 'ru.strbnm'
-    version = '1.0.0'
+    if (System.getenv('CI')) {
+        version = "1.0.0.${getBuildTimestamp()}-RELEASE"
+        if (System.getenv('NEXUS_REPOSITORY_RELEASES_URL')) {
+            ext {
+                set('mavenRepositoryUrl', System.getenv('NEXUS_REPOSITORY_RELEASES_URL'))
+            }
+        } else {
+            ext {
+                set('mavenRepositoryUrl', 'http://localhost:8081/repository/maven-releases/')
+            }
+        }
+    } else {
+        version = '1.0.0-SNAPSHOT'
+        ext {
+            set('mavenRepositoryUrl', 'http://localhost:8081/repository/maven-snapshots/')
+        }
+    }
+
 
     java {
         toolchain {
@@ -38,7 +64,17 @@ allprojects {
 
     repositories {
         mavenCentral()
+        maven {
+            name = "nexus-docker"
+            url = mavenRepositoryUrl
+            allowInsecureProtocol = true
+            credentials {
+                username = project.findProperty("nexusUsername") as String
+                password = project.findProperty("nexusPassword") as String
+            }
+        }
     }
+
 
 }
 
@@ -50,6 +86,7 @@ subprojects {
     apply plugin: 'org.openapi.generator'
     apply plugin: 'org.springframework.cloud.contract'
     apply plugin: 'jacoco'
+    apply plugin: 'maven-publish'
 
     configurations.configureEach {
         exclude group: 'com.vaadin.external.google', module: 'android-json'
@@ -81,6 +118,33 @@ subprojects {
             csv.required.set(false)
         }
     }
+
+    publishing {
+        publications {
+            create("mavenJava", MavenPublication) {
+                from components.java
+                artifact verifierStubsJar
+            }
+        }
+        repositories {
+            maven {
+                name = "nexus-docker"
+                url = version.endsWith('SNAPSHOT')
+                        ? uri('http://localhost:8081/repository/maven-snapshots/')
+                        : uri('http://localhost:8081/repository/maven-releases/')
+                allowInsecureProtocol = true
+                credentials {
+                    username = project.findProperty("nexusUsername") as String
+                    password = project.findProperty("nexusPassword") as String
+                }
+            }
+        }
+    }
+    test {
+        System.setProperty("stubrunner.username", project.findProperty("nexusUsername") as String)
+        System.setProperty("stubrunner.password", project.findProperty("nexusPassword") as String)
+    }
+
 }
 
 // Отключаем задачи Java в корневом проекте

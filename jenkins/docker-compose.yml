@@ -1,0 +1,63 @@
+services:
+  jenkins:
+    build: .
+    container_name: jenkins
+    user: root
+    env_file:
+      - .env
+    environment:
+      - JAVA_OPTS=-Djenkins.install.runSetupWizard=false
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${KUBECONFIG_PATH}:/root/.kube/config
+    networks:
+      - ci-net
+
+  nexus:
+    image: sonatype/nexus3
+    container_name: nexus
+    ports:
+      - "8081:8081"
+    volumes:
+      - nexus_data:/nexus-data
+      - ./nexus/nexus.properties:/nexus-data/etc/nexus.properties
+    networks:
+      - ci-net
+
+  nexus-init:
+    image: curlimages/curl
+    container_name: nexus-init
+    environment:
+      NEXUS_ADMIN_PASSWORD: ${NEXUS_ADMIN_PASSWORD}
+      NEXUS_JENKINS_PASSWORD: ${NEXUS_JENKINS_PASSWORD}
+    depends_on:
+      - nexus
+    entrypoint: >
+      sh -c "
+        echo '⏳ Waiting for Nexus UI on :8081 ...' &&
+        until [ "$(curl -s -o /dev/null -w "%{http_code}" http://nexus:8081/)" -eq 200 ]; do sleep 5; done;
+        echo '✅ Nexus UI is up'
+        curl -v -u admin:$(cat /nexus-data/admin.password) -X POST http://nexus:8081/service/rest/v1/script --header 'Content-Type: application/json' -d @/scripts/create-user.json
+        curl -v -u admin:$(cat /nexus-data/admin.password) -X POST http://nexus:8081/service/rest/v1/script/create_user/run --header 'Content-Type: text/plain' -d '{\"adminPassword\": \"$NEXUS_ADMIN_PASSWORD\", \"jenkinsPassword\": \"$NEXUS_JENKINS_PASSWORD\"}'
+      "
+#      curl -v -u admin:$(cat /nexus-data/admin.password) -X POST http://nexus:8081/service/rest/v1/script --header 'Content-Type: application/json' -d @/scripts/create-repositories.json
+#      curl -v -u admin:$(cat /nexus-data/admin.password) -X POST http://nexus:8081/service/rest/v1/script/create_repositories/run --header 'Content-Type: text/plain'
+    volumes:
+      - nexus_data:/nexus-data
+      - ./scripts:/scripts
+    networks:
+      - ci-net
+
+volumes:
+  jenkins_home:
+    name: jenkins_home
+  nexus_data:
+    name: nexus_data
+
+networks:
+  ci-net:
+    driver: bridge
