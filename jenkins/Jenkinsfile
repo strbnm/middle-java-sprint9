@@ -35,69 +35,65 @@ pipeline {
     }
 
     stages {
-        stage('Build & Tests First Block') {
-            parallel {
-                stage('Exchange Service') {
-                    steps {
-                        dir('exchange-service') {
-                            sh './gradlew clean build -PnexusUsername=jenkins -PnexusPassword=$NEXUS_PASSWORD'
-                        }
-                    }
-                }
-                stage('Notifications Service') {
-                    steps {
-                        dir('notifications-service') {
-                            sh './gradlew clean build -PnexusUsername=jenkins -PnexusPassword=$NEXUS_PASSWORD'
-                        }
-                    }
-                }
-                stage('Blocker Service') {
-                    steps {
-                        dir('blocker-service') {
-                            sh './gradlew clean build -PnexusUsername=jenkins -PnexusPassword=$NEXUS_PASSWORD'
-                        }
-                    }
-                }
-            }
-        }
-        stage('Build & Tests Second Block') {
-            parallel {
-                stage('Exchange Generator') {
-                    steps {
-                        dir('exchange-generator') {
-                            sh './gradlew clean build -PnexusUsername=jenkins -PnexusPassword=$NEXUS_PASSWORD'
-                        }
-                    }
-                }
-                stage('Accounts Service') {
-                    steps {
-                        dir('accounts-service') {
-                            sh './gradlew clean build -PnexusUsername=jenkins -PnexusPassword=$NEXUS_PASSWORD'
-                        }
-                    }
-                }
-            }
-            stage('Cash Service') {
+        parallel {
+            stage('Exchange Service') {
                 steps {
-                    dir('cash-service') {
+                    dir('exchange-service') {
                         sh './gradlew clean build -PnexusUsername=jenkins -PnexusPassword=$NEXUS_PASSWORD'
                     }
                 }
             }
-            stage('Transfer Service') {
+            stage('Notifications Service') {
                 steps {
-                    dir('transfer-service') {
+                    dir('notifications-service') {
                         sh './gradlew clean build -PnexusUsername=jenkins -PnexusPassword=$NEXUS_PASSWORD'
                     }
                 }
             }
-            stage('Front UI') {
+            stage('Blocker Service') {
                 steps {
-                    dir('front-ui') {
+                    dir('blocker-service') {
                         sh './gradlew clean build -PnexusUsername=jenkins -PnexusPassword=$NEXUS_PASSWORD'
                     }
                 }
             }
         }
+        stage('Exchange Generator') {
+            steps {
+                dir('exchange-generator') {
+                    sh './gradlew clean build -PnexusUsername=jenkins -PnexusPassword=$NEXUS_PASSWORD'
+                }
+            }
+        }
+        stage('Accounts Service') {
+            steps {
+                dir('accounts-service') {
+                    sh './gradlew clean build -PnexusUsername=jenkins -PnexusPassword=$NEXUS_PASSWORD'
+                }
+            }
+        }
+
+        stage('Cash Service') {
+            steps {
+                dir('cash-service') {
+                    sh './gradlew clean build -PnexusUsername=jenkins -PnexusPassword=$NEXUS_PASSWORD'
+                }
+            }
+        }
+        stage('Transfer Service') {
+            steps {
+                dir('transfer-service') {
+                    sh './gradlew clean build -PnexusUsername=jenkins -PnexusPassword=$NEXUS_PASSWORD'
+                }
+            }
+        }
+        stage('Front UI') {
+            steps {
+                dir('front-ui') {
+                    sh './gradlew clean build -PnexusUsername=jenkins -PnexusPassword=$NEXUS_PASSWORD'
+                }
+            }
+        }
+
     }
 }
