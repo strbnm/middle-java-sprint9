@@ -129,9 +129,10 @@ subprojects {
         repositories {
             maven {
                 name = "nexus-docker"
-                url = version.endsWith('SNAPSHOT')
-                        ? uri('http://localhost:8081/repository/maven-snapshots/')
-                        : uri('http://localhost:8081/repository/maven-releases/')
+                url = mavenRepositoryUrl
+//                url = version.endsWith('SNAPSHOT')
+//                        ? uri('http://localhost:8081/repository/maven-snapshots/')
+//                        : uri('http://localhost:8081/repository/maven-releases/')
                 allowInsecureProtocol = true
                 credentials {
                     username = project.findProperty("nexusUsername") as String
