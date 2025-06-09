@@ -18,7 +18,7 @@ import reactor.test.StepVerifier;
 @AutoConfigureStubRunner(
     ids = "ru.strbnm:exchange-service:+:stubs:8080",
     stubsMode = StubRunnerProperties.StubsMode.REMOTE,
-    repositoryRoot = "http://localhost:8081/repository/maven-public/"
+    repositoryRoot = "http://localhost:8081/repository/maven-public/,http://nexus:8081/repository/maven-public/"
 )
 class ExchangeGeneratorStubTest {
 

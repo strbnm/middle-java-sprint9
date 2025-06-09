@@ -20,7 +20,7 @@ import ru.strbnm.accounts_service.client.notifications.domain.NotificationReques
 @AutoConfigureStubRunner(
     ids = "ru.strbnm:notifications-service:+:stubs:8093",
     stubsMode = StubRunnerProperties.StubsMode.REMOTE,
-    repositoryRoot = "http://localhost:8081/repository/maven-public/"
+    repositoryRoot = "http://localhost:8081/repository/maven-public/,http://nexus:8081/repository/maven-public/"
 )
 class NotificationsStubTest {
 

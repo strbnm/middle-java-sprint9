@@ -40,7 +40,7 @@ import java.util.List;
                 "ru.strbnm:blocker-service:+:stubs:8084"
         },
         stubsMode = StubRunnerProperties.StubsMode.REMOTE,
-    repositoryRoot = "http://localhost:8081/repository/maven-public/"
+    repositoryRoot = "http://localhost:8081/repository/maven-public/,http://nexus:8081/repository/maven-public/"
 )
 class CashServiceImplTest {
 

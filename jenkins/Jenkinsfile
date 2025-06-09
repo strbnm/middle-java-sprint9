@@ -29,15 +29,16 @@ pipeline {
 
         NEXUS_PASSWORD          = credentials('NEXUS_JENKINS_PASSWORD')
         NEXUS_USER              = 'jenkins'
-
-        STUBRUNNER_PASSWORD     = credentials('NEXUS_JENKINS_PASSWORD')
-        STUBRUNNER_USERNAME     = 'jenkins'
     }
 
     stages {
+        stage('Pre setup environment'){
+            sh 'export STUBRUNNER_PASSWORD=$NEXUS_PASSWORD && export STUBRUNNER_USERNAME=$NEXUS_USER'
+            sh 'chmod +x ./gradlew'
+        }
         stage('Biuld First Block Services') {
             steps {
-                sh 'chmod +x ./gradlew'
+
                 sh './gradlew :exchange-service:clean :exchange-service:build -PnexusUsername=jenkins -PnexusPassword=$NEXUS_PASSWORD'
             }
         }
