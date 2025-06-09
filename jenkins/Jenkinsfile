@@ -38,7 +38,7 @@ pipeline {
         stage('Exchange Service') {
             steps {
                 dir('exchange-service') {
-                    sh './gradlew clean build -PnexusUsername=jenkins -PnexusPassword=$NEXUS_PASSWORD'
+                    sh 'gradlew clean build -PnexusUsername=jenkins -PnexusPassword=$NEXUS_PASSWORD'
                 }
             }
         }
