@@ -42,7 +42,7 @@ bootJar {
     }
     // имя и версия создаваемого архива
     archiveBaseName = 'front-ui'
-    archiveVersion = '1.0.0'
+    archiveVersion = project.version
 }
 
 
@@ -119,6 +119,12 @@ tasks.register('buildTransferClient', GenerateTask) {
 
 tasks.named('compileJava') {
     dependsOn(tasks.buildTransferClient)
+}
+
+tasks.named("test") {
+    dependsOn ':accounts-service:publish'
+    dependsOn ':cash-service:publish'
+    dependsOn ':transfer-service:publish'
 }
 
 afterEvaluate {

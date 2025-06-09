@@ -50,7 +50,7 @@ bootJar {
     }
     // имя и версия создаваемого архива
     archiveBaseName = 'exchange-service'
-    archiveVersion = '1.0.0'
+    archiveVersion = project.version
 }
 
 openApiGenerate {
@@ -88,24 +88,11 @@ contracts {
     generatedTestJavaSourcesDir = project.file('src/contractTest/java/ru/strbnm/exchange_service/generatedContract')
 }
 
-apply plugin: 'maven-publish'
-
-publishing {
-    publications {
-        create("mavenJava", MavenPublication) {
-            artifact verifierStubsJar
-        }
-    }
-    repositories {
-        mavenLocal()
-    }
-}
-
 //Зависимости задач Gradle
 tasks.named('compileJava') {
     dependsOn(tasks.openApiGenerate)
 }
 tasks.named('build') {
     dependsOn 'verifierStubsJar'
-    finalizedBy 'publishToMavenLocal'
+    finalizedBy 'publish'
 }

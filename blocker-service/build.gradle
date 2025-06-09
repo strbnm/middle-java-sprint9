@@ -40,7 +40,7 @@ bootJar {
     }
     // имя и версия создаваемого архива
     archiveBaseName = 'blocker-service'
-    archiveVersion = '1.0.0'
+    archiveVersion = project.version
 }
 
 openApiGenerate {
@@ -77,18 +77,6 @@ contracts {
     generatedTestJavaSourcesDir = project.file('src/contractTest/java/ru/strbnm/blocker_service/generatedContract')
 }
 
-apply plugin: 'maven-publish'
-
-publishing {
-    publications {
-        create("mavenJava", MavenPublication) {
-            artifact verifierStubsJar
-        }
-    }
-    repositories {
-        mavenLocal()
-    }
-}
 
 //Зависимости задач Gradle
 tasks.named('compileJava') {
@@ -96,11 +84,5 @@ tasks.named('compileJava') {
 }
 tasks.named('build') {
     dependsOn 'verifierStubsJar'
-    finalizedBy 'publishToMavenLocal'
+    finalizedBy 'publish'
 }
-
-//afterEvaluate {
-//    tasks.matching { it.name.startsWith("contract") || it.name.contains("Contract") }.configureEach {
-//        enabled = false
-//    }
-//}
