@@ -37,6 +37,7 @@ pipeline {
     stages {
         stage('Biuld First Block Services') {
             steps {
+                sh 'chmod +x ./gradlew'
                 sh './gradlew :exchange-service:clean :exchange-service:build -PnexusUsername=jenkins -PnexusPassword=$NEXUS_PASSWORD'
             }
         }
