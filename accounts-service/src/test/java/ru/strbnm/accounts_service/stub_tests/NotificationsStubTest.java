@@ -15,11 +15,12 @@ import ru.strbnm.accounts_service.client.notifications.domain.NotificationReques
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
         properties = {
                 "spring.config.name=application-test",
-                "spring.rest.notifications-service.url=http://localhost:8080"
+                "spring.rest.notifications-service.url=http://localhost:8093"
         })
 @AutoConfigureStubRunner(
-    ids = "ru.strbnm:notifications-service:+:stubs:8080",
-    stubsMode = StubRunnerProperties.StubsMode.LOCAL
+    ids = "ru.strbnm:notifications-service:+:stubs:8093",
+    stubsMode = StubRunnerProperties.StubsMode.REMOTE,
+    repositoryRoot = "http://localhost:8081/repository/maven-public/"
 )
 class NotificationsStubTest {
 

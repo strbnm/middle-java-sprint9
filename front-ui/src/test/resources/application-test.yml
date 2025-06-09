@@ -11,6 +11,6 @@ spring:
     transfer-service:
       url: http://localhost:8080
     cash-service:
-      url: http://localhost:8081
+      url: http://localhost:8084
     accounts-service:
       url: http://localhost:8082

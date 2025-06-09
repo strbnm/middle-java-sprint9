@@ -32,8 +32,9 @@ import static org.springframework.security.test.web.reactive.server.SecurityMock
     properties = {"spring.config.name=application-test"})
 @AutoConfigureWebTestClient
 @AutoConfigureStubRunner(
-    ids = {"ru.strbnm:accounts-service:+:stubs:8082", "ru.strbnm:blocker-service:+:stubs:8081"},
-    stubsMode = StubRunnerProperties.StubsMode.LOCAL)
+    ids = {"ru.strbnm:accounts-service:+:stubs:8082", "ru.strbnm:blocker-service:+:stubs:8084"},
+    stubsMode = StubRunnerProperties.StubsMode.REMOTE,
+    repositoryRoot = "http://localhost:8081/repository/maven-public/")
 @Import(TestSecurityConfig.class)
 class CashControllerIntegrationTest {
 

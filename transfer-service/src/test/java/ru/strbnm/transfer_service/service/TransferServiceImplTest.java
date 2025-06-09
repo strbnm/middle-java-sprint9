@@ -39,10 +39,11 @@ import ru.strbnm.transfer_service.repository.TransferTransactionInfoRepository;
 @AutoConfigureStubRunner(
         ids = {
                 "ru.strbnm:accounts-service:+:stubs:8082",
-                "ru.strbnm:blocker-service:+:stubs:8081",
+                "ru.strbnm:blocker-service:+:stubs:8084",
                 "ru.strbnm:exchange-service:+:stubs:8083"
         },
-        stubsMode = StubRunnerProperties.StubsMode.LOCAL
+        stubsMode = StubRunnerProperties.StubsMode.REMOTE,
+    repositoryRoot = "http://localhost:8081/repository/maven-public/"
 )
 class TransferServiceImplTest {
 

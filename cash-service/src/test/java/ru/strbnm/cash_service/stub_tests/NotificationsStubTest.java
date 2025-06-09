@@ -19,7 +19,8 @@ import ru.strbnm.cash_service.client.notifications.domain.NotificationRequest;
         })
 @AutoConfigureStubRunner(
     ids = "ru.strbnm:notifications-service:+:stubs:8080",
-    stubsMode = StubRunnerProperties.StubsMode.LOCAL
+    stubsMode = StubRunnerProperties.StubsMode.REMOTE,
+    repositoryRoot = "http://localhost:8081/repository/maven-public/"
 )
 class NotificationsStubTest {
 

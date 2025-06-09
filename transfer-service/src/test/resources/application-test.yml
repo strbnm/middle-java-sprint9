@@ -34,7 +34,7 @@ spring:
     notifications-service:
       url: http://localhost:8080
     blocker-service:
-      url: http://localhost:8081
+      url: http://localhost:8084
     accounts-service:
       url: http://localhost:8082
     exchange-service:
