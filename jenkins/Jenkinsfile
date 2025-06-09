@@ -35,7 +35,7 @@ pipeline {
     }
 
     stages {
-        stage('Build & Tests') {
+        stage('Build & Tests First Block') {
             parallel {
                 stage('Exchange Service') {
                     steps {
@@ -59,6 +59,8 @@ pipeline {
                     }
                 }
             }
+        }
+        stage('Build & Tests Second Block') {
             parallel {
                 stage('Exchange Generator') {
                     steps {
@@ -75,19 +77,17 @@ pipeline {
                     }
                 }
             }
-            parallel {
-                stage('Cash Service') {
-                    steps {
-                        dir('cash-service') {
-                            sh './gradlew clean build -PnexusUsername=jenkins -PnexusPassword=$NEXUS_PASSWORD'
-                        }
+            stage('Cash Service') {
+                steps {
+                    dir('cash-service') {
+                        sh './gradlew clean build -PnexusUsername=jenkins -PnexusPassword=$NEXUS_PASSWORD'
                     }
                 }
-                stage('Transfer Service') {
-                    steps {
-                        dir('transfer-service') {
-                            sh './gradlew clean build -PnexusUsername=jenkins -PnexusPassword=$NEXUS_PASSWORD'
-                        }
+            }
+            stage('Transfer Service') {
+                steps {
+                    dir('transfer-service') {
+                        sh './gradlew clean build -PnexusUsername=jenkins -PnexusPassword=$NEXUS_PASSWORD'
                     }
                 }
             }
@@ -132,7 +132,6 @@ pipeline {
                 }
             }
         }
-
 //         stage('Install PostgreSQL to TEST') {
 //             steps {
 //                 sh """
@@ -241,5 +240,5 @@ pipeline {
 //                 """
 //             }
 //         }
-//     }
+    }
 }
