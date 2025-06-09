@@ -35,15 +35,15 @@ pipeline {
     }
 
     stages {
-        stage('Build First Block Services') {
-            parallel {
-                steps {
-                    sh './gradlew :exchange-service:clean :exchange-service:build -PnexusUsername=jenkins -PnexusPassword=$NEXUS_PASSWORD'
-                }
-                steps {
-                    sh './gradlew :notifications-service:clean :notifications-service:build -PnexusUsername=jenkins -PnexusPassword=$NEXUS_PASSWORD'
+        stage('Biuld First Block Services') {
+            steps {
+                sh './gradlew :exchange-service:clean :exchange-service:build -PnexusUsername=jenkins -PnexusPassword=$NEXUS_PASSWORD'
+            }
+        }
+        stage('Notifications Service') {
+            steps {
+                sh './gradlew :notifications-service:clean :notifications-service:build -PnexusUsername=jenkins -PnexusPassword=$NEXUS_PASSWORD'
 
-                }
             }
         }
         stage('Blocker Service') {
