@@ -40,7 +40,7 @@ pipeline {
                 sh 'chmod +x ./gradlew'
             }
         }
-        stage("Build") {
+        stage("Build Application") {
             parallel {
                 stage('Build Exchange Service') {
                     steps {
@@ -80,6 +80,50 @@ pipeline {
                 stage('Build Front UI') {
                     steps {
                         sh './gradlew :front-ui:clean :front-ui:build -x test -x contractTest -PnexusUsername=jenkins -PnexusPassword=$NEXUS_PASSWORD'
+                    }
+                }
+            }
+        }
+        stage("Test Application") {
+            parallel {
+                stage('Test Exchange Service') {
+                    steps {
+                        sh './gradlew :exchange-service:test -PnexusUsername=jenkins -PnexusPassword=$NEXUS_PASSWORD'
+                    }
+                }
+                stage('Test Notifications Service') {
+                    steps {
+                        sh './gradlew :notifications-service:test -PnexusUsername=jenkins -PnexusPassword=$NEXUS_PASSWORD'
+                    }
+                }
+                stage('Test Blocker Service') {
+                    steps {
+                        sh './gradlew :blocker-service:test -PnexusUsername=jenkins -PnexusPassword=$NEXUS_PASSWORD'
+                    }
+                }
+                stage('Test Exchange Generator') {
+                    steps {
+                        sh './gradlew :exchange-generator:test -PnexusUsername=jenkins -PnexusPassword=$NEXUS_PASSWORD'
+                    }
+                }
+                stage('Test Accounts Service') {
+                    steps {
+                        sh './gradlew :accounts-service:test -PnexusUsername=jenkins -PnexusPassword=$NEXUS_PASSWORD'
+                    }
+                }
+                stage('Test Cash Service') {
+                    steps {
+                        sh './gradlew :cash-service:test -PnexusUsername=jenkins -PnexusPassword=$NEXUS_PASSWORD'
+                    }
+                }
+                stage('Test Transfer Service') {
+                    steps {
+                        sh './gradlew :transfer-service:test -PnexusUsername=jenkins -PnexusPassword=$NEXUS_PASSWORD'
+                    }
+                }
+                stage('Test Front UI') {
+                    steps {
+                        sh './gradlew :front-ui:test -PnexusUsername=jenkins -PnexusPassword=$NEXUS_PASSWORD'
                     }
                 }
             }
