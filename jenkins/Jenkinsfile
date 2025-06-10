@@ -32,7 +32,7 @@ pipeline {
 
         STUBRUNNER_PASSWORD     = credentials('NEXUS_JENKINS_PASSWORD')
         STUBRUNNER_USERNAME     = 'jenkins'
-        CI_VERSION = "${env.BUILD_NUMBER}-${getBuildTimestamp()}"
+
     }
 
     stages {

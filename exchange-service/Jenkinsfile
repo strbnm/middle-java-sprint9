@@ -15,7 +15,7 @@ pipeline {
         CONTRACT_TEST_REPORT_DIR            = 'build/reports/tests/contractTest'
         JACOCO_HTML                         = 'build/reports/jacoco/test/html'
 
-        CI_VERSION = "${env.BUILD_NUMBER}-${getBuildTimestamp()}"
+
 
         MODULE = 'exchange-service'
     }
