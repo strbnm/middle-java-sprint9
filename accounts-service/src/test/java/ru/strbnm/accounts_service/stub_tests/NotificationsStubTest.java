@@ -18,7 +18,7 @@ import ru.strbnm.accounts_service.client.notifications.domain.NotificationReques
                 "spring.rest.notifications-service.url=http://localhost:7080"
         })
 @AutoConfigureStubRunner(
-    ids = "ru.strbnm:notifications-service:+:stubs:8093",
+    ids = "ru.strbnm:notifications-service:+:stubs:7080",
     stubsMode = StubRunnerProperties.StubsMode.REMOTE,
     repositoryRoot = "http://localhost:8081/repository/maven-public/,http://nexus:8081/repository/maven-public/"
 )
