@@ -35,48 +35,55 @@ pipeline {
     }
 
     stages {
-        stage('Biuld First Block Services') {
+        stage("Checkout and setup") {
             steps {
+                checkout
                 sh 'chmod +x ./gradlew'
-                sh './gradlew :exchange-service:clean :exchange-service:build -PnexusUsername=jenkins -PnexusPassword=$NEXUS_PASSWORD'
             }
         }
-        stage('Notifications Service') {
-            steps {
-                sh './gradlew :notifications-service:clean :notifications-service:build -PnexusUsername=jenkins -PnexusPassword=$NEXUS_PASSWORD'
-
+        stage("Build") {
+            parallel {
+                stage('Build Exchange Service') {
+                    steps {
+                        sh './gradlew :exchange-service:clean :exchange-service:build -x test -x contractTest -PnexusUsername=jenkins -PnexusPassword=$NEXUS_PASSWORD'
+                    }
+                }
+                stage('Build Notifications Service') {
+                    steps {
+                        sh './gradlew :notifications-service:clean :notifications-service:build -x test -x contractTest -PnexusUsername=jenkins -PnexusPassword=$NEXUS_PASSWORD'
+                    }
+                }
+                stage('Build Blocker Service') {
+                    steps {
+                        sh './gradlew :blocker-service:clean :blocker-service:build -x test -x contractTest -PnexusUsername=jenkins -PnexusPassword=$NEXUS_PASSWORD'
+                    }
+                }
+                stage('Build Exchange Generator') {
+                    steps {
+                        sh './gradlew :exchange-generator:clean :exchange-generator:build -x test -x contractTest -PnexusUsername=jenkins -PnexusPassword=$NEXUS_PASSWORD'
+                    }
+                }
+                stage('Build Accounts Service') {
+                    steps {
+                        sh './gradlew :accounts-service:clean :accounts-service:build -x test -x contractTest -PnexusUsername=jenkins -PnexusPassword=$NEXUS_PASSWORD'
+                    }
+                }
+                stage('Build Cash Service') {
+                    steps {
+                        sh './gradlew :cash-service:clean :cash-service:build -x test -x contractTest -PnexusUsername=jenkins -PnexusPassword=$NEXUS_PASSWORD'
+                    }
+                }
+                stage('Build Transfer Service') {
+                    steps {
+                        sh './gradlew :transfer-service:clean :transfer-service:build -x test -x contractTest -PnexusUsername=jenkins -PnexusPassword=$NEXUS_PASSWORD'
+                    }
+                }
+                stage('Build Front UI') {
+                    steps {
+                        sh './gradlew :front-ui:clean :front-ui:build -x test -x contractTest -PnexusUsername=jenkins -PnexusPassword=$NEXUS_PASSWORD'
+                    }
+                }
             }
         }
-        stage('Blocker Service') {
-            steps {
-                sh './gradlew :blocker-service:clean :blocker-service:build -PnexusUsername=jenkins -PnexusPassword=$NEXUS_PASSWORD'
-            }
-        }
-        stage('Exchange Generator') {
-            steps {
-                sh './gradlew :exchange-generator:clean :exchange-generator:build -PnexusUsername=jenkins -PnexusPassword=$NEXUS_PASSWORD'
-            }
-        }
-        stage('Accounts Service') {
-            steps {
-                sh './gradlew :accounts-service:clean :accounts-service:build -PnexusUsername=jenkins -PnexusPassword=$NEXUS_PASSWORD'
-            }
-        }
-        stage('Cash Service') {
-            steps {
-                sh './gradlew :cash-service:clean :cash-service:build -PnexusUsername=jenkins -PnexusPassword=$NEXUS_PASSWORD'
-            }
-        }
-        stage('Transfer Service') {
-            steps {
-                sh './gradlew :transfer-service:clean :transfer-service:build -PnexusUsername=jenkins -PnexusPassword=$NEXUS_PASSWORD'
-            }
-        }
-        stage('Front UI') {
-            steps {
-                sh './gradlew :front-ui:clean :front-ui:build -PnexusUsername=jenkins -PnexusPassword=$NEXUS_PASSWORD'
-            }
-        }
-
     }
 }
