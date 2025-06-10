@@ -24,8 +24,8 @@ import ru.strbnm.cash_service.repository.OutboxNotificationRepository;
 @Import(ContractTestSecurityConfig.class)
 @AutoConfigureStubRunner(
         ids = {
-                "ru.strbnm:accounts-service:+:stubs:8082",
-                "ru.strbnm:blocker-service:+:stubs:8083"
+                "ru.strbnm:accounts-service:+:stubs:7083",
+                "ru.strbnm:blocker-service:+:stubs:7082"
         },
         stubsMode = StubRunnerProperties.StubsMode.REMOTE,
         repositoryRoot = "http://localhost:8081/repository/maven-public/,http://nexus:8081/repository/maven-public/"

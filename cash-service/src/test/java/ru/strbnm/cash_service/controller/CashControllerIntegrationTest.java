@@ -32,7 +32,7 @@ import static org.springframework.security.test.web.reactive.server.SecurityMock
     properties = {"spring.config.name=application-test"})
 @AutoConfigureWebTestClient
 @AutoConfigureStubRunner(
-    ids = {"ru.strbnm:accounts-service:+:stubs:8082", "ru.strbnm:blocker-service:+:stubs:8084"},
+    ids = {"ru.strbnm:accounts-service:+:stubs:7086", "ru.strbnm:blocker-service:+:stubs:7085"},
     stubsMode = StubRunnerProperties.StubsMode.REMOTE,
     repositoryRoot = "http://localhost:8081/repository/maven-public/,http://nexus:8081/repository/maven-public/")
 @Import(TestSecurityConfig.class)

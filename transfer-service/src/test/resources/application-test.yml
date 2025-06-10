@@ -32,13 +32,13 @@ spring:
 
   rest:
     notifications-service:
-      url: http://localhost:8080
+      url: http://localhost:7095
     blocker-service:
-      url: http://localhost:8084
+      url: http://localhost:7096
     accounts-service:
-      url: http://localhost:8082
+      url: http://localhost:7097
     exchange-service:
-      url: http://localhost:8083
+      url: http://localhost:7098
 
 logging:
   level:
