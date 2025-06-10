@@ -100,12 +100,12 @@ pipeline {
             }
         }
 
-        stage("Build Docker Image") {
+        stage("Сборка обзара Docker") {
             steps {
                 sh 'docker build -t $DOCKER_REGISTRY/$MODULE:$IMAGE_TAG --build-arg CI_VERSION=$CI_VERSION $MODULE'
             }
         }
-        stage('Push Docker Images') {
+        stage('Пуш в репозиторий') {
             steps {
                 withCredentials([string(credentialsId: 'GHCR_TOKEN', variable: 'GHCR_TOKEN')]) {
                     sh """
@@ -113,6 +113,11 @@ pipeline {
                     docker push ${env.DOCKER_REGISTRY}/${env.MODULE}:${env.IMAGE_TAG}
                     """
                 }
+            }
+        }
+        stage('Создание пространства имен') {
+            steps {
+                sh 'kubectl get namespace test >/dev/null 2>&1 || kubectl create namespace test'
             }
         }
         stage('Create Secrets for TEST') {
