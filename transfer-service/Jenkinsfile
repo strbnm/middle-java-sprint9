@@ -100,7 +100,7 @@ pipeline {
 
         stage("Build Docker Image") {
             steps {
-                sh "docker build -t ${env.DOCKER_REGISTRY}/${env.MODULE}:${env.IMAGE_TAG} --build_arg CI_VERSION='${env.CI_VERSION}' ${env.MODULE}"
+                sh 'docker build -t $DOCKER_REGISTRY/$MODULE:$IMAGE_TAG --build-arg CI_VERSION=$CI_VERSION $MODULE'
             }
         }
         stage('Push Docker Images') {
