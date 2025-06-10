@@ -40,7 +40,7 @@ pipeline {
         }
         stage("Сборка и тест") {
             steps {
-                sh "./gradlew :${MODULE}:clean :${MODULE}:build -PnexusUsername=jenkins -PnexusPassword=$NEXUS_PASSWORD"
+                sh "./gradlew :${env.MODULE}:clean :${env.MODULE}:build -PnexusUsername=jenkins -PnexusPassword=${env.NEXUS_PASSWORD}"
             }
         }
         stage('Генерация метрик') {
@@ -58,7 +58,7 @@ pipeline {
                     steps {
                         catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
                             publishHTML(target: [
-                                reportDir: "${MODULE}/${JACOCO_HTML}",
+                                reportDir: "${env.MODULE}/${env.JACOCO_HTML}",
                                 reportFiles: 'index.html',
                                 reportName: 'Jacoco Code Coverage',
                                 keepAll: true,
@@ -72,7 +72,7 @@ pipeline {
                     steps {
                         catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
                             publishHTML(target: [
-                                reportDir: "${MODULE}/${TEST_REPORT_DIR}",
+                                reportDir: "${env.MODULE}/${env.TEST_REPORT_DIR}",
                                 reportFiles: 'index.html',
                                 reportName: 'Unit tests report',
                                 keepAll: true,
@@ -86,7 +86,7 @@ pipeline {
                     steps {
                         catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
                             publishHTML(target: [
-                                reportDir: "${MODULE}/${CONTRACT_TEST_REPORT_DIR}",
+                                reportDir: "${env.MODULE}/${env.CONTRACT_TEST_REPORT_DIR}",
                                 reportFiles: 'index.html',
                                 reportName: 'Contracts tests report',
                                 keepAll: true,
@@ -101,15 +101,15 @@ pipeline {
 
         stage("Build Docker Image") {
             steps {
-                sh "docker build -t --build_arg CI_VERSION=${CI_VERSION} ${DOCKER_REGISTRY}/${MODULE}:${IMAGE_TAG} ${MODULE}"
+                sh "docker build -t --build_arg CI_VERSION=${env.CI_VERSION} ${env.DOCKER_REGISTRY}/${env.MODULE}:${env.IMAGE_TAG} ${env.MODULE}"
             }
         }
         stage('Push Docker Images') {
             steps {
                 withCredentials([string(credentialsId: 'GHCR_TOKEN', variable: 'GHCR_TOKEN')]) {
                     sh """
-                    echo \$GHCR_TOKEN | docker login ghcr.io -u ${GITHUB_USERNAME} --password-stdin
-                    docker push ${DOCKER_REGISTRY}/${MODULE}:${IMAGE_TAG}
+                    echo \$GHCR_TOKEN | docker login ghcr.io -u ${env.GITHUB_USERNAME} --password-stdin
+                    docker push ${env.DOCKER_REGISTRY}/${env.MODULE}:${env.IMAGE_TAG}
                     """
                 }
             }
@@ -117,10 +117,10 @@ pipeline {
     }
     post {
         success {
-            sh "echo 'Сборка ${MODULE} успешно завершена.'"
+            sh "echo 'Сборка ${env.MODULE} успешно завершена.'"
         }
         failure {
-            echo "Сборка ${MODULE} завершилась с ошибкой."
+            echo "Сборка ${env.MODULE} завершилась с ошибкой."
         }
     }
 }
