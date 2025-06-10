@@ -33,9 +33,9 @@ import static org.springframework.security.test.web.reactive.server.SecurityMock
 @AutoConfigureWebTestClient
 @AutoConfigureStubRunner(
     ids = {
-            "ru.strbnm:blocker-service:+:stubs:8084",
-            "ru.strbnm:accounts-service:+:stubs:8082",
-            "ru.strbnm:exchange-service:+:stubs:8083"
+            "ru.strbnm:blocker-service:+:stubs:7096",
+            "ru.strbnm:accounts-service:+:stubs:7097",
+            "ru.strbnm:exchange-service:+:stubs:7098"
     },
     stubsMode = StubRunnerProperties.StubsMode.REMOTE,
     repositoryRoot = "http://localhost:8081/repository/maven-public/,http://nexus:8081/repository/maven-public/")

@@ -36,8 +36,8 @@ import java.util.List;
 @Import({AccountsWebClientConfig.class, BlockerWebClientConfig.class, LiquibaseConfig.class, CashServiceImpl.class})
 @AutoConfigureStubRunner(
         ids = {
-                "ru.strbnm:accounts-service:+:stubs:8082",
-                "ru.strbnm:blocker-service:+:stubs:8084"
+                "ru.strbnm:accounts-service:+:stubs:7086",
+                "ru.strbnm:blocker-service:+:stubs:7085"
         },
         stubsMode = StubRunnerProperties.StubsMode.REMOTE,
     repositoryRoot = "http://localhost:8081/repository/maven-public/,http://nexus:8081/repository/maven-public/"

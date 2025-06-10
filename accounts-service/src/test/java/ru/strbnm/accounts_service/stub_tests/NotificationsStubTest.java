@@ -15,7 +15,7 @@ import ru.strbnm.accounts_service.client.notifications.domain.NotificationReques
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
         properties = {
                 "spring.config.name=application-test",
-                "spring.rest.notifications-service.url=http://localhost:8093"
+                "spring.rest.notifications-service.url=http://localhost:7080"
         })
 @AutoConfigureStubRunner(
     ids = "ru.strbnm:notifications-service:+:stubs:8093",

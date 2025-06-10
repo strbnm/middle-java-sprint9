@@ -13,7 +13,7 @@ import reactor.test.StepVerifier;
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
         properties = {
                 "spring.config.name=application-test",
-                "spring.rest.exchange-service.url=http://localhost:8080"
+                "spring.rest.exchange-service.url=http://localhost:7087"
         })
 @AutoConfigureStubRunner(
     ids = "ru.strbnm:exchange-service:+:stubs:8080",
