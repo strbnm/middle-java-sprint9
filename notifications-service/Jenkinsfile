@@ -54,10 +54,10 @@ pipeline {
             }
         }
         stage('Публикация отчетов') {
-            catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
-                parallel {
-                    stage('Отчёт Jacoco в HTML') {
-                        steps {
+            parallel {
+                stage('Отчёт Jacoco в HTML') {
+                    steps {
+                        catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
                             publishHTML(target: [
                                 reportDir: "${MODULE}/${JACOCO_HTML}",
                                 reportFiles: 'index.html',
@@ -68,8 +68,10 @@ pipeline {
                             ])
                         }
                     }
-                    stage('Отчёт по тестам в HTML') {
-                        steps {
+                }
+                stage('Отчёт по тестам в HTML') {
+                    steps {
+                        catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
                             publishHTML(target: [
                                 reportDir: "${MODULE}/${TEST_REPORT_DIR}",
                                 reportFiles: 'index.html',
@@ -80,8 +82,10 @@ pipeline {
                             ])
                         }
                     }
-                    stage('Отчёт по контрактным тестам в HTML') {
-                        steps {
+                }
+                stage('Отчёт по контрактным тестам в HTML') {
+                    steps {
+                        catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
                             publishHTML(target: [
                                 reportDir: "${MODULE}/${CONTRACT_TEST_REPORT_DIR}",
                                 reportFiles: 'index.html',
