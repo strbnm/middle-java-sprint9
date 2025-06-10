@@ -39,11 +39,7 @@ pipeline {
         }
         stage("Сборка и тест") {
             steps {
-                withCredentials([string(credentialsId: 'NEXUS_JENKINS_PASSWORD', variable: 'NEXUS_PASSWORD')]) {
-                    sh """
-                    ./gradlew :${env.MODULE}:clean :${env.MODULE}:build -PnexusUsername=jenkins -PnexusPassword=$NEXUS_PASSWORD
-                    """
-                }
+                sh './gradlew :$MODULE:clean :$MODULE:build -PnexusUsername=jenkins -PnexusPassword=$NEXUS_PASSWORD'
             }
         }
         stage('Генерация метрик') {
