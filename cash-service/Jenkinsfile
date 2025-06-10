@@ -1,0 +1,116 @@
+pipeline {
+    agent any
+
+    environment {
+        DOCKER_REGISTRY                     = credentials('DOCKER_REGISTRY')
+        NEXUS_REPOSITORY_RELEASES_URL       = 'http://nexus:8081/repository/maven-releases/'
+        GITHUB_USERNAME                     = credentials('GITHUB_USERNAME')
+        IMAGE_TAG                           = "${env.BUILD_NUMBER}"
+        NEXUS_PASSWORD                      = credentials('NEXUS_JENKINS_PASSWORD')
+        NEXUS_USER                          = 'jenkins'
+        STUBRUNNER_PASSWORD                 = credentials('NEXUS_JENKINS_PASSWORD')
+        STUBRUNNER_USERNAME                 = 'jenkins'
+
+        TEST_REPORT_DIR                     = 'build/reports/tests/test'
+        CONTRACT_TEST_REPORT_DIR            = 'build/reports/tests/contractTest'
+        JACOCO_HTML                         = 'build/reports/jacoco/test/html'
+
+        static def getBuildTimestamp() {
+            def date = new Date()
+            def format = new SimpleDateFormat("yyyyMMdd-HHmm")
+            return format.format(date)
+        }
+        CI_VERSION = "${env.BUILD_NUMBER}-${getBuildTimestamp()}"
+
+        MODULE = 'cash-service'
+    }
+
+    stages {
+        stage("Получение исходников") {
+            steps {
+                checkout scm
+                sh 'chmod +x ./gradlew'
+            }
+        }
+        stage("Сборка и тест") {
+            steps {
+                sh "./gradlew :${MODULE}:clean :${MODULE}:build -PnexusUsername=jenkins -PnexusPassword=$NEXUS_PASSWORD"
+            }
+        }
+        stage('Генерация метрик') {
+            steps {
+                echo "Ключевые метрики сборки:"
+                echo "- Длительность: ${currentBuild.durationString}"
+                echo "- Автор: ${env.BUILD_USER ?: 'N/A'}"
+                echo "- Статус: ${currentBuild.currentResult}"
+                echo "- Коммит: ${env.GIT_COMMIT ?: 'N/A'}"
+            }
+        }
+        stage('Публикация отчетов') {
+            catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                parallel {
+                    stage('Отчёт Jacoco в HTML') {
+                        steps {
+                            publishHTML(target: [
+                                reportDir: "${MODULE}/${JACOCO_HTML}",
+                                reportFiles: 'index.html',
+                                reportName: 'Jacoco Code Coverage',
+                                keepAll: true,
+                                alwaysLinkToLastBuild: true,
+                                allowMissing: true
+                            ])
+                        }
+                    }
+                    stage('Отчёт по тестам в HTML') {
+                        steps {
+                            publishHTML(target: [
+                                reportDir: "${MODULE}/${TEST_REPORT_DIR}",
+                                reportFiles: 'index.html',
+                                reportName: 'Unit tests report',
+                                keepAll: true,
+                                alwaysLinkToLastBuild: true,
+                                allowMissing: true
+                            ])
+                        }
+                    }
+                    stage('Отчёт по контрактным тестам в HTML') {
+                        steps {
+                            publishHTML(target: [
+                                reportDir: "${MODULE}/${CONTRACT_TEST_REPORT_DIR}",
+                                reportFiles: 'index.html',
+                                reportName: 'Contracts tests report',
+                                keepAll: true,
+                                alwaysLinkToLastBuild: true,
+                                allowMissing: true
+                            ])
+                        }
+                    }
+                }
+            }
+        }
+
+        stage("Build Docker Image") {
+            steps {
+                sh "docker build -t --build_arg CI_VERSION=${CI_VERSION} ${DOCKER_REGISTRY}/${MODULE}:${IMAGE_TAG} ${MODULE}"
+            }
+        }
+        stage('Push Docker Images') {
+            steps {
+                withCredentials([string(credentialsId: 'GHCR_TOKEN', variable: 'GHCR_TOKEN')]) {
+                    sh """
+                    echo \$GHCR_TOKEN | docker login ghcr.io -u ${GITHUB_USERNAME} --password-stdin
+                    docker push ${DOCKER_REGISTRY}/${MODULE}:${IMAGE_TAG}
+                    """
+                }
+            }
+        }
+    }
+    post {
+        success {
+            sh "echo 'Сборка ${MODULE} успешно завершена.'"
+        }
+        failure {
+            echo "Сборка ${MODULE} завершилась с ошибкой."
+        }
+    }
+}

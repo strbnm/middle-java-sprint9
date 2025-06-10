@@ -67,9 +67,9 @@ sourceSets.main.java.srcDir "$projectDir/build/generated/src/main/java"
 tasks.named('compileJava') {
     dependsOn(tasks.buildClient)
 }
-//tasks.named("test") {
-//    dependsOn ':exchange-service:publish'
-//}
+tasks.named("test") {
+    dependsOn ':exchange-service:publish'
+}
 
 afterEvaluate {
     tasks.matching { it.name.startsWith("contract") || it.name.contains("Contract") }.configureEach {

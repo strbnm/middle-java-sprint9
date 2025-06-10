@@ -185,9 +185,9 @@ tasks.named('build') {
     dependsOn 'verifierStubsJar'
     finalizedBy 'publish'
 }
-//tasks.named("test") {
-//    dependsOn ':notifications-service:publish'
-//    dependsOn ':accounts-service:publish'
-//    dependsOn ':blocker-service:publish'
-//    dependsOn ':exchange-service:publish'
-//}
+tasks.named("test") {
+    dependsOn ':notifications-service:publish'
+    dependsOn ':accounts-service:publish'
+    dependsOn ':blocker-service:publish'
+    dependsOn ':exchange-service:publish'
+}

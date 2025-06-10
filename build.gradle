@@ -23,13 +23,11 @@ dependencies {
     implementation project(':front-ui')
 }
 
-
 static def getBuildTimestamp() {
     def date = new Date()
     def format = new SimpleDateFormat("yyyyMMdd-HHmmss")
     return format.format(date)
 }
-
 
 allprojects {
     group = 'ru.strbnm'
@@ -50,7 +48,6 @@ allprojects {
             set('mavenRepositoryUrl', 'http://localhost:8081/repository/maven-snapshots/')
         }
     }
-
 
     java {
         toolchain {
@@ -74,8 +71,6 @@ allprojects {
             }
         }
     }
-
-
 }
 
 subprojects {
@@ -130,9 +125,6 @@ subprojects {
             maven {
                 name = "nexus-docker"
                 url = mavenRepositoryUrl
-//                url = version.endsWith('SNAPSHOT')
-//                        ? uri('http://localhost:8081/repository/maven-snapshots/')
-//                        : uri('http://localhost:8081/repository/maven-releases/')
                 allowInsecureProtocol = true
                 credentials {
                     username = project.findProperty("nexusUsername") as String
@@ -141,11 +133,6 @@ subprojects {
             }
         }
     }
-    test {
-        System.setProperty("stubrunner.username", project.findProperty("nexusUsername") as String)
-        System.setProperty("stubrunner.password", project.findProperty("nexusPassword") as String)
-    }
-
 }
 
 // Отключаем задачи Java в корневом проекте
