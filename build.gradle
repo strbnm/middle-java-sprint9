@@ -33,8 +33,8 @@ static def getBuildTimestamp() {
 
 allprojects {
     group = 'ru.strbnm'
-    if (System.getenv('CI')) {
-        version = "1.0.0.${getBuildTimestamp()}-RELEASE"
+    if (System.getenv('CI_VERSION')) {
+        version = "1.0.0.${System.getenv('CI_VERSION')}"
         if (System.getenv('NEXUS_REPOSITORY_RELEASES_URL')) {
             ext {
                 set('mavenRepositoryUrl', System.getenv('NEXUS_REPOSITORY_RELEASES_URL'))

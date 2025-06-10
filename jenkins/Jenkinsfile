@@ -32,6 +32,12 @@ pipeline {
 
         STUBRUNNER_PASSWORD     = credentials('NEXUS_JENKINS_PASSWORD')
         STUBRUNNER_USERNAME     = 'jenkins'
+        static def getBuildTimestamp() {
+            def date = new Date()
+            def format = new SimpleDateFormat("yyyyMMdd-HHmm")
+            return format.format(date)
+        }
+        CI_VERSION = "${env.BUILD_NUMBER}-${getBuildTimestamp()}"
     }
 
     stages {
