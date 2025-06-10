@@ -76,3 +76,29 @@ tolerations: []
 
 affinity: {}
 
+config:
+  service_db_user: transfer_user
+  oauth2:
+    - client_id: notifications-client
+      scope: resource.readwrite
+      secret_name: OAUTH2_CLIENT_SECRET_NOTIFICATIONS
+    - client_id: accounts-client
+      scope: resource.readwrite
+      secret_name: OAUTH2_CLIENT_SECRET_ACCOUNTS
+    - client_id: blocker-client
+      scope: resource.readwrite
+      secret_name: OAUTH2_CLIENT_SECRET_BLOCKER
+    - client_id: exchange-client
+      scope: resource.readwrite
+      secret_name: OAUTH2_CLIENT_SECRET_EXCHANGE
+# Configuration for the transfer-db (PostgreSQL dependency)
+transfer-db:
+  enabled: true
+  # Override values from the official postgresql chart
+  auth:
+    database: app_db
+    username: transfer_user
+  primary:
+    persistence:
+      enabled: true
+      size: 1Gi # Small size for example

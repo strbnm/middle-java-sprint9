@@ -76,3 +76,20 @@ tolerations: []
 
 affinity: {}
 
+config:
+  service_db_user: accounts_user
+  oauth2:
+    - client_id: notifications-client
+      scope: resource.readwrite
+      secret_name: OAUTH2_CLIENT_SECRET_NOTIFICATIONS
+# Configuration for the accounts-db (PostgreSQL dependency)
+accounts-db:
+  enabled: true
+  # Override values from the official postgresql chart
+  auth:
+    database: app_db
+    username: accounts_user
+  primary:
+    persistence:
+      enabled: true
+      size: 1Gi # Small size for example

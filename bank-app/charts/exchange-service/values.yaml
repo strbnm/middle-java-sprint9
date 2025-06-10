@@ -76,3 +76,16 @@ tolerations: []
 
 affinity: {}
 
+config:
+  service_db_user: exchange_user
+# Configuration for the exchange-db (PostgreSQL dependency)
+exchange-db:
+  enabled: true
+  # Override values from the official postgresql chart
+  auth:
+    database: app_db
+    username: exchange_user
+  primary:
+    persistence:
+      enabled: true
+      size: 1Gi # Small size for example

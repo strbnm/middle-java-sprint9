@@ -23,26 +23,11 @@ dependencies:
 - name: front-ui
   repository: file://./charts/front-ui
   version: 0.1.0
-- name: postgresql
-  repository: file://./charts/postgresql
-  version: 16.7.10
-- name: postgresql
-  repository: file://./charts/postgresql
-  version: 16.7.10
-- name: postgresql
-  repository: file://./charts/postgresql
-  version: 16.7.10
-- name: postgresql
-  repository: file://./charts/postgresql
-  version: 16.7.10
-- name: postgresql
-  repository: file://./charts/postgresql
-  version: 16.7.10
 - name: keycloak
   repository: file://./charts/keycloak
   version: 24.7.3
 - name: rabbitmq
   repository: file://./charts/rabbitmq
   version: 16.0.6
-digest: sha256:f855a34aa7d4951d83d890d67a0552150c64f4baf55de8a231e196de5273d872
-generated: "2025-06-08T15:11:48.7491846+03:00"
+digest: sha256:86fd5666df4f2a38363c3f1be6dd03a9238bc24321dc397b09e8732327b31082
+generated: "2025-06-10T22:08:43.4491974+03:00"

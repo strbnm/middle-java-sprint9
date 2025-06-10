@@ -46,41 +46,6 @@ dependencies:
     version: "0.1.0"
     repository: "file://./charts/front-ui"  # Local path reference
 
- # Dependency for Accounts DB (PostgreSQL)
-  - name: postgresql
-    version: "16.7.10"
-    repository: "file://./charts/postgresql"
-    alias: accounts-db
-    condition: accounts-db.enabled
-  
-  # Dependency for Cash DB (PostgreSQL)
-  - name: postgresql
-    version: "16.7.10" 
-    repository: "file://./charts/postgresql"
-    alias: cash-db 
-    condition: cash-db.enabled
-
-  # Dependency for Transfer DB (PostgreSQL)
-  - name: postgresql
-    version: "16.7.10"
-    repository: "file://./charts/postgresql"
-    alias: transfer-db 
-    condition: transfer-db.enabled
-
-  # Dependency for Exchange DB (PostgreSQL)
-  - name: postgresql
-    version: "16.7.10"
-    repository: "file://./charts/postgresql"
-    alias: exchange-db 
-    condition: exchange-db.enabled
-
-  # Dependency for Notifications DB (PostgreSQL)
-  - name: postgresql
-    version: "16.7.10"
-    repository: "file://./charts/postgresql"
-    alias: notifications-db 
-    condition: notifications-db.enabled
-
   # Dependency for Keycloak
   - name: keycloak
     version: "24.7.3"

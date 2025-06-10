@@ -21,13 +21,23 @@ accounts-service:
     host: accounts-service.bankapp.local
     path: /
     pathType: ImplementationSpecific
-  # Database connection details passed to customer-service configmap
   config:
     service_db_user: accounts_user
     oauth2:
       - client_id: notifications-client
         scope: resource.readwrite
         secret_name: OAUTH2_CLIENT_SECRET_NOTIFICATIONS
+  # Configuration for the accounts-db (PostgreSQL dependency)
+  accounts-db:
+    enabled: true
+    # Override values from the official postgresql chart
+    auth:
+      database: app_db
+      username: accounts_user
+    primary:
+      persistence:
+        enabled: true
+        size: 1Gi # Small size for example
 
 cash-service:
   replicaCount: 1
@@ -58,6 +68,17 @@ cash-service:
       - client_id: blocker-client
         scope: resource.readwrite
         secret_name: OAUTH2_CLIENT_SECRET_BLOCKER
+  # Configuration for the cash-db (PostgreSQL dependency)
+  cash-db:
+    enabled: true
+    # Override values from the official postgresql chart
+    auth:
+      database: app_db
+      username: cash_user
+    primary:
+      persistence:
+        enabled: true
+        size: 1Gi # Small size for example
 
 transfer-service:
   replicaCount: 1
@@ -91,6 +112,17 @@ transfer-service:
       - client_id: exchange-client
         scope: resource.readwrite
         secret_name: OAUTH2_CLIENT_SECRET_EXCHANGE
+  # Configuration for the transfer-db (PostgreSQL dependency)
+  transfer-db:
+    enabled: true
+    # Override values from the official postgresql chart
+    auth:
+      database: app_db
+      username: transfer_user
+    primary:
+      persistence:
+        enabled: true
+        size: 1Gi # Small size for example
 
 blocker-service:
   replicaCount: 1
@@ -109,7 +141,6 @@ blocker-service:
     host: blocker-service.bankapp.local
     path: /
     pathType: ImplementationSpecific
-  config:
 
 exchange-service:
   replicaCount: 1
@@ -130,6 +161,17 @@ exchange-service:
     pathType: ImplementationSpecific
   config:
     service_db_user: exchange_user
+  # Configuration for the exchange-db (PostgreSQL dependency)
+  exchange-db:
+    enabled: true
+    # Override values from the official postgresql chart
+    auth:
+      database: app_db
+      username: exchange_user
+    primary:
+      persistence:
+        enabled: true
+        size: 1Gi # Small size for example
 
 exchange-generator:
   replicaCount: 1
@@ -148,7 +190,6 @@ exchange-generator:
     host: exchange-generator.bankapp.local
     path: /
     pathType: ImplementationSpecific
-  config:
 
 notifications-service:
   replicaCount: 1
@@ -169,6 +210,17 @@ notifications-service:
     pathType: ImplementationSpecific
   config:
     service_db_user: notifications_user
+  # Configuration for the notifications-db (PostgreSQL dependency)
+  notifications-db:
+    enabled: true
+    # Override values from the official postgresql chart
+    auth:
+      database: app_db
+      username: notifications_user
+    primary:
+      persistence:
+        enabled: true
+        size: 1Gi # Small size for example
 
 front-ui:
   replicaCount: 1
@@ -200,83 +252,6 @@ front-ui:
       - client_id: transfer-client
         scope: resource.readwrite
         secret_name: OAUTH2_CLIENT_SECRET_TRANSFER
-
-# Configuration for the accounts-db (PostgreSQL dependency)
-# Values here are prefixed according to the Bitnami PostgreSQL chart's structure
-# Check the Bitnami chart's values.yaml for all available options
-accounts-db:
-  enabled: true
-  # Override values from the official postgresql chart
-  auth:
-    database: app_db
-    username: accounts_user
-    # Use existingSecret or provide password (less secure for production)
-    # existingSecret: "{{ .Release.Name }}-customer-db-postgresql" # Name of the secret to use/create
-    password: "changeM3Accounts!" # Example: Not recommended for production
-  primary:
-    persistence:
-      enabled: true
-      size: 1Gi # Small size for example
-
-# Configuration for the cash-db (PostgreSQL dependency)
-cash-db:
-  enabled: true
-  # Override values from the official postgresql chart
-  auth:
-    database: app_db
-    username: cash_user
-    # Use existingSecret or provide password (less secure for production)
-    # existingSecret: "{{ .Release.Name }}-customer-db-postgresql" # Name of the secret to use/create
-    password: "changeM3Cash!" # Example: Not recommended for production
-  primary:
-    persistence:
-      enabled: true
-      size: 1Gi # Small size for example
-
-# Configuration for the transfer-db (PostgreSQL dependency)
-transfer-db:
-  enabled: true
-  # Override values from the official postgresql chart
-  auth:
-    database: app_db
-    username: transfer_user
-    # Use existingSecret or provide password (less secure for production)
-    # existingSecret: "{{ .Release.Name }}-customer-db-postgresql" # Name of the secret to use/create
-    password: "changeM3Transfer!" # Example: Not recommended for production
-  primary:
-    persistence:
-      enabled: true
-      size: 1Gi # Small size for example
-
-# Configuration for the exchange-db (PostgreSQL dependency)
-exchange-db:
-  enabled: true
-  # Override values from the official postgresql chart
-  auth:
-    database: app_db
-    username: exchange_user
-    # Use existingSecret or provide password (less secure for production)
-    # existingSecret: "{{ .Release.Name }}-customer-db-postgresql" # Name of the secret to use/create
-    password: "changeM3Exchange!" # Example: Not recommended for production
-  primary:
-    persistence:
-      enabled: true
-      size: 1Gi # Small size for example
-
-# Configuration for the notifications-db (PostgreSQL dependency)
-notifications-db:
-  enabled: true
-  # Override values from the official postgresql chart
-  auth:
-    database: app_db
-    username: notifications_user
-    # Use existingSecret or provide password (less secure for production)
-    # existingSecret: "{{ .Release.Name }}-customer-db-postgresql" # Name of the secret to use/create
-    password: "changeM3Notifications!" # Example: Not recommended for production
-  primary:
-    persistence:
-      enabled: true
-      size: 1Gi # Small size for example
 
 keycloak:
   enabled: true
