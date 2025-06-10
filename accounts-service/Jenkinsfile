@@ -15,17 +15,24 @@ pipeline {
         CONTRACT_TEST_REPORT_DIR            = 'build/reports/tests/contractTest'
         JACOCO_HTML                         = 'build/reports/jacoco/test/html'
 
-        static def getBuildTimestamp() {
-            def date = new Date()
-            def format = new SimpleDateFormat("yyyyMMdd-HHmm")
-            return format.format(date)
-        }
         CI_VERSION = "${env.BUILD_NUMBER}-${getBuildTimestamp()}"
 
         MODULE = 'accounts-service'
     }
 
     stages {
+        stage('Set CI Version') {
+            steps {
+                script {
+                    def date = new Date()
+                    def formatter = new java.text.SimpleDateFormat("yyyyMMdd-HHmm")
+                    def timestamp = formatter.format(date)
+                    env.IMAGE_TAG = "${env.BUILD_NUMBER}"
+                    env.CI_VERSION = "${env.BUILD_NUMBER}-${timestamp}"
+                    echo "CI_VERSION set to ${env.CI_VERSION}"
+                }
+            }
+        }
         stage("Получение исходников") {
             steps {
                 checkout scm

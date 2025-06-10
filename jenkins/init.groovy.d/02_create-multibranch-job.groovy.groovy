@@ -48,13 +48,13 @@ mapJobNameToScriptPath.forEach { jobName, scriptPath ->
 
     println "    Создаём job '${jobName}' с Jenkinsfile: ${scriptPath}"
 
-    // Создаём GitHub SCM Source
+// Создаём GitHub SCM Source
     def source = new GitHubSCMSource(owner, repo)
     source.setCredentialsId(credentialsId)
     source.setTraits([
             new BranchDiscoveryTrait(1),
             new OriginPullRequestDiscoveryTrait(1),
-            new ForkPullRequestDiscoveryTrait(1, new TrustPermission())
+            new ForkPullRequestDiscoveryTrait(1, new ForkPullRequestDiscoveryTrait.TrustPermission())
     ])
 
     def branchSource = new BranchSource(source)
