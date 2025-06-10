@@ -6,6 +6,7 @@ pipeline {
         NEXUS_REPOSITORY_RELEASES_URL       = 'http://nexus:8081/repository/maven-releases/'
         GITHUB_USERNAME                     = credentials('GITHUB_USERNAME')
         IMAGE_TAG                           = "${env.BUILD_NUMBER}"
+        NEXUS_PASSWORD                      = credentials('NEXUS_JENKINS_PASSWORD')
         STUBRUNNER_PASSWORD                 = credentials('NEXUS_JENKINS_PASSWORD')
         STUBRUNNER_USERNAME                 = 'jenkins'
 
@@ -40,7 +41,7 @@ pipeline {
             steps {
                 withCredentials([string(credentialsId: 'NEXUS_JENKINS_PASSWORD', variable: 'NEXUS_PASSWORD')]) {
                     sh """
-                    ./gradlew :${env.MODULE}:clean :${env.MODULE}:build -PnexusUsername=jenkins -PnexusPassword=\$NEXUS_PASSWORD
+                    ./gradlew :${env.MODULE}:clean :${env.MODULE}:build -PnexusUsername=jenkins -PnexusPassword=$NEXUS_PASSWORD
                     """
                 }
             }
