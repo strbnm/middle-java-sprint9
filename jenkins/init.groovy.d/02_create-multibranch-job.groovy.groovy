@@ -11,6 +11,18 @@ def githubRepo    = env['GITHUB_REPOSITORY']
 def credentialsId = "github-creds"
 def scriptPath    = "jenkins/Jenkinsfile"
 
+def mapJobNameToScriptPath = [
+        BankHelmApp: "jenkins/Jenkinsfile",
+        accountsService: "accounts-service/Jenkinsfile",
+        cashService: "cash-service/Jenkinsfile",
+        transferService: "transfer-service/Jenkinsfile",
+        blockerService: "blocker-service/Jenkinsfile",
+        exchangeService: "exchange-service/Jenkinsfile",
+        exchangeGenerator: "exchange-generator/Jenkinsfile",
+        notificationsService: "notifications-service/Jenkinsfile",
+        frontUI: "front-ui/Jenkinsfile"
+]
+
 println "--> Запуск create-multibranch-job.groovy"
 
 if (!githubRepo) {
