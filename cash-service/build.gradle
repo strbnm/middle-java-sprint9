@@ -164,8 +164,8 @@ tasks.named('build') {
     dependsOn 'verifierStubsJar'
     finalizedBy 'publishToMavenLocal'
 }
-tasks.named("test") {
-    dependsOn ':notifications-service:publish'
-    dependsOn ':accounts-service:publish'
-    dependsOn ':blocker-service:publish'
-}
+//tasks.named("test") {
+//    dependsOn ':notifications-service:publish'
+//    dependsOn ':accounts-service:publish'
+//    dependsOn ':blocker-service:publish'
+//}

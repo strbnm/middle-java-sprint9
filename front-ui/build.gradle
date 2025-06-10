@@ -121,11 +121,11 @@ tasks.named('compileJava') {
     dependsOn(tasks.buildTransferClient)
 }
 
-tasks.named("test") {
-    dependsOn ':accounts-service:publish'
-    dependsOn ':cash-service:publish'
-    dependsOn ':transfer-service:publish'
-}
+//tasks.named("test") {
+//    dependsOn ':accounts-service:publish'
+//    dependsOn ':cash-service:publish'
+//    dependsOn ':transfer-service:publish'
+//}
 
 afterEvaluate {
     tasks.matching { it.name.startsWith("contract") || it.name.contains("Contract") }.configureEach {
