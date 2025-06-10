@@ -2,6 +2,9 @@ pipeline {
     agent any
 
     environment {
+        MODULE                              = 'transfer-service'
+        RELEASE_NAME                        = 'bank-app'
+
         DOCKER_REGISTRY                     = credentials('DOCKER_REGISTRY')
         NEXUS_REPOSITORY_RELEASES_URL       = 'http://nexus:8081/repository/maven-releases/'
         GITHUB_USERNAME                     = credentials('GITHUB_USERNAME')
@@ -14,9 +17,8 @@ pipeline {
         CONTRACT_TEST_REPORT_DIR            = 'build/reports/tests/contractTest'
         JACOCO_HTML                         = 'build/reports/jacoco/test/html'
 
-
-
-        MODULE = 'transfer-service'
+        DB_NAME                             = 'app_db'
+        TRANSFER_DB_USER                    = 'transfer_user'
     }
 
     stages {
@@ -113,13 +115,65 @@ pipeline {
                 }
             }
         }
-    }
-    post {
-        success {
-            sh "echo 'Сборка ${env.MODULE} успешно завершена.'"
+        stage('Create Secrets for TEST') {
+            steps {
+                withCredentials([string(credentialsId: 'ACCOUNTS_SERVICE_DB_PASSWORD', variable: 'DB_PASSWORD')]) {
+                    sh """
+                    kubectl create secret generic $RELEASE_NAME-$MODULE-db \\
+                      --from-literal=password=${DB_PASSWORD} \\
+                      -n test --dry-run=client -o yaml | kubectl apply -f -
+                    """
+                }
+                withCredentials([string(credentialsId: 'NOTIFICATION_CLIENT_SECRET', variable: 'NOTIFICATION_CLIENT_SECRET')]) {
+                    sh """
+                    kubectl create secret generic ${RELEASE_NAME}_oauth2_client_secret_notifications \\
+                      --from-literal=password=${NOTIFICATION_CLIENT_SECRET} \\
+                      -n test --dry-run=client -o yaml | kubectl apply -f -
+                    """
+                }
+                withCredentials([string(credentialsId: 'ACCOUNTS_CLIENT_SECRET', variable: 'ACCOUNTS_CLIENT_SECRET')]) {
+                    sh """
+                    kubectl create secret generic ${RELEASE_NAME}_oauth2_client_secret_accounts \\
+                      --from-literal=password=${ACCOUNTS_CLIENT_SECRET} \\
+                      -n test --dry-run=client -o yaml | kubectl apply -f -
+                    """
+                }
+                withCredentials([string(credentialsId: 'BLOCKER_CLIENT_SECRET', variable: 'BLOCKER_CLIENT_SECRET')]) {
+                    sh """
+                    kubectl create secret generic ${RELEASE_NAME}_oauth2_client_secret_blocker \\
+                      --from-literal=password=${BLOCKER_CLIENT_SECRET} \\
+                      -n test --dry-run=client -o yaml | kubectl apply -f -
+                    """
+                }
+                withCredentials([string(credentialsId: 'EXCHANGE_CLIENT_SECRET', variable: 'EXCHANGE_CLIENT_SECRET')]) {
+                    sh """
+                    kubectl create secret generic ${RELEASE_NAME}_oauth2_client_secret_exchange \\
+                      --from-literal=password=${EXCHANGE_CLIENT_SECRET} \\
+                      -n test --dry-run=client -o yaml | kubectl apply -f -
+                    """
+                }
+                withCredentials([string(credentialsId: 'RABBITMQ_DEFAULT_PASS', variable: 'RABBITMQ_PASS')]) {
+                    sh """
+                    kubectl create secret generic $RELEASE_NAME-rabbitmq \\
+                      --from-literal=password=${RABBITMQ_PASS} \\
+                      -n test --dry-run=client -o yaml | kubectl apply -f -
+                    """
+                }
+            }
         }
-        failure {
-            echo "Сборка ${env.MODULE} завершилась с ошибкой."
+        stage('Helm Deploy to TEST') {
+            steps {
+                sh """
+                helm upgrade --install bank-app bank-app/charts/transfer-service \\
+                  --namespace test --create-namespace \\
+                  --set image.repository=${DOCKER_REGISTRY}/${MODULE} \\
+                  --set image.tag=${IMAGE_TAG} \\
+                  --set ingress.enabled=true \\
+                  --set ingress.host="transfer-service.test.local" \\
+                  --set ingress.pathType="ImplementationSpecific" \\
+                  --set accounts-db.auth.existingSecret=$RELEASE_NAME-$MODULE-db
+                """
+            }
         }
     }
 }
