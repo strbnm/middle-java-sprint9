@@ -37,7 +37,6 @@ pipeline {
     stages {
         stage("Checkout and setup") {
             steps {
-                checkout
                 sh 'chmod +x ./gradlew'
             }
         }
