@@ -123,7 +123,13 @@ pipeline {
         stage('Create Secrets for TEST') {
             steps {
                 withCredentials([string(credentialsId: 'GHCR_TOKEN', variable: 'GHCR_TOKEN')]) {
-                    sh 'kubectl create secret docker-registry ghcr-registry --docker-server=$DOCKER_REGISTRY --docker-username=$GITHUB_USERNAME --docker-password=$GHCR_TOKEN -n test'
+                    sh """
+                    kubectl create secret docker-registry ghcr-registry \\
+                    --docker-server=${DOCKER_REGISTRY}
+                    --docker-username=${GITHUB_USERNAME}
+                    --docker-password=${GHCR_TOKEN}
+                    -n test --dry-run=client -o yaml | kubectl apply -f -
+                    """
                 }
                 withCredentials([string(credentialsId: 'ACCOUNTS_SERVICE_DB_PASSWORD', variable: 'DB_PASSWORD')]) {
                     sh """
