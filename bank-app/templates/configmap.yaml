@@ -2,9 +2,10 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: global-config
+  namespace: {{ .Release.Namespace }}
 data:
   {{- range $key, $value := .Values.global }}
-    {{- if ne $key "domain" }}
+    {{- if and (ne $key "domain") (ne $key "oauth2") }}
   {{ $key | upper }}: {{ $value | quote }}
   {{- end }}
   {{- end }}

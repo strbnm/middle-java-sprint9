@@ -6,6 +6,7 @@ metadata:
     {{- include "transfer-service.labels" . | nindent 4 }}
 data:
   {{- range $key, $value := .Values.config }}
+    {{- if ne $key "oauth2" }}
   {{ $key | upper }}: {{ $value | quote }}
   {{- end }}
 
@@ -17,3 +18,4 @@ data:
   SPRING_REST_EXCHANGE_SERVICE_URL: "http://exchange-service.bankapp.local"
   OAUTH2_CLIENT_ID: "transfer-client"
   OAUTH2_CLIENT_SCOPE: "resource.readwrite"
+  SERVICE_DB_HOST: {{ .Release.Name }}-transfer-db.{{ .Release.Namespace }}.svc.cluster.local
