@@ -189,9 +189,6 @@ pipeline {
                     helm repo add stable https://charts.helm.sh/stable
                     helm repo update
 
-                    helm dependency update .
-                    helm dependency update charts/transfer-service
-
                     helm upgrade --install bank-app charts/transfer-service \\
                       --namespace test --create-namespace \\
                       --set image.repository=${DOCKER_REGISTRY}/${MODULE} \\
@@ -199,7 +196,7 @@ pipeline {
                       --set ingress.enabled=true \\
                       --set ingress.host="transfer-service.test.local" \\
                       --set ingress.pathType="ImplementationSpecific" \\
-                      --set accounts-db.auth.existingSecret=$RELEASE_NAME-$MODULE-db
+                      --set accounts-db.auth.existingSecret=$RELEASE_NAME-$MODULE-db \\
                       --set imagePullSecrets[0].name=ghcr-registry
                     """
                 }
