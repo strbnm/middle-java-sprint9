@@ -9,6 +9,7 @@ data:
     {{- if ne $key "oauth2" }}
   {{ $key | upper }}: {{ $value | quote }}
   {{- end }}
+  {{- end }}
 
   SERVER_PORT: {{ .Values.service.port | quote }}
   SPRING_APPLICATION_NAME: {{ include "transfer-service.fullname" . }}
