@@ -194,8 +194,8 @@ pipeline {
                     sh """
                     echo "Рендерим шаблон c глобальными переменными и устанавливаем/обновляем его в кластере"
                     helm template $RELEASE_NAME . \\
-                      -n test \\
-                      -s templates/configmap.yaml | kubectl apply -f -
+                    -n test \\
+                    -s templates/configmap.yaml | kubectl apply -f -
                     """
                 }
             }
@@ -234,10 +234,8 @@ pipeline {
                 helm list -n test | grep rabbitmq || \\
                 helm upgrade --install rabbitmq bank-app/charts/rabbitmq \\
                 -n test --create-namespace \\
-                --set rabbitmq.enabled=true \\
                 --set rabbitmq.ingress.enabled=true \\
                 --set rabbitmq.ingress.hostname=rabbitmq.bankapp.local \\
-                --set rabbitmq.ingress.annotations={} \\
                 --set rabbitmq.ingress.ingressClassName=nginx \\
                 --set rabbitmq.port=5672 \\
                 --set rabbitmq.host=rabbitmq.bankapp.local \\
