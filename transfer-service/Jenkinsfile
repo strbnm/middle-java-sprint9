@@ -176,8 +176,6 @@ pipeline {
                 helm repo add stable https://charts.helm.sh/stable
                 helm repo update
 
-                helm dependency build bank-app/charts/transfer-service
-
                 helm upgrade --install bank-app bank-app/charts/transfer-service \\
                   --namespace test --create-namespace \\
                   --set image.repository=${DOCKER_REGISTRY}/${MODULE} \\
