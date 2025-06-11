@@ -195,7 +195,7 @@ pipeline {
                     echo "Рендерим шаблон c глобальными переменными и устанавливаем/обновляем его в кластере"
                     helm template $RELEASE_NAME . \\
                     -n test \\
-                    -s templates/configmap.yaml | kubectl apply -f -
+                    -s templates/configmap.yaml | kubectl apply -n test -f -
                     """
                 }
             }
