@@ -4,6 +4,11 @@ pipeline {
         // This is required if you want to clean before build
         skipDefaultCheckout(true)
     }
+
+    parameters {
+        booleanParam(name: 'SKIP_DEPLOY', defaultValue: false, description: 'Skip deploy stage?')
+    }
+
     environment {
         MODULE                              = 'transfer-service'
         RELEASE_NAME                        = 'bank-app'
@@ -121,144 +126,151 @@ pipeline {
                 }
             }
         }
-        stage('Создание пространства имен') {
-            steps {
-                sh 'kubectl get namespace test >/dev/null 2>&1 || kubectl create namespace test'
+        stage('Деплой на TEST') {
+            when {
+                 expression { return !params.SKIP_DEPLOY }
             }
-        }
-        stage('Create Secrets for TEST') {
-            steps {
-                withCredentials([string(credentialsId: 'GHCR_TOKEN', variable: 'GHCR_TOKEN')]) {
-                    sh """
-                    kubectl create secret docker-registry ghcr-registry \\
-                    --docker-server=${DOCKER_REGISTRY} \\
-                    --docker-username=${GITHUB_USERNAME} \\
-                    --docker-password=${GHCR_TOKEN} \\
-                    -n test --dry-run=client -o yaml | kubectl apply -f -
-                    """
+            stages {
+                stage('Создание пространства имен') {
+                    steps {
+                        sh 'kubectl get namespace test >/dev/null 2>&1 || kubectl create namespace test'
+                    }
                 }
-                withCredentials([string(credentialsId: 'ACCOUNTS_SERVICE_DB_PASSWORD', variable: 'DB_PASSWORD')]) {
-                    sh """
-                    kubectl create secret generic $RELEASE_NAME-$MODULE-db \\
-                      --from-literal=password=${DB_PASSWORD} \\
-                      -n test --dry-run=client -o yaml | kubectl apply -f -
-                    """
+                stage('Create Secrets for TEST') {
+                    steps {
+                        withCredentials([string(credentialsId: 'GHCR_TOKEN', variable: 'GHCR_TOKEN')]) {
+                            sh """
+                            kubectl create secret docker-registry ghcr-registry \\
+                            --docker-server=${DOCKER_REGISTRY} \\
+                            --docker-username=${GITHUB_USERNAME} \\
+                            --docker-password=${GHCR_TOKEN} \\
+                            -n test --dry-run=client -o yaml | kubectl apply -f -
+                            """
+                        }
+                        withCredentials([string(credentialsId: 'ACCOUNTS_SERVICE_DB_PASSWORD', variable: 'DB_PASSWORD')]) {
+                            sh """
+                            kubectl create secret generic $RELEASE_NAME-$MODULE-db \\
+                              --from-literal=password=${DB_PASSWORD} \\
+                              -n test --dry-run=client -o yaml | kubectl apply -f -
+                            """
+                        }
+                        withCredentials([string(credentialsId: 'NOTIFICATION_CLIENT_SECRET', variable: 'NOTIFICATION_CLIENT_SECRET')]) {
+                            sh """
+                            kubectl create secret generic $RELEASE_NAME-oauth2-client-secret-notifications \\
+                              --from-literal=password=${NOTIFICATION_CLIENT_SECRET} \\
+                              -n test --dry-run=client -o yaml | kubectl apply -f -
+                            """
+                        }
+                        withCredentials([string(credentialsId: 'ACCOUNTS_CLIENT_SECRET', variable: 'ACCOUNTS_CLIENT_SECRET')]) {
+                            sh """
+                            kubectl create secret generic $RELEASE_NAME-oauth2-client-secret-accounts \\
+                              --from-literal=password=${ACCOUNTS_CLIENT_SECRET} \\
+                              -n test --dry-run=client -o yaml | kubectl apply -f -
+                            """
+                        }
+                        withCredentials([string(credentialsId: 'BLOCKER_CLIENT_SECRET', variable: 'BLOCKER_CLIENT_SECRET')]) {
+                            sh """
+                            kubectl create secret generic $RELEASE_NAME-oauth2-client-secret-blocker \\
+                              --from-literal=password=${BLOCKER_CLIENT_SECRET} \\
+                              -n test --dry-run=client -o yaml | kubectl apply -f -
+                            """
+                        }
+                        withCredentials([string(credentialsId: 'EXCHANGE_CLIENT_SECRET', variable: 'EXCHANGE_CLIENT_SECRET')]) {
+                            sh """
+                            kubectl create secret generic $RELEASE_NAME-oauth2-client-secret-exchange \\
+                              --from-literal=password=${EXCHANGE_CLIENT_SECRET} \\
+                              -n test --dry-run=client -o yaml | kubectl apply -f -
+                            """
+                        }
+                        withCredentials([string(credentialsId: 'RABBITMQ_DEFAULT_PASS', variable: 'RABBITMQ_PASS')]) {
+                            sh """
+                            kubectl create secret generic $RELEASE_NAME-rabbitmq \\
+                              --from-literal=password=${RABBITMQ_PASS} \\
+                              -n test --dry-run=client -o yaml | kubectl apply -f -
+                            """
+                        }
+                        withCredentials([string(credentialsId: 'KEYCLOAK_PASS', variable: 'KEYCLOAK_PASS')]) {
+                            sh """
+                            kubectl create secret generic $RELEASE_NAME-keycloak \\
+                              --from-literal=password=${KEYCLOAK_PASS} \\
+                              -n test --dry-run=client -o yaml | kubectl apply -f -
+                            """
+                        }
+                    }
                 }
-                withCredentials([string(credentialsId: 'NOTIFICATION_CLIENT_SECRET', variable: 'NOTIFICATION_CLIENT_SECRET')]) {
-                    sh """
-                    kubectl create secret generic $RELEASE_NAME-oauth2-client-secret-notifications \\
-                      --from-literal=password=${NOTIFICATION_CLIENT_SECRET} \\
-                      -n test --dry-run=client -o yaml | kubectl apply -f -
-                    """
+                stage('Установка глобальных переменных') {
+                    steps {
+                        dir('bank-app') {
+                            sh """
+                            echo "Рендерим шаблон c глобальными переменными и устанавливаем/обновляем его в кластере"
+                            helm template $RELEASE_NAME . \\
+                            -n test \\
+                            -s templates/configmap.yaml | kubectl apply -n test -f -
+                            """
+                        }
+                    }
                 }
-                withCredentials([string(credentialsId: 'ACCOUNTS_CLIENT_SECRET', variable: 'ACCOUNTS_CLIENT_SECRET')]) {
-                    sh """
-                    kubectl create secret generic $RELEASE_NAME-oauth2-client-secret-accounts \\
-                      --from-literal=password=${ACCOUNTS_CLIENT_SECRET} \\
-                      -n test --dry-run=client -o yaml | kubectl apply -f -
-                    """
-                }
-                withCredentials([string(credentialsId: 'BLOCKER_CLIENT_SECRET', variable: 'BLOCKER_CLIENT_SECRET')]) {
-                    sh """
-                    kubectl create secret generic $RELEASE_NAME-oauth2-client-secret-blocker \\
-                      --from-literal=password=${BLOCKER_CLIENT_SECRET} \\
-                      -n test --dry-run=client -o yaml | kubectl apply -f -
-                    """
-                }
-                withCredentials([string(credentialsId: 'EXCHANGE_CLIENT_SECRET', variable: 'EXCHANGE_CLIENT_SECRET')]) {
-                    sh """
-                    kubectl create secret generic $RELEASE_NAME-oauth2-client-secret-exchange \\
-                      --from-literal=password=${EXCHANGE_CLIENT_SECRET} \\
-                      -n test --dry-run=client -o yaml | kubectl apply -f -
-                    """
-                }
-                withCredentials([string(credentialsId: 'RABBITMQ_DEFAULT_PASS', variable: 'RABBITMQ_PASS')]) {
-                    sh """
-                    kubectl create secret generic $RELEASE_NAME-rabbitmq \\
-                      --from-literal=password=${RABBITMQ_PASS} \\
-                      -n test --dry-run=client -o yaml | kubectl apply -f -
-                    """
-                }
-                withCredentials([string(credentialsId: 'KEYCLOAK_PASS', variable: 'KEYCLOAK_PASS')]) {
-                    sh """
-                    kubectl create secret generic $RELEASE_NAME-keycloak \\
-                      --from-literal=password=${KEYCLOAK_PASS} \\
-                      -n test --dry-run=client -o yaml | kubectl apply -f -
-                    """
-                }
-            }
-        }
-        stage('Установка глобальных переменных') {
-            steps {
-                dir('bank-app') {
-                    sh """
-                    echo "Рендерим шаблон c глобальными переменными и устанавливаем/обновляем его в кластере"
-                    helm template $RELEASE_NAME . \\
-                    -n test \\
-                    -s templates/configmap.yaml | kubectl apply -n test -f -
-                    """
-                }
-            }
-        }
-        stage('Install Keycloak if needed') {
-            steps {
-                sh """
-                # Используется только в учебном проекте!!! Создаем ConfigMap с конфигурацией realm из файла.
-                # В реальных проектах должно быть создано отдельно и конфигурация не должна храниться в VCS
+                stage('Install Keycloak if needed') {
+                    steps {
+                        sh """
+                        # Используется только в учебном проекте!!! Создаем ConfigMap с конфигурацией realm из файла.
+                        # В реальных проектах должно быть создано отдельно и конфигурация не должна храниться в VCS
 
-                helm list -n test | grep keycloak || \\
-                kubectl create configmap my-realm-config --from-file=keycloak/bank-app-realm.json \\
-                -n test --dry-run=client -o yaml | kubectl apply -f - && \\
-                helm upgrade --install keycloak bank-app/charts/keycloak \\
-                  -n test --create-namespace \\
-                  --set keycloak.enabled=true \\
-                  --set keycloak.auth.adminUser=admin \\
-                  --set keycloak.auth.existingSecret=$RELEASE_NAME-keycloak \\
-                  --set keycloak.extraVolumes[0].name=realm-config \\
-                  --set keycloak.extraVolumes[0].configMap.name=my-realm-config \\
-                  --set keycloak.extraVolumeMounts[0].name=realm-config \\
-                  --set keycloak.extraVolumeMounts[0].mountPath=/opt/bitnami/keycloak/data/import \\
-                  --set keycloak.extraVolumeMounts[0].readOnly=true \\
-                  --set keycloak.extraStartupArgs="--import-realm" \\
-                  --set keycloak.ingress.enabled=true \\
-                  --set keycloak.ingress.ingressClassName=nginx \\
-                  --set keycloak.ingress.hostname=keycloak.bankapp.local \\
-                  --set keycloak.issuer.url=http://keycloak.bankapp.local/realms/bank-app
-                """
-            }
-        }
+                        helm list -n test | grep keycloak || \\
+                        kubectl create configmap my-realm-config --from-file=keycloak/bank-app-realm.json \\
+                        -n test --dry-run=client -o yaml | kubectl apply -f - && \\
+                        helm upgrade --install keycloak bank-app/charts/keycloak \\
+                          -n test --create-namespace \\
+                          --set keycloak.enabled=true \\
+                          --set keycloak.auth.adminUser=admin \\
+                          --set keycloak.auth.existingSecret=$RELEASE_NAME-keycloak \\
+                          --set keycloak.extraVolumes[0].name=realm-config \\
+                          --set keycloak.extraVolumes[0].configMap.name=my-realm-config \\
+                          --set keycloak.extraVolumeMounts[0].name=realm-config \\
+                          --set keycloak.extraVolumeMounts[0].mountPath=/opt/bitnami/keycloak/data/import \\
+                          --set keycloak.extraVolumeMounts[0].readOnly=true \\
+                          --set keycloak.extraStartupArgs="--import-realm" \\
+                          --set keycloak.ingress.enabled=true \\
+                          --set keycloak.ingress.ingressClassName=nginx \\
+                          --set keycloak.ingress.hostname=keycloak.bankapp.local \\
+                          --set keycloak.issuer.url=http://keycloak.bankapp.local/realms/bank-app
+                        """
+                    }
+                }
 
-        stage('Install RabbitMQ if needed') {
-            steps {
-                sh """
-                helm list -n test | grep rabbitmq || \\
-                helm upgrade --install rabbitmq bank-app/charts/rabbitmq \\
-                -n test --create-namespace \\
-                --set rabbitmq.ingress.enabled=true \\
-                --set rabbitmq.ingress.hostname=rabbitmq.bankapp.local \\
-                --set rabbitmq.ingress.ingressClassName=nginx \\
-                --set rabbitmq.port=5672 \\
-                --set rabbitmq.host=rabbitmq.bankapp.local \\
-                --set rabbitmq.username=ampq_user \\
-                --set rabbitmq.existingPasswordSecret=$RELEASE_NAME-rabbitmq
-                """
-            }
-        }
+                stage('Install RabbitMQ if needed') {
+                    steps {
+                        sh """
+                        helm list -n test | grep rabbitmq || \\
+                        helm upgrade --install rabbitmq bank-app/charts/rabbitmq \\
+                        -n test --create-namespace \\
+                        --set rabbitmq.ingress.enabled=true \\
+                        --set rabbitmq.ingress.hostname=rabbitmq.bankapp.local \\
+                        --set rabbitmq.ingress.ingressClassName=nginx \\
+                        --set rabbitmq.port=5672 \\
+                        --set rabbitmq.host=rabbitmq.bankapp.local \\
+                        --set rabbitmq.username=ampq_user \\
+                        --set rabbitmq.existingPasswordSecret=$RELEASE_NAME-rabbitmq
+                        """
+                    }
+                }
 
-        stage('Helm Deploy to TEST') {
-            steps {
-                dir('bank-app') {
-                    sh """
-                    helm upgrade --install bank-app charts/transfer-service \\
-                      --namespace test --create-namespace \\
-                      --set image.repository=${DOCKER_REGISTRY}/${MODULE} \\
-                      --set image.tag=${IMAGE_TAG} \\
-                      --set ingress.enabled=true \\
-                      --set ingress.host="transfer-service.test.local" \\
-                      --set ingress.pathType="ImplementationSpecific" \\
-                      --set accounts-db.auth.existingSecret=$RELEASE_NAME-$MODULE-db \\
-                      --set imagePullSecrets[0].name=ghcr-registry
-                    """
+                stage('Helm Deploy to TEST') {
+                    steps {
+                        dir('bank-app') {
+                            sh """
+                            helm upgrade --install bank-app charts/transfer-service \\
+                              --namespace test --create-namespace \\
+                              --set image.repository=${DOCKER_REGISTRY}/${MODULE} \\
+                              --set image.tag=${IMAGE_TAG} \\
+                              --set ingress.enabled=true \\
+                              --set ingress.host="transfer-service.test.local" \\
+                              --set ingress.pathType="ImplementationSpecific" \\
+                              --set accounts-db.auth.existingSecret=$RELEASE_NAME-$MODULE-db \\
+                              --set imagePullSecrets[0].name=ghcr-registry
+                            """
+                        }
+                    }
                 }
             }
         }
