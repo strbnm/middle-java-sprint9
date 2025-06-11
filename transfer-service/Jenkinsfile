@@ -125,9 +125,9 @@ pipeline {
                 withCredentials([string(credentialsId: 'GHCR_TOKEN', variable: 'GHCR_TOKEN')]) {
                     sh """
                     kubectl create secret docker-registry ghcr-registry \\
-                    --docker-server=${DOCKER_REGISTRY}
-                    --docker-username=${GITHUB_USERNAME}
-                    --docker-password=${GHCR_TOKEN}
+                    --docker-server=${DOCKER_REGISTRY} \\
+                    --docker-username=${GITHUB_USERNAME} \\
+                    --docker-password=${GHCR_TOKEN} \\
                     -n test --dry-run=client -o yaml | kubectl apply -f -
                     """
                 }
@@ -177,12 +177,16 @@ pipeline {
         }
         stage('Helm Deploy to TEST') {
             steps {
+                dir('bank-app')
                 sh """
                 helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
                 helm repo add stable https://charts.helm.sh/stable
                 helm repo update
 
-                helm upgrade --install bank-app bank-app/charts/transfer-service \\
+                helm dependency update .
+                helm dependency update charts/transfer-service
+
+                helm upgrade --install bank-app charts/transfer-service \\
                   --namespace test --create-namespace \\
                   --set image.repository=${DOCKER_REGISTRY}/${MODULE} \\
                   --set image.tag=${IMAGE_TAG} \\
