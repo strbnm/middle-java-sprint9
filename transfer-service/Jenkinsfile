@@ -122,6 +122,9 @@ pipeline {
         }
         stage('Create Secrets for TEST') {
             steps {
+                withCredentials([string(credentialsId: 'GHCR_TOKEN', variable: 'GHCR_TOKEN')]) {
+                    sh 'kubectl create secret docker-registry ghcr-registry --docker-server=$DOCKER_REGISTRY --docker-username=$GITHUB_USERNAME --docker-password=$GHCR_TOKEN -n test'
+                }
                 withCredentials([string(credentialsId: 'ACCOUNTS_SERVICE_DB_PASSWORD', variable: 'DB_PASSWORD')]) {
                     sh """
                     kubectl create secret generic $RELEASE_NAME-$MODULE-db \\
@@ -169,6 +172,11 @@ pipeline {
         stage('Helm Deploy to TEST') {
             steps {
                 sh """
+                helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+                helm repo update
+
+                helm dependency build bank-app/charts/transfer-service
+
                 helm upgrade --install bank-app bank-app/charts/transfer-service \\
                   --namespace test --create-namespace \\
                   --set image.repository=${DOCKER_REGISTRY}/${MODULE} \\
@@ -177,6 +185,7 @@ pipeline {
                   --set ingress.host="transfer-service.test.local" \\
                   --set ingress.pathType="ImplementationSpecific" \\
                   --set accounts-db.auth.existingSecret=$RELEASE_NAME-$MODULE-db
+                  --set imagePullSecrets[0].name=ghcr-registry
                 """
             }
         }
