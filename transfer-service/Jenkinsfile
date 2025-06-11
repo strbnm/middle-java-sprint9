@@ -1,6 +1,9 @@
 pipeline {
     agent any
-
+    options {
+        // This is required if you want to clean before build
+        skipDefaultCheckout(true)
+    }
     environment {
         MODULE                              = 'transfer-service'
         RELEASE_NAME                        = 'bank-app'
@@ -36,6 +39,9 @@ pipeline {
         }
         stage("Получение исходников") {
             steps {
+                cleanWs()
+                // We need to explicitly checkout from SCM here
+                checkout scm
                 sh 'chmod +x ./gradlew'
             }
         }
@@ -198,11 +204,6 @@ pipeline {
                     """
                 }
             }
-        }
-    }
-    post {
-        always {
-            cleanWs()
         }
     }
 }
