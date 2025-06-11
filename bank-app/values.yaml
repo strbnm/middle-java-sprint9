@@ -22,7 +22,6 @@ accounts-service:
     path: /
     pathType: ImplementationSpecific
   config:
-    start_with_umbrella: true
     service_db_user: accounts_user
     oauth2:
       - client_id: notifications-client
@@ -58,7 +57,6 @@ cash-service:
     path: /
     pathType: ImplementationSpecific
   config:
-    start_with_umbrella: true
     service_db_user: cash_user
     oauth2:
       - client_id: notifications-client
@@ -100,7 +98,6 @@ transfer-service:
     path: /
     pathType: ImplementationSpecific
   config:
-    start_with_umbrella: true
     service_db_user: transfer_user
     oauth2:
       - client_id: notifications-client
@@ -144,8 +141,6 @@ blocker-service:
     host: blocker-service.bankapp.local
     path: /
     pathType: ImplementationSpecific
-  config:
-    start_with_umbrella: true
 
 exchange-service:
   replicaCount: 1
@@ -165,7 +160,6 @@ exchange-service:
     path: /
     pathType: ImplementationSpecific
   config:
-    start_with_umbrella: true
     service_db_user: exchange_user
   # Configuration for the exchange-db (PostgreSQL dependency)
   exchange-db:
@@ -196,8 +190,6 @@ exchange-generator:
     host: exchange-generator.bankapp.local
     path: /
     pathType: ImplementationSpecific
-  config:
-    start_with_umbrella: true
 
 notifications-service:
   replicaCount: 1
@@ -217,7 +209,6 @@ notifications-service:
     path: /
     pathType: ImplementationSpecific
   config:
-    start_with_umbrella: true
     service_db_user: notifications_user
   # Configuration for the notifications-db (PostgreSQL dependency)
   notifications-db:
@@ -251,7 +242,6 @@ front-ui:
           - path: /
             pathType: ImplementationSpecific
   config:
-    start_with_umbrella: true
     oauth2:
       - client_id: accounts-client
         scope: resource.readwrite
@@ -267,13 +257,11 @@ keycloak:
   enabled: true
   auth:
     adminUser: admin
-    adminPassword: admin123
-
+    existingSecret:
   extraVolumes:
     - name: realm-config
       configMap:
         name: my-realm-config
-
   extraVolumeMounts:
     - name: realm-config
       mountPath: /opt/bitnami/keycloak/data/import
@@ -284,7 +272,6 @@ keycloak:
     ingressClassName: "nginx"
     annotations: {}
     hostname: "keycloak.bankapp.local"
-
   issuer:
     url: "http://keycloak.bankapp.local/realms/bank-app"
 

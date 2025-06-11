@@ -77,7 +77,6 @@ tolerations: []
 affinity: {}
 
 config:
-  start_with_umbrella: false
   service_db_user: transfer_user
   oauth2:
     - client_id: notifications-client

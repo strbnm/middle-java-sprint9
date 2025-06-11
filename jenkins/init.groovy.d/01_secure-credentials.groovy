@@ -19,6 +19,7 @@ def dbExchangePassword = env['EXCHANGE_SERVICE_DB_PASSWORD']
 def dbNotificationsPassword = env['NOTIFICATIONS_SERVICE_DB_PASSWORD']
 
 def rabbitmqPassword = env['RABBITMQ_DEFAULT_PASS']
+def keycloakPassword = env['KEYCLOAK_PASS']
 
 def accountsClientSecret = env['ACCOUNTS_CLIENT_SECRET']
 def cashClientSecret = env['CASH_CLIENT_SECRET']
@@ -216,6 +217,18 @@ if (rabbitmqPassword) {
             Secret.fromString(rabbitmqPassword)
     )
     store.addCredentials(Domain.global(), rabbitPass)
+}
+
+// Создаём пароль Keycloak (используется в helm и kubectl)
+if (keycloakPassword) {
+    println "--> Creating credential: KEYCLOAK_PASS"
+    def keycloakPass = new StringCredentialsImpl(
+            CredentialsScope.GLOBAL,
+            "KEYCLOAK_PASS",
+            "Keycloak password from ENV",
+            Secret.fromString(keycloakPassword)
+    )
+    store.addCredentials(Domain.global(), keycloakPass)
 }
 
 // Создаём пароль для работы с Nexus
