@@ -11,3 +11,4 @@ docker-workflow
 blueocean
 credentials-binding
 plain-credentials
+ws-cleanup
