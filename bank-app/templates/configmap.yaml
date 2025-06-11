@@ -4,7 +4,7 @@ metadata:
   name: global-config
 data:
   {{- range $key, $value := .Values.global }}
-  {{- if and (ne $key "domain") (ne $key "oauth2") }}
+    {{- if ne $key "domain" }}
   {{ $key | upper }}: {{ $value | quote }}
   {{- end }}
   {{- end }}
@@ -12,4 +12,5 @@ data:
   RABBITMQ_HOST: {{ .Values.rabbitmq.host | quote }}
   RABBITMQ_PORT: {{ .Values.rabbitmq.port | quote }}
   RABBITMQ_DEFAULT_USER: {{ .Values.rabbitmq.username | quote }}
+
   KEYCLOAK_ISSUER_URL: {{ .Values.keycloak.issuer.url | quote }}
