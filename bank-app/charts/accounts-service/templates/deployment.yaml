@@ -55,8 +55,10 @@ spec:
             - name: {{ .Chart.Name }}-volume
               mountPath: /app/config      # Путь, куда смонтируется файл
           envFrom:
+            {{- if and .Values.config .Values.config.start_with_umbrella }}
             - configMapRef:
-                  name: global-config
+                name: global-config  # Переменные, общие для всех сервисов - rabbitmq, keycloak
+            {{- end }}
             - configMapRef:
                 name: {{ include "accounts-service.fullname" . }}
           env:
