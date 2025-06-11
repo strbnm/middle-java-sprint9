@@ -36,7 +36,6 @@ pipeline {
         }
         stage("Получение исходников") {
             steps {
-                checkout scm
                 sh 'chmod +x ./gradlew'
             }
         }
