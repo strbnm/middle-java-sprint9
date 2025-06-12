@@ -267,15 +267,13 @@ keycloak:
       mountPath: /opt/bitnami/keycloak/data/import
       readOnly: true
   extraStartupArgs: "--import-realm"
+  ingress:
+    enabled: true
+    ingressClassName: "nginx"
+    hostname: "keycloak.bankapp.local"
+
 
 rabbitmq:
   enabled: true
-  ingress:
-    enabled: true
-    hostname: rabbitmq.bankapp.local
-    annotations: {}
-    ingressClassName: "nginx"
   port: 5672
-  host: rabbitmq.bankapp.local
   username: ampq_user
-

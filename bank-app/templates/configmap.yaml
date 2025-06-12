@@ -9,7 +9,7 @@ data:
   {{- end }}
   {{- end }}
 
-  RABBITMQ_HOST: {{ .Values.rabbitmq.host | quote }}
+  RABBITMQ_HOST: rabbitmq.{{ .Release.Namespace }}.svc.cluster.local
   RABBITMQ_PORT: {{ .Values.rabbitmq.port | quote }}
   RABBITMQ_DEFAULT_USER: {{ .Values.rabbitmq.username | quote }}
 

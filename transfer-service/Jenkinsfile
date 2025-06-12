@@ -11,7 +11,7 @@ pipeline {
 
     environment {
         MODULE                              = 'transfer-service'
-        RELEASE_NAME                        = 'bank-app'
+        RELEASE_NAME                        = 'transfer-service'
 
         DOCKER_REGISTRY                     = credentials('DOCKER_REGISTRY')
         NEXUS_REPOSITORY_RELEASES_URL       = 'http://nexus:8081/repository/maven-releases/'
@@ -184,14 +184,14 @@ pipeline {
                         }
                         withCredentials([string(credentialsId: 'RABBITMQ_DEFAULT_PASS', variable: 'RABBITMQ_PASS')]) {
                             sh '''
-                            kubectl create secret generic $RELEASE_NAME-rabbitmq \\
+                            kubectl create secret generic rabbitmq-secret \\
                               --from-literal=password=$RABBITMQ_PASS \\
                               -n test --dry-run=client -o yaml | kubectl apply -f -
                             '''
                         }
                         withCredentials([string(credentialsId: 'KEYCLOAK_PASS', variable: 'KEYCLOAK_PASS')]) {
                             sh '''
-                            kubectl create secret generic $RELEASE_NAME-keycloak \\
+                            kubectl create secret generic keycloak-secret \\
                               --from-literal=password=$KEYCLOAK_PASS \\
                               -n test --dry-run=client -o yaml | kubectl apply -f -
                             '''
@@ -220,16 +220,18 @@ pipeline {
                         kubectl create configmap my-realm-config --from-file=keycloak/bank-app-realm.json \\
                         -n test --dry-run=client -o yaml | kubectl apply -f - && \\
                         helm upgrade --install keycloak bank-app/charts/keycloak \\
-                          -n test --create-namespace \\
-                          --set keycloak.enabled=true \\
-                          --set keycloak.auth.adminUser=admin \\
-                          --set keycloak.auth.existingSecret=$RELEASE_NAME-keycloak \\
-                          --set keycloak.extraVolumes[0].name=realm-config \\
-                          --set keycloak.extraVolumes[0].configMap.name=my-realm-config \\
-                          --set keycloak.extraVolumeMounts[0].name=realm-config \\
-                          --set keycloak.extraVolumeMounts[0].mountPath=/opt/bitnami/keycloak/data/import \\
-                          --set keycloak.extraVolumeMounts[0].readOnly=true \\
-                          --set keycloak.extraStartupArgs="--import-realm"
+                        -n test --create-namespace \\
+                        --set auth.adminUser=admin \\
+                        --set auth.existingSecret=keycloak-secret \\
+                        --set extraVolumes[0].name=realm-config \\
+                        --set extraVolumes[0].configMap.name=my-realm-config \\
+                        --set extraVolumeMounts[0].name=realm-config \\
+                        --set extraVolumeMounts[0].mountPath=/opt/bitnami/keycloak/data/import \\
+                        --set extraVolumeMounts[0].readOnly=true \\
+                        --set extraStartupArgs="--import-realm" \\
+                        --set ingress.enabled=true \\
+                        --set ingress.ingressClassName=nginx \\
+                        --set ingress.hostname=keycloak.bankapp.local \\
                         """
                     }
                 }
@@ -240,13 +242,13 @@ pipeline {
                         helm list -n test | grep rabbitmq || \\
                         helm upgrade --install rabbitmq bank-app/charts/rabbitmq \\
                         -n test --create-namespace \\
-                        --set rabbitmq.ingress.enabled=true \\
-                        --set rabbitmq.ingress.hostname=rabbitmq.bankapp.local \\
-                        --set rabbitmq.ingress.ingressClassName=nginx \\
-                        --set rabbitmq.port=5672 \\
-                        --set rabbitmq.host=rabbitmq.bankapp.local \\
-                        --set rabbitmq.username=ampq_user \\
-                        --set rabbitmq.existingPasswordSecret=$RELEASE_NAME-rabbitmq
+                        --set ingress.enabled=true \\
+                        --set ingress.hostname=rabbitmq.bankapp.local \\
+                        --set ingress.ingressClassName=nginx \\
+                        --set port=5672 \\
+                        --set host=rabbitmq.bankapp.local \\
+                        --set username=ampq_user \\
+                        --set existingPasswordSecret=rabbitmq-secret
                         """
                     }
                 }
