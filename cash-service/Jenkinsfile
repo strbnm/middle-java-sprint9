@@ -1,23 +1,29 @@
 pipeline {
     agent any
+    options {
+        // This is required if you want to clean before build
+        skipDefaultCheckout(true)
+    }
+
+    parameters {
+        booleanParam(name: 'SKIP_DEPLOY', defaultValue: false, description: 'Skip deploy stage?')
+    }
 
     environment {
+        MODULE                              = 'cash-service'
+        RELEASE_NAME                        = 'cash-service'
+
         DOCKER_REGISTRY                     = credentials('DOCKER_REGISTRY')
         NEXUS_REPOSITORY_RELEASES_URL       = 'http://nexus:8081/repository/maven-releases/'
         GITHUB_USERNAME                     = credentials('GITHUB_USERNAME')
         IMAGE_TAG                           = "${env.BUILD_NUMBER}"
         NEXUS_PASSWORD                      = credentials('NEXUS_JENKINS_PASSWORD')
-        NEXUS_USER                          = 'jenkins'
         STUBRUNNER_PASSWORD                 = credentials('NEXUS_JENKINS_PASSWORD')
         STUBRUNNER_USERNAME                 = 'jenkins'
 
         TEST_REPORT_DIR                     = 'build/reports/tests/test'
         CONTRACT_TEST_REPORT_DIR            = 'build/reports/tests/contractTest'
         JACOCO_HTML                         = 'build/reports/jacoco/test/html'
-
-
-
-        MODULE = 'cash-service'
     }
 
     stages {
@@ -35,13 +41,15 @@ pipeline {
         }
         stage("Получение исходников") {
             steps {
+                cleanWs()
+                // We need to explicitly checkout from SCM here
                 checkout scm
                 sh 'chmod +x ./gradlew'
             }
         }
         stage("Сборка и тест") {
             steps {
-                sh "./gradlew :${MODULE}:clean :${MODULE}:build -PnexusUsername=jenkins -PnexusPassword=$NEXUS_PASSWORD"
+                sh './gradlew :$MODULE:clean :$MODULE:build -PnexusUsername=jenkins -PnexusPassword=$NEXUS_PASSWORD'
             }
         }
         stage('Генерация метрик') {
@@ -54,12 +62,12 @@ pipeline {
             }
         }
         stage('Публикация отчетов') {
-            catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
-                parallel {
-                    stage('Отчёт Jacoco в HTML') {
-                        steps {
+            parallel {
+                stage('Отчёт Jacoco в HTML') {
+                    steps {
+                        catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
                             publishHTML(target: [
-                                reportDir: "${MODULE}/${JACOCO_HTML}",
+                                reportDir: "${env.MODULE}/${env.JACOCO_HTML}",
                                 reportFiles: 'index.html',
                                 reportName: 'Jacoco Code Coverage',
                                 keepAll: true,
@@ -68,10 +76,12 @@ pipeline {
                             ])
                         }
                     }
-                    stage('Отчёт по тестам в HTML') {
-                        steps {
+                }
+                stage('Отчёт по тестам в HTML') {
+                    steps {
+                        catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
                             publishHTML(target: [
-                                reportDir: "${MODULE}/${TEST_REPORT_DIR}",
+                                reportDir: "${env.MODULE}/${env.TEST_REPORT_DIR}",
                                 reportFiles: 'index.html',
                                 reportName: 'Unit tests report',
                                 keepAll: true,
@@ -80,10 +90,12 @@ pipeline {
                             ])
                         }
                     }
-                    stage('Отчёт по контрактным тестам в HTML') {
-                        steps {
+                }
+                stage('Отчёт по контрактным тестам в HTML') {
+                    steps {
+                        catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
                             publishHTML(target: [
-                                reportDir: "${MODULE}/${CONTRACT_TEST_REPORT_DIR}",
+                                reportDir: "${env.MODULE}/${env.CONTRACT_TEST_REPORT_DIR}",
                                 reportFiles: 'index.html',
                                 reportName: 'Contracts tests report',
                                 keepAll: true,
@@ -96,28 +108,133 @@ pipeline {
             }
         }
 
-        stage("Build Docker Image") {
+        stage("Сборка образа Docker") {
             steps {
-                sh "docker build -t --build_arg CI_VERSION=${CI_VERSION} ${DOCKER_REGISTRY}/${MODULE}:${IMAGE_TAG} ${MODULE}"
+                sh 'docker build -t $DOCKER_REGISTRY/$MODULE:$IMAGE_TAG --build-arg CI_VERSION=$CI_VERSION $MODULE'
             }
         }
-        stage('Push Docker Images') {
+        stage('Пуш в репозиторий') {
             steps {
                 withCredentials([string(credentialsId: 'GHCR_TOKEN', variable: 'GHCR_TOKEN')]) {
                     sh """
-                    echo \$GHCR_TOKEN | docker login ghcr.io -u ${GITHUB_USERNAME} --password-stdin
-                    docker push ${DOCKER_REGISTRY}/${MODULE}:${IMAGE_TAG}
+                    echo \$GHCR_TOKEN | docker login ghcr.io -u ${env.GITHUB_USERNAME} --password-stdin
+                    docker push ${env.DOCKER_REGISTRY}/${env.MODULE}:${env.IMAGE_TAG}
                     """
                 }
             }
         }
-    }
-    post {
-        success {
-            sh "echo 'Сборка ${MODULE} успешно завершена.'"
-        }
-        failure {
-            echo "Сборка ${MODULE} завершилась с ошибкой."
+        stage('Деплой на TEST') {
+            when {
+                 expression { return !params.SKIP_DEPLOY }
+            }
+            stages {
+                stage('Создание пространства имен') {
+                    steps {
+                        sh 'kubectl get namespace test >/dev/null 2>&1 || kubectl create namespace test'
+                    }
+                }
+                stage('Create Secrets for TEST') {
+                    steps {
+                        withCredentials([string(credentialsId: 'GHCR_TOKEN', variable: 'GHCR_TOKEN')]) {
+                            sh """
+                            kubectl create secret docker-registry ghcr-registry \\
+                            --docker-server=${DOCKER_REGISTRY} \\
+                            --docker-username=${GITHUB_USERNAME} \\
+                            --docker-password=${GHCR_TOKEN} \\
+                            -n test --dry-run=client -o yaml | kubectl apply -f -
+                            """
+                        }
+                        withCredentials([string(credentialsId: 'CASH_SERVICE_DB_PASSWORD', variable: 'DB_PASSWORD')]) {
+                            sh '''
+                            kubectl create secret generic $RELEASE_NAME-$MODULE-db \\
+                              --from-literal=password=$DB_PASSWORD \\
+                              -n test --dry-run=client -o yaml | kubectl apply -f -
+                            '''
+                        }
+                        withCredentials([string(credentialsId: 'NOTIFICATION_CLIENT_SECRET', variable: 'NOTIFICATION_CLIENT_SECRET')]) {
+                            sh '''
+                            kubectl create secret generic oauth2-client-secret-notifications \\
+                              --from-literal=password=$NOTIFICATION_CLIENT_SECRET \\
+                              -n test --dry-run=client -o yaml | kubectl apply -f -
+                            '''
+                        }
+                        withCredentials([string(credentialsId: 'ACCOUNTS_CLIENT_SECRET', variable: 'ACCOUNTS_CLIENT_SECRET')]) {
+                            sh '''
+                            kubectl create secret generic oauth2-client-secret-accounts \\
+                              --from-literal=password=$ACCOUNTS_CLIENT_SECRET \\
+                              -n test --dry-run=client -o yaml | kubectl apply -f -
+                            '''
+                        }
+                        withCredentials([string(credentialsId: 'BLOCKER_CLIENT_SECRET', variable: 'BLOCKER_CLIENT_SECRET')]) {
+                            sh '''
+                            kubectl create secret generic oauth2-client-secret-blocker \\
+                              --from-literal=password=$BLOCKER_CLIENT_SECRET \\
+                              -n test --dry-run=client -o yaml | kubectl apply -f -
+                            '''
+                        }
+                        withCredentials([string(credentialsId: 'KEYCLOAK_PASS', variable: 'KEYCLOAK_PASS')]) {
+                            sh '''
+                            kubectl create secret generic keycloak-secret \\
+                              --from-literal=password=$KEYCLOAK_PASS \\
+                              -n test --dry-run=client -o yaml | kubectl apply -f -
+                            '''
+                        }
+                    }
+                }
+                stage('Установка глобальных переменных') {
+                    steps {
+                        dir('bank-app') {
+                            sh """
+                            echo "Рендерим шаблон c глобальными переменными и устанавливаем/обновляем его в кластере"
+                            helm template $RELEASE_NAME . \\
+                            -n test \\
+                            -s templates/configmap.yaml | kubectl apply -n test -f -
+                            """
+                        }
+                    }
+                }
+                stage('Install Keycloak if needed') {
+                    steps {
+                        sh """
+                        # Используется только в учебном проекте!!! Создаем ConfigMap с конфигурацией realm из файла.
+                        # В реальных проектах должно быть создано отдельно и конфигурация не должна храниться в VCS
+
+                        helm list -n test | grep keycloak || \\
+                        kubectl create configmap my-realm-config --from-file=keycloak/bank-app-realm.json \\
+                        -n test --dry-run=client -o yaml | kubectl apply -f - && \\
+                        helm upgrade --install keycloak bank-app/charts/keycloak \\
+                        -n test --create-namespace \\
+                        --set extraVolumes[0].name=realm-config \\
+                        --set extraVolumes[0].configMap.name=my-realm-config \\
+                        --set extraVolumeMounts[0].name=realm-config \\
+                        --set extraVolumeMounts[0].mountPath=/opt/bitnami/keycloak/data/import \\
+                        --set extraVolumeMounts[0].readOnly=true \\
+                        --set extraStartupArgs="--import-realm" \\
+                        --set ingress.enabled=true \\
+                        --set ingress.ingressClassName=nginx \\
+                        --set ingress.hostname=keycloak.bankapp.local \\
+                        """
+                    }
+                }
+
+                stage('Helm Deploy to TEST') {
+                    steps {
+                        dir('bank-app') {
+                            sh """
+                            helm upgrade --install ${RELEASE_NAME} charts/${MODULE} \\
+                              --namespace test --create-namespace \\
+                              --set image.repository=${DOCKER_REGISTRY}/${MODULE} \\
+                              --set image.tag=${IMAGE_TAG} \\
+                              --set ingress.enabled=true \\
+                              --set ingress.host="${MODULE}.test.local" \\
+                              --set ingress.pathType="ImplementationSpecific" \\
+                              --set cash-db.auth.existingSecret=$RELEASE_NAME-$MODULE-db \\
+                              --set imagePullSecrets[0].name=ghcr-registry
+                            """
+                        }
+                    }
+                }
+            }
         }
     }
 }
