@@ -46,6 +46,7 @@ data:
             provider:
               keycloak:
                 issuer-uri: ${KEYCLOAK_ISSUER_URL} # Адрес сервера авторизации для получения токена
+            {{- if and .Values.config .Values.config.oauth2 }}
             registration:
               {{- range .Values.config.oauth2 }}
               {{ .client_id }}:
@@ -56,3 +57,4 @@ data:
                 authorization-grant-type: client_credentials
                 clientAuthenticationMethod: client_secret_post
               {{- end }}
+            {{- end }}

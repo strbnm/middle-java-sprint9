@@ -76,3 +76,14 @@ tolerations: []
 
 affinity: {}
 
+config:
+  oauth2:
+    - client_id: accounts-client
+      scope: resource.readwrite
+      secret_name: OAUTH2_CLIENT_SECRET_ACCOUNTS
+    - client_id: cash-client
+      scope: resource.readwrite
+      secret_name: OAUTH2_CLIENT_SECRET_CASH
+    - client_id: transfer-client
+      scope: resource.readwrite
+      secret_name: OAUTH2_CLIENT_SECRET_TRANSFER
