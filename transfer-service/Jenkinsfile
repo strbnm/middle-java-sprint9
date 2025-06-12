@@ -147,7 +147,7 @@ pipeline {
                             -n test --dry-run=client -o yaml | kubectl apply -f -
                             """
                         }
-                        withCredentials([string(credentialsId: 'ACCOUNTS_SERVICE_DB_PASSWORD', variable: 'DB_PASSWORD')]) {
+                        withCredentials([string(credentialsId: 'TRANSFER_SERVICE_DB_PASSWORD', variable: 'DB_PASSWORD')]) {
                             sh '''
                             kubectl create secret generic $RELEASE_NAME-$MODULE-db \\
                               --from-literal=password=$DB_PASSWORD \\
@@ -156,28 +156,28 @@ pipeline {
                         }
                         withCredentials([string(credentialsId: 'NOTIFICATION_CLIENT_SECRET', variable: 'NOTIFICATION_CLIENT_SECRET')]) {
                             sh '''
-                            kubectl create secret generic $RELEASE_NAME-oauth2-client-secret-notifications \\
+                            kubectl create secret generic oauth2-client-secret-notifications \\
                               --from-literal=password=$NOTIFICATION_CLIENT_SECRET \\
                               -n test --dry-run=client -o yaml | kubectl apply -f -
                             '''
                         }
                         withCredentials([string(credentialsId: 'ACCOUNTS_CLIENT_SECRET', variable: 'ACCOUNTS_CLIENT_SECRET')]) {
                             sh '''
-                            kubectl create secret generic $RELEASE_NAME-oauth2-client-secret-accounts \\
+                            kubectl create secret generic oauth2-client-secret-accounts \\
                               --from-literal=password=$ACCOUNTS_CLIENT_SECRET \\
                               -n test --dry-run=client -o yaml | kubectl apply -f -
                             '''
                         }
                         withCredentials([string(credentialsId: 'BLOCKER_CLIENT_SECRET', variable: 'BLOCKER_CLIENT_SECRET')]) {
                             sh '''
-                            kubectl create secret generic $RELEASE_NAME-oauth2-client-secret-blocker \\
+                            kubectl create secret generic oauth2-client-secret-blocker \\
                               --from-literal=password=$BLOCKER_CLIENT_SECRET \\
                               -n test --dry-run=client -o yaml | kubectl apply -f -
                             '''
                         }
                         withCredentials([string(credentialsId: 'EXCHANGE_CLIENT_SECRET', variable: 'EXCHANGE_CLIENT_SECRET')]) {
                             sh '''
-                            kubectl create secret generic $RELEASE_NAME-oauth2-client-secret-exchange \\
+                            kubectl create secret generic oauth2-client-secret-exchange \\
                               --from-literal=password=$EXCHANGE_CLIENT_SECRET \\
                               -n test --dry-run=client -o yaml | kubectl apply -f -
                             '''
@@ -257,7 +257,7 @@ pipeline {
                     steps {
                         dir('bank-app') {
                             sh """
-                            helm upgrade --install transfer-service charts/transfer-service \\
+                            helm upgrade --install ${RELEASE_NAME} charts/${MODULE} \\
                               --namespace test --create-namespace \\
                               --set image.repository=${DOCKER_REGISTRY}/${MODULE} \\
                               --set image.tag=${IMAGE_TAG} \\

@@ -63,7 +63,7 @@ spec:
             - name: RABBITMQ_DEFAULT_PASS
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Release.Name }}-rabbitmq
+                  name: rabbitmq-secret
                   key: password
             {{- if and .Values.config .Values.config.oauth2 }}
             {{- with .Values.config.oauth2 }}
@@ -71,7 +71,7 @@ spec:
             - name: {{ .secret_name }}
               valueFrom:
                 secretKeyRef:
-                  name: {{ $.Release.Name }}_{{ .secret_name | lower }}
+                  name: {{ .secret_name | lower | replace "_" "-"}}
                   key: password
             {{- end }}
             {{- end }}
