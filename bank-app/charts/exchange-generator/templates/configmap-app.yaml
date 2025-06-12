@@ -36,11 +36,11 @@ data:
             registration:
               {{- range .Values.config.oauth2 }}
               {{ .client_id }}:
-              provider: keycloak
-              client-id: {{ .client_id }}
-              client-secret: {{ printf "${%s}" .secret_name }}
-              scope: {{ .scope }}
-              authorization-grant-type: client_credentials
-              clientAuthenticationMethod: client_secret_post
+                provider: keycloak
+                client-id: {{ .client_id }}
+                client-secret: {{ printf "${%s}" .secret_name }}
+                scope: {{ .scope }}
+                authorization-grant-type: client_credentials
+                clientAuthenticationMethod: client_secret_post
               {{- end }}
             {{- end }}
