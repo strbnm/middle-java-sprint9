@@ -84,7 +84,7 @@ spec:
       volumes:
         - name: {{ .Chart.Name }}-volume
           configMap:
-            name: properties-without-db
+            name: {{ include "exchange-generator.fullname" . }}-config
             items:
               - key: application.yml  # Имя ключа в ConfigMap
                 path: application.yml # Имя файла в контейнере
