@@ -12,5 +12,4 @@ data:
   RABBITMQ_HOST: rabbitmq.{{ .Release.Namespace }}.svc.cluster.local
   RABBITMQ_PORT: {{ .Values.rabbitmq.port | quote }}
   RABBITMQ_DEFAULT_USER: {{ .Values.rabbitmq.username | quote }}
-
-  KEYCLOAK_ISSUER_URL: {{- printf "http://keycloak.%s.svc.cluster.local/realm/bank-app" .Release.Namespace }}
+  KEYCLOAK_ISSUER_URL: {{ printf "http://keycloak.%s.svc.cluster.local/realm/bank-app" .Release.Namespace }}
