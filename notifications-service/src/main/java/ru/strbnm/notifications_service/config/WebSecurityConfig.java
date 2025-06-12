@@ -25,6 +25,7 @@ public class WebSecurityConfig {
         .authorizeExchange(
             exchange ->
                 exchange
+                    .pathMatchers("/actuator/health/**", "/actuator/info").permitAll()
                     .pathMatchers("/api/v1/notifications")
                     .hasAuthority("SCOPE_resource.readwrite")
                     .anyExchange()

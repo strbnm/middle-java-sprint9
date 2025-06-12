@@ -23,9 +23,16 @@ data:
         web:
           exposure:
             include: health,info,prometheus,refresh
+      endpoint:
         health:
           probes:
             enabled: true
+          show-details: always
+      health:
+        livenessState:
+          enabled: true
+        readinessState:
+          enabled: true
     spring:
       thymeleaf:
         check-template-location: true
