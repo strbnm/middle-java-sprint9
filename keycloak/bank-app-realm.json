@@ -2412,7 +2412,7 @@
     "oauth2DeviceCodeLifespan" : "600",
     "parRequestUriLifespan" : "60",
     "clientSessionMaxLifespan" : "0",
-    "frontendUrl" : "http://keycloak:8080",
+    "frontendUrl" : "http://keycloak.test.svc.cluster.local",
     "acr.loa.map" : "{}"
   },
   "keycloakVersion" : "26.1.3",
