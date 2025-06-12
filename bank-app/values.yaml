@@ -267,13 +267,6 @@ keycloak:
       mountPath: /opt/bitnami/keycloak/data/import
       readOnly: true
   extraStartupArgs: "--import-realm"
-  ingress:
-    enabled: true
-    ingressClassName: "nginx"
-    annotations: {}
-    hostname: "keycloak.bankapp.local"
-  issuer:
-    url: "http://keycloak.bankapp.local/realms/bank-app"
 
 rabbitmq:
   enabled: true

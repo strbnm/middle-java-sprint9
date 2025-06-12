@@ -229,11 +229,7 @@ pipeline {
                           --set keycloak.extraVolumeMounts[0].name=realm-config \\
                           --set keycloak.extraVolumeMounts[0].mountPath=/opt/bitnami/keycloak/data/import \\
                           --set keycloak.extraVolumeMounts[0].readOnly=true \\
-                          --set keycloak.extraStartupArgs="--import-realm" \\
-                          --set keycloak.ingress.enabled=true \\
-                          --set keycloak.ingress.ingressClassName=nginx \\
-                          --set keycloak.ingress.hostname=keycloak.bankapp.local \\
-                          --set keycloak.issuer.url=http://keycloak.bankapp.local/realms/bank-app
+                          --set keycloak.extraStartupArgs="--import-realm"
                         """
                     }
                 }
@@ -259,7 +255,7 @@ pipeline {
                     steps {
                         dir('bank-app') {
                             sh """
-                            helm upgrade --install bank-app charts/transfer-service \\
+                            helm upgrade --install transfer-service charts/transfer-service \\
                               --namespace test --create-namespace \\
                               --set image.repository=${DOCKER_REGISTRY}/${MODULE} \\
                               --set image.tag=${IMAGE_TAG} \\

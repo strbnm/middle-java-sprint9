@@ -13,4 +13,4 @@ data:
   RABBITMQ_PORT: {{ .Values.rabbitmq.port | quote }}
   RABBITMQ_DEFAULT_USER: {{ .Values.rabbitmq.username | quote }}
 
-  KEYCLOAK_ISSUER_URL: {{ .Values.keycloak.issuer.url | quote }}
+  KEYCLOAK_ISSUER_URL: keycloak.{{ .Release.Namespace }}.svc.cluster.local
