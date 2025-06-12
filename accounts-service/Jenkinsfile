@@ -108,7 +108,7 @@ pipeline {
             }
         }
 
-        stage("Сборка обзара Docker") {
+        stage("Сборка образа Docker") {
             steps {
                 sh 'docker build -t $DOCKER_REGISTRY/$MODULE:$IMAGE_TAG --build-arg CI_VERSION=$CI_VERSION $MODULE'
             }
