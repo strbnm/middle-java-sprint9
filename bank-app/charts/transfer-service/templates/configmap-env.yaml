@@ -13,8 +13,8 @@ data:
 
   SERVER_PORT: {{ .Values.service.port | quote }}
   SPRING_APPLICATION_NAME: {{ include "transfer-service.fullname" . }}
-  SPRING_REST_NOTIFICATIONS_SERVICE_URL: "http://notifications-service.bankapp.local"
-  SPRING_REST_ACCOUNTS_SERVICE_URL: "http://accounts-service.bankapp.local"
-  SPRING_REST_BLOCKER_SERVICE_URL: "http://blocker-service.bankapp.local"
-  SPRING_REST_EXCHANGE_SERVICE_URL: "http://exchange-service.bankapp.local"
+  SPRING_REST_NOTIFICATIONS_SERVICE_URL: {{ printf "http://notifications-service.%s.local" .Release.Namespace }}
+  SPRING_REST_ACCOUNTS_SERVICE_URL: {{ printf "http://accounts-service.%s.local" .Release.Namespace }}
+  SPRING_REST_BLOCKER_SERVICE_URL: {{ printf "http://blocker-service.%s.local" .Release.Namespace }}
+  SPRING_REST_EXCHANGE_SERVICE_URL: {{ printf "http://exchange-service.%s.local" .Release.Namespace }}
   SERVICE_DB_HOST: {{ .Release.Name }}-transfer-db.{{ .Release.Namespace }}.svc.cluster.local

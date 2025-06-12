@@ -6,9 +6,11 @@ metadata:
     {{- include "exchange-service.labels" . | nindent 4 }}
 data:
   {{- range $key, $value := .Values.config }}
+    {{- if ne $key "oauth2" }}
   {{ $key | upper }}: {{ $value | quote }}
   {{- end }}
+  {{- end }}
 
-  SERVER_PORT: {{ .Values.service.port }}
-  SERVICE_DB_HOST: {{ .Release.Name }}{{ .Chart.Name }}-db
+  SERVER_PORT: {{ .Values.service.port | quote }}
   SPRING_APPLICATION_NAME: {{ include "exchange-service.fullname" . }}
+  SERVICE_DB_HOST: {{ .Release.Name }}-exchange-db.{{ .Release.Namespace }}.svc.cluster.local

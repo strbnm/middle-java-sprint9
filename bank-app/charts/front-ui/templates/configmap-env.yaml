@@ -6,11 +6,13 @@ metadata:
     {{- include "front-ui.labels" . | nindent 4 }}
 data:
   {{- range $key, $value := .Values.config }}
+    {{- if ne $key "oauth2" }}
   {{ $key | upper }}: {{ $value | quote }}
   {{- end }}
+  {{- end }}
 
-  SERVER_PORT: {{ .Values.service.port }}
+  SERVER_PORT: {{ .Values.service.port | quote }}
   SPRING_APPLICATION_NAME: {{ include "front-ui.fullname" . }}
-  SPRING_REST_ACCOUNTS_SERVICE_URL: "http://accounts-service.bankapp.local"
-  SPRING_REST_CASH_SERVICE_URL: "http://cash-service.bankapp.local"
-  SPRING_REST_TRANSFER_SERVICE_URL: "http://transfer-service.bankapp.local"
+  SPRING_REST_ACCOUNTS_SERVICE_URL: {{ printf "http://accounts-service.%s.local" .Release.Namespace }}
+  SPRING_REST_TRANSFER_SERVICE_URL: {{ printf "http://transfer-service.%s.local" .Release.Namespace }}
+  SPRING_REST_CASH_SERVICE_URL: {{ printf "http://cash-service.%s.local" .Release.Namespace }}
