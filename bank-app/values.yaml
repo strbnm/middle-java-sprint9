@@ -190,6 +190,11 @@ exchange-generator:
     host: exchange-generator.bankapp.local
     path: /
     pathType: ImplementationSpecific
+  config:
+    oauth2:
+      - client_id: exchange-client
+        scope: resource.readwrite
+        secret_name: OAUTH2_CLIENT_SECRET_EXCHANGE
 
 notifications-service:
   replicaCount: 1
