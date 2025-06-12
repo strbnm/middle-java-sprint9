@@ -84,7 +84,7 @@ spec:
       volumes:
         - name: {{ .Chart.Name }}-volume
           configMap:
-            name: properties-with-db
+            name: {{ include "front-ui.fullname" . }}-config
             items:
               - key: application.yml  # Имя ключа в ConfigMap
                 path: application.yml # Имя файла в контейнере
