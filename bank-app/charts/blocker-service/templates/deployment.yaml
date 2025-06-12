@@ -20,6 +20,16 @@ spec:
       labels:
         {{- include "blocker-service.selectorLabels" . | nindent 8 }}
     spec:
+      initContainers:
+        - name: wait-for-keycloak
+          image: busybox
+          command:
+            - sh
+            - -c
+            - |
+              until nc -z keycloak.{{ .Release.Namespace }}.svc.cluster.local 80; do
+                echo "Waiting for keycloak..."; sleep 3;
+              done
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
