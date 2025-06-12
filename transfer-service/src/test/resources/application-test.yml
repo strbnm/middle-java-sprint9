@@ -25,11 +25,6 @@ spring:
     init:
       mode: never
 
-  rabbitmq:
-    listener:
-      direct:
-        auto-startup: false
-
   rest:
     notifications-service:
       url: http://localhost:7095

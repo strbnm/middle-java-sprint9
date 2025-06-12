@@ -2,20 +2,7 @@ spring:
   application:
     name: blocker-service
 
-  cloud:
-    config:
-      enabled: false
-
   security:
-    enabled: false
-
-  rabbitmq:
-    listener:
-      direct:
-        auto-startup: false
-
-eureka:
-  client:
     enabled: false
 
 openapi:

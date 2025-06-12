@@ -18,7 +18,6 @@ def dbTransferPassword = env['TRANSFER_SERVICE_DB_PASSWORD']
 def dbExchangePassword = env['EXCHANGE_SERVICE_DB_PASSWORD']
 def dbNotificationsPassword = env['NOTIFICATIONS_SERVICE_DB_PASSWORD']
 
-def rabbitmqPassword = env['RABBITMQ_DEFAULT_PASS']
 def keycloakPassword = env['KEYCLOAK_PASS']
 
 def accountsClientSecret = env['ACCOUNTS_CLIENT_SECRET']
@@ -205,18 +204,6 @@ if (blockerClientSecret) {
             Secret.fromString(blockerClientSecret)
     )
     store.addCredentials(Domain.global(), blockerCltSrt)
-}
-
-// Создаём пароль RabbitMQ (используется в helm и kubectl)
-if (rabbitmqPassword) {
-    println "--> Creating credential: RABBITMQ_DEFAULT_PASS"
-    def rabbitPass = new StringCredentialsImpl(
-            CredentialsScope.GLOBAL,
-            "RABBITMQ_DEFAULT_PASS",
-            "RabbitMq password from ENV",
-            Secret.fromString(rabbitmqPassword)
-    )
-    store.addCredentials(Domain.global(), rabbitPass)
 }
 
 // Создаём пароль Keycloak (используется в helm и kubectl)

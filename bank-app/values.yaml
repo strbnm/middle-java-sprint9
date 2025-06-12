@@ -271,9 +271,3 @@ keycloak:
     enabled: true
     ingressClassName: "nginx"
     hostname: "keycloak.bankapp.local"
-
-
-rabbitmq:
-  enabled: true
-  port: 5672
-  username: ampq_user

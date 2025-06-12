@@ -21,23 +21,10 @@ spring:
     init:
       mode: never
 
-  cloud:
-    config:
-      enabled: false
-
   security:
     enabled: false
-
-  rabbitmq:
-    listener:
-      direct:
-        auto-startup: false
 
 logging:
   level:
     org.springframework.r2dbc.core: DEBUG  # Логирование SQL-запросов
     io.r2dbc.h2: DEBUG                     # Для H2
-
-eureka:
-  client:
-    enabled: false

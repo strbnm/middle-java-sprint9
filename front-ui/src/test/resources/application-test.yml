@@ -2,11 +2,6 @@ spring:
   application:
     name: front-ui
 
-  rabbitmq:
-    listener:
-      direct:
-        auto-startup: false
-
   rest:
     transfer-service:
       url: http://localhost:7088

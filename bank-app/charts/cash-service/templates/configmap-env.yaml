@@ -6,12 +6,14 @@ metadata:
     {{- include "cash-service.labels" . | nindent 4 }}
 data:
   {{- range $key, $value := .Values.config }}
-  {{ $key | upper }}: {{ $value | quote }}
-  {{- end }}
+    {{- if ne $key "oauth2" }}
+    {{ $key | upper }}: {{ $value | quote }}
+    {{- end }}
+    {{- end }}
 
-  SERVER_PORT: {{ .Values.service.port }}
-  SERVICE_DB_HOST: {{ .Release.Name }}{{ .Chart.Name }}-db
-  SPRING_APPLICATION_NAME: {{ include "cash-service.fullname" . }}
-  SPRING_REST_NOTIFICATIONS_SERVICE_URL: "http://notifications-service.bankapp.local"
-  SPRING_REST_ACCOUNTS_SERVICE_URL: "http://accounts-service.bankapp.local"
-  SPRING_REST_BLOCKER_SERVICE_URL: "http://blocker-service.bankapp.local"
+    SERVER_PORT: {{ .Values.service.port | quote }}
+    SPRING_APPLICATION_NAME: {{ include "cash-service.fullname" . }}
+    SPRING_REST_NOTIFICATIONS_SERVICE_URL: "http://notifications-service.bankapp.local"
+    SPRING_REST_ACCOUNTS_SERVICE_URL: "http://accounts-service.bankapp.local"
+    SPRING_REST_BLOCKER_SERVICE_URL: "http://blocker-service.bankapp.local"
+    SERVICE_DB_HOST: {{ .Release.Name }}-cash-db.{{ .Release.Namespace }}.svc.cluster.local

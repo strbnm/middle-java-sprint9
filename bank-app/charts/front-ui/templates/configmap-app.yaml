@@ -22,16 +22,11 @@ data:
       endpoints:
         web:
           exposure:
-            include: health,info,prometheus,refresh,busrefresh,busshutdown
+            include: health,info,prometheus,refresh
         health:
           probes:
             enabled: true
     spring:
-      rabbitmq:
-        host: ${RABBITMQ_HOST}
-        port: ${RABBITMQ_PORT}
-        username: ${RABBITMQ_DEFAULT_USER}
-        password: ${RABBITMQ_DEFAULT_PASS}
       thymeleaf:
         check-template-location: true
         prefix: classpath:/templates/

@@ -25,11 +25,6 @@ spring:
     init:
       mode: never
 
-  rabbitmq:
-    listener:
-      direct:
-        auto-startup: false
-
 logging:
   level:
     org.springframework.r2dbc.core: DEBUG  # Логирование SQL-запросов

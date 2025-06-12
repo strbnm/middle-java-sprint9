@@ -6,8 +6,10 @@ metadata:
     {{- include "blocker-service.labels" . | nindent 4 }}
 data:
   {{- range $key, $value := .Values.config }}
-  {{ $key | upper }}: {{ $value | quote }}
-  {{- end }}
+    {{- if ne $key "oauth2" }}
+    {{ $key | upper }}: {{ $value | quote }}
+    {{- end }}
+    {{- end }}
 
-  SERVER_PORT: {{ .Values.service.port }}
-  SPRING_APPLICATION_NAME: {{ include "blocker-service.fullname" . }}
+    SERVER_PORT: {{ .Values.service.port | quote }}
+    SPRING_APPLICATION_NAME: {{ include "blocker-service.fullname" . }}

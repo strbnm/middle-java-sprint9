@@ -6,10 +6,12 @@ metadata:
     {{- include "accounts-service.labels" . | nindent 4 }}
 data:
   {{- range $key, $value := .Values.config }}
-  {{ $key | upper }}: {{ $value | quote }}
-  {{- end }}
+    {{- if ne $key "oauth2" }}
+    {{ $key | upper }}: {{ $value | quote }}
+    {{- end }}
+    {{- end }}
 
-  SERVER_PORT: {{ .Values.service.port }}
-  SERVICE_DB_HOST: {{ .Release.Name }}{{ .Chart.Name }}-db
-  SPRING_APPLICATION_NAME: {{ include "accounts-service.fullname" . }}
-  SPRING_REST_NOTIFICATIONS_SERVICE_URL: "http://notifications-service.bankapp.local"
+    SERVER_PORT: {{ .Values.service.port | quote }}
+    SPRING_APPLICATION_NAME: {{ include "accounts-service.fullname" . }}
+    SPRING_REST_NOTIFICATIONS_SERVICE_URL: "http://notifications-service.bankapp.local"
+    SERVICE_DB_HOST: {{ .Release.Name }}-accounts-db.{{ .Release.Namespace }}.svc.cluster.local

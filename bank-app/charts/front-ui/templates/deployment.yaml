@@ -66,15 +66,10 @@ spec:
               mountPath: /app/config      # Путь, куда смонтируется файл
           envFrom:
             - configMapRef:
-                name: global-config  # Переменные, общие для всех сервисов - rabbitmq, keycloak
+                name: global-config  # Переменные, общие для всех сервисов - keycloak, путь к конфигу для импорта
             - configMapRef:
                 name: {{ include "front-ui.fullname" . }}
           env:
-            - name: RABBITMQ_DEFAULT_PASS
-              valueFrom:
-                secretKeyRef:
-                  name: rabbitmq-secret
-                  key: password
             {{- if and .Values.config .Values.config.oauth2 }}
             {{- with .Values.config.oauth2 }}
             {{- range . }}

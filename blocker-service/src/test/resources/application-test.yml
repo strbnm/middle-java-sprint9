@@ -5,8 +5,3 @@ openapi:
 spring:
   application:
     name: blocker-service
-
-  rabbitmq:
-    listener:
-      direct:
-        auto-startup: false

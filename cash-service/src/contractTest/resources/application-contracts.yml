@@ -2,17 +2,8 @@ spring:
   application:
     name: cash-service
 
-  cloud:
-    config:
-      enabled: false
-
   security:
     enabled: false
-
-  rabbitmq:
-    listener:
-      direct:
-        auto-startup: false
 
   rest:
     notifications-service:
@@ -21,10 +12,6 @@ spring:
       url: http://localhost:7082
     accounts-service:
       url: http://localhost:7083
-
-eureka:
-  client:
-    enabled: false
 
 openapi:
   accountsService:

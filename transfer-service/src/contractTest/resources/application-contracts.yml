@@ -2,17 +2,8 @@ spring:
   application:
     name: transfer-service
 
-  cloud:
-    config:
-      enabled: false
-
   security:
     enabled: false
-
-  rabbitmq:
-    listener:
-      direct:
-        auto-startup: false
 
   rest:
     notifications-service:
@@ -23,10 +14,6 @@ spring:
       url: http://localhost:7093
     exchange-service:
       url: http://localhost:7094
-
-eureka:
-  client:
-    enabled: false
 
 openapi:
   transferService:

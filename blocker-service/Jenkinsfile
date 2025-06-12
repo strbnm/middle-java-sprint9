@@ -144,13 +144,6 @@ pipeline {
                             -n test --dry-run=client -o yaml | kubectl apply -f -
                             """
                         }
-                        withCredentials([string(credentialsId: 'RABBITMQ_DEFAULT_PASS', variable: 'RABBITMQ_PASS')]) {
-                            sh '''
-                            kubectl create secret generic rabbitmq-secret \\
-                              --from-literal=password=$RABBITMQ_PASS \\
-                              -n test --dry-run=client -o yaml | kubectl apply -f -
-                            '''
-                        }
                         withCredentials([string(credentialsId: 'KEYCLOAK_PASS', variable: 'KEYCLOAK_PASS')]) {
                             sh '''
                             kubectl create secret generic keycloak-secret \\
@@ -192,23 +185,6 @@ pipeline {
                         --set ingress.enabled=true \\
                         --set ingress.ingressClassName=nginx \\
                         --set ingress.hostname=keycloak.bankapp.local \\
-                        """
-                    }
-                }
-
-                stage('Install RabbitMQ if needed') {
-                    steps {
-                        sh """
-                        helm list -n test | grep rabbitmq || \\
-                        helm upgrade --install rabbitmq bank-app/charts/rabbitmq \\
-                        -n test --create-namespace \\
-                        --set ingress.enabled=true \\
-                        --set ingress.hostname=rabbitmq.bankapp.local \\
-                        --set ingress.ingressClassName=nginx \\
-                        --set port=5672 \\
-                        --set host=rabbitmq.bankapp.local \\
-                        --set username=ampq_user \\
-                        --set existingPasswordSecret=rabbitmq-secret
                         """
                     }
                 }
