@@ -178,24 +178,31 @@ pipeline {
                         # Используется только в учебном проекте!!! Создаем ConfigMap с конфигурацией realm из файла.
                         # В реальных проектах должно быть создано отдельно и конфигурация не должна храниться в VCS
 
-                        helm list -n test | grep keycloak || \\
-                        kubectl create configmap my-realm-config --from-file=keycloak/bank-app-realm.json \\
-                        -n test --dry-run=client -o yaml | kubectl apply -f - && \\
-                        helm upgrade --install keycloak bank-app/charts/keycloak \\
-                        -n test --create-namespace \\
-                        --set extraVolumes[0].name=realm-config \\
-                        --set extraVolumes[0].configMap.name=my-realm-config \\
-                        --set extraVolumeMounts[0].name=realm-config \\
-                        --set extraVolumeMounts[0].mountPath=/opt/bitnami/keycloak/data/import \\
-                        --set extraVolumeMounts[0].readOnly=true \\
-                        --set extraStartupArgs="--import-realm" \\
-                        --set ingress.enabled=true \\
-                        --set ingress.ingressClassName=nginx \\
-                        --set ingress.hostname=keycloak.bankapp.local \\
+                        if ! helm list -n test | grep -q keycloak; then
+                          echo "Keycloak not found, installing..."
+
+                          kubectl create configmap my-realm-config \\
+                            --from-file=keycloak/bank-app-realm.json \\
+                            -n test --dry-run=client -o yaml | kubectl apply -f -
+
+                          helm upgrade --install keycloak bank-app/charts/keycloak \\
+                            -n test --create-namespace \\
+                            --set extraVolumes[0].name=realm-config \\
+                            --set extraVolumes[0].configMap.name=my-realm-config \\
+                            --set extraVolumeMounts[0].name=realm-config \\
+                            --set extraVolumeMounts[0].mountPath=/opt/bitnami/keycloak/data/import \\
+                            --set extraVolumeMounts[0].readOnly=true \\
+                            --set extraStartupArgs="--import-realm" \\
+                            --set ingress.enabled=true \\
+                            --set ingress.ingressClassName=nginx \\
+                            --set ingress.hostname=keycloak.bankapp.local
+
+                        else
+                          echo "Keycloak already installed — skipping config and upgrade."
+                        fi
                         """
                     }
                 }
-
                 stage('Helm Deploy to TEST') {
                     steps {
                         dir('bank-app') {
