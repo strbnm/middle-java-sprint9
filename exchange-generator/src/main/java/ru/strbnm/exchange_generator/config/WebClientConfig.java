@@ -25,26 +25,6 @@ public class WebClientConfig {
     @Value("${spring.rest.exchange-service.url}")
     private String baseUrl;
 
-    @Profile("default")
-    @Bean
-    public ReactiveOAuth2AuthorizedClientManager authorizedClientManager(
-            ReactiveClientRegistrationRepository clientRegistrationRepository,
-            ServerOAuth2AuthorizedClientRepository authorizedClientRepository
-    ) {
-        ReactiveOAuth2AuthorizedClientProvider authorizedClientProvider =
-                ReactiveOAuth2AuthorizedClientProviderBuilder.builder()
-                        .clientCredentials()
-                        .refreshToken()
-                        .build();
-
-        DefaultReactiveOAuth2AuthorizedClientManager authorizedClientManager =
-                new DefaultReactiveOAuth2AuthorizedClientManager(
-                        clientRegistrationRepository, authorizedClientRepository);
-
-        authorizedClientManager.setAuthorizedClientProvider(authorizedClientProvider);
-
-        return authorizedClientManager;
-    }
 
     @Profile("default")
     @Bean

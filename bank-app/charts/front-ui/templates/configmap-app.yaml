@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: properties-front-ui
+  name: {{ include "front-ui.fullname" . }}-config
 data:
   application.yml: |
     server:

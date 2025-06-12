@@ -33,6 +33,7 @@ public class WebSecurityConfig {
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
         http
+                .oauth2Client(Customizer.withDefaults())
                 .securityContextRepository(new WebSessionServerSecurityContextRepository())
                 .formLogin(Customizer.withDefaults())
                 .csrf(csrf -> csrf
