@@ -24,9 +24,6 @@ pipeline {
         TEST_REPORT_DIR                     = 'build/reports/tests/test'
         CONTRACT_TEST_REPORT_DIR            = 'build/reports/tests/contractTest'
         JACOCO_HTML                         = 'build/reports/jacoco/test/html'
-
-        DB_NAME                             = 'app_db'
-        TRANSFER_DB_USER                    = 'transfer_user'
     }
 
     stages {
