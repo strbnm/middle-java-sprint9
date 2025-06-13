@@ -91,6 +91,3 @@ config:
 gateway:
   gatewayName: gateway
   gatewayNamespace: nginx-gateway
-  routes:
-    - name: front-ui-route
-      path: /bank-app

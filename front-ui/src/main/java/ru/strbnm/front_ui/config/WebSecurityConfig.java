@@ -16,7 +16,6 @@ import org.springframework.security.oauth2.client.registration.ReactiveClientReg
 import org.springframework.security.oauth2.client.web.DefaultReactiveOAuth2AuthorizedClientManager;
 import org.springframework.security.oauth2.client.web.server.ServerOAuth2AuthorizedClientRepository;
 import org.springframework.security.web.server.SecurityWebFilterChain;
-import org.springframework.security.web.server.authentication.RedirectServerAuthenticationSuccessHandler;
 import org.springframework.security.web.server.context.WebSessionServerSecurityContextRepository;
 import org.springframework.security.web.server.csrf.CookieServerCsrfTokenRepository;
 import reactor.core.publisher.Mono;
@@ -36,28 +35,24 @@ public class WebSecurityConfig {
         http
                 .oauth2Client(Customizer.withDefaults())
                 .securityContextRepository(new WebSessionServerSecurityContextRepository())
-                .formLogin(form -> form
-                        .loginPage("/bank-app/login")
-                        .authenticationSuccessHandler(new RedirectServerAuthenticationSuccessHandler("/bank-app/main"))
-                )
+                .formLogin(Customizer.withDefaults())
                 .csrf(csrf -> csrf
                         .csrfTokenRepository(CookieServerCsrfTokenRepository.withHttpOnlyFalse())
                 )
                 .authorizeExchange(exchange -> exchange
-                        .pathMatchers("/actuator/health/**", "/actuator/info").permitAll()
-                        .pathMatchers("/bank-app", "/bank-app/signup", "/bank-app/css/**", "/bank-app/login").permitAll()
-                        .anyExchange().authenticated()
+                    .pathMatchers("/actuator/health/**", "/actuator/info").permitAll()
+                    .pathMatchers("/", "/signup", "/css/**", "/login").permitAll()
+                    .anyExchange().authenticated()
                 )
-                .logout(logout -> logout.logoutUrl("/bank-app/logout"))
+                .logout(logout -> logout.logoutUrl("/logout"))
                 .headers(headers -> headers.frameOptions(Customizer.withDefaults()).disable())
                 .exceptionHandling(handling -> handling
                         .accessDeniedHandler((exchange, denied) ->
                                 Mono.error(new AccessDeniedException("Access Denied")))
-                );
-
+                )
+        ;
         return http.build();
     }
-
 
     @Bean
     public ReactiveOAuth2AuthorizedClientManager authorizedClientManager(
