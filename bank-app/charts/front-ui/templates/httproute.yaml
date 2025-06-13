@@ -14,12 +14,6 @@ spec:
         - path:
             type: PathPrefix
             value: {{ $route.path }}
-      filters:
-        - type: URLRewrite
-          urlRewrite:
-            path:
-              type: ReplacePrefixMatch
-              replacePrefixMatch: /
       backendRefs:
         - name: {{ include "front-ui.fullname" $ }}
           port: {{ $.Values.service.port }}

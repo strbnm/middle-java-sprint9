@@ -2,95 +2,492 @@ pipeline {
     agent any
 
     environment {
+        RELEASE_NAME                        = 'bank-app'
+
         DOCKER_REGISTRY                     = credentials('DOCKER_REGISTRY')
-        ACCOUNTS_SERVICE_DB_PASSWORD        = credentials('ACCOUNTS_SERVICE_DB_PASSWORD')
-        CASH_SERVICE_DB_PASSWORD            = credentials('CASH_SERVICE_DB_PASSWORD')
-        TRANSFER_SERVICE_DB_PASSWORD        = credentials('TRANSFER_SERVICE_DB_PASSWORD')
-        EXCHANGE_SERVICE_DB_PASSWORD        = credentials('EXCHANGE_SERVICE_DB_PASSWORD')
-        NOTIFICATIONS_SERVICE_DB_PASSWORD   = credentials('NOTIFICATIONS_SERVICE_DB_PASSWORD')
-        RABBITMQ_DEFAULT_PASS               = credentials('RABBITMQ_DEFAULT_PASS')
-        ACCOUNTS_CLIENT_SECRET              = credentials('ACCOUNTS_CLIENT_SECRET')
-        CASH_CLIENT_SECRET                  = credentials('CASH_CLIENT_SECRET')
-        EXCHANGE_CLIENT_SECRET              = credentials('EXCHANGE_CLIENT_SECRET')
-        NOTIFICATION_CLIENT_SECRET          = credentials('NOTIFICATION_CLIENT_SECRET')
-        TRANSFER_CLIENT_SECRET              = credentials('TRANSFER_CLIENT_SECRET')
-        BLOCKER_CLIENT_SECRET               = credentials('BLOCKER_CLIENT_SECRET')
-        NEXUS_REPOSITORY_RELEASES_URL       = 'http://nexus:8081/repository/maven-releases/'
-
-        GITHUB_USERNAME         = credentials('GITHUB_USERNAME')
-
-        DB_NAME                 = 'app_db'
-        ACCOUNTS_DB_USER        = 'accounts_user'
-        CASH_DB_USER            = 'cash_user'
-        TRANSFER_DB_USER        = 'transfer_user'
-        EXCHANGE_DB_USER        = 'exchange_user'
-        NOTIFICATIONS_DB_USER   = 'notifications_user'
-        IMAGE_TAG               = "${env.BUILD_NUMBER}"
-
-        NEXUS_PASSWORD          = credentials('NEXUS_JENKINS_PASSWORD')
-        NEXUS_USER              = 'jenkins'
-
-        STUBRUNNER_PASSWORD     = credentials('NEXUS_JENKINS_PASSWORD')
-        STUBRUNNER_USERNAME     = 'jenkins'
-
+        GITHUB_USERNAME                     = credentials('GITHUB_USERNAME')
     }
 
     stages {
-        stage("Checkout and setup") {
+        stage("Build, Test And Push Images") {
+            parallel {
+                stage('Accounts Service') {
+                    steps {
+                        script {
+                            def childBuild = build job: 'accounts-service',
+                                parameters: [
+                                    booleanParam(name: 'SKIP_DEPLOY', value: true)
+                                ],
+                                propagate: true,
+                                wait: true
+                            echo "Номер сборки: ${childBuild.number}"
+                            env.ACCOUNTS_BUILD_NUMBER = "${childBuild.number}"
+                        }
+                    }
+                }
+                stage('Blocker Service') {
+                    steps {
+                        script {
+                            def childBuild = build job: 'blocker-service',
+                                parameters: [
+                                    booleanParam(name: 'SKIP_DEPLOY', value: true)
+                                ],
+                                propagate: true,
+                                wait: true
+                            echo "Номер сборки: ${childBuild.number}"
+                            env.BLOCKER_BUILD_NUMBER = "${childBuild.number}"
+                        }
+                    }
+                }
+                stage('Cash Service') {
+                    steps {
+                        script {
+                            def childBuild = build job: 'cash-service',
+                                parameters: [
+                                    booleanParam(name: 'SKIP_DEPLOY', value: true)
+                                ],
+                                propagate: true,
+                                wait: true
+                            echo "Номер сборки: ${childBuild.number}"
+                            env.CASH_BUILD_NUMBER = "${childBuild.number}"
+                        }
+                    }
+                }
+                stage('Transfer Service') {
+                    steps {
+                        script {
+                            def childBuild = build job: 'transfer-service',
+                                parameters: [
+                                    booleanParam(name: 'SKIP_DEPLOY', value: true)
+                                ],
+                                propagate: true,
+                                wait: true
+                            echo "Номер сборки: ${childBuild.number}"
+                            env.TRANSFER_BUILD_NUMBER = "${childBuild.number}"
+                        }
+                    }
+                }
+                stage('Exchange Service') {
+                    steps {
+                        script {
+                            def childBuild = build job: 'exchange-service',
+                                parameters: [
+                                    booleanParam(name: 'SKIP_DEPLOY', value: true)
+                                ],
+                                propagate: true,
+                                wait: true
+                            echo "Номер сборки: ${childBuild.number}"
+                            env.EXCHANGE_BUILD_NUMBER = "${childBuild.number}"
+                        }
+                    }
+                }
+                stage('Exchange Generator') {
+                    steps {
+                        script {
+                            def childBuild = build job: 'exchange-generator',
+                                parameters: [
+                                    booleanParam(name: 'SKIP_DEPLOY', value: true)
+                                ],
+                                propagate: true,
+                                wait: true
+                            echo "Номер сборки: ${childBuild.number}"
+                            env.EXCHANGE_GENERATOR_BUILD_NUMBER = "${childBuild.number}"
+                        }
+                    }
+                }
+                stage('Notifications Service') {
+                    steps {
+                        script {
+                            def childBuild = build job: 'notifications-service',
+                                parameters: [
+                                    booleanParam(name: 'SKIP_DEPLOY', value: true)
+                                ],
+                                propagate: true,
+                                wait: true
+                            echo "Номер сборки: ${childBuild.number}"
+                            env.NOTIFICATIONS_BUILD_NUMBER = "${childBuild.number}"
+                        }
+                    }
+                }
+                stage('Front UI') {
+                    steps {
+                        script {
+                            def childBuild = build job: 'front-ui',
+                                parameters: [
+                                    booleanParam(name: 'SKIP_DEPLOY', value: true)
+                                ],
+                                propagate: true,
+                                wait: true
+                            echo "Номер сборки: ${childBuild.number}"
+                            env.FRONT_UI_BUILD_NUMBER = "${childBuild.number}"
+                        }
+                    }
+                }
+            }
+        }
+        stage("Deploy All On TEST") {
+            stages {
+                stage('Создание пространства имен') {
+                    steps {
+                        sh 'kubectl get namespace test >/dev/null 2>&1 || kubectl create namespace test'
+                    }
+                }
+                stage('Create Secrets for TEST') {
+                    steps {
+                        withCredentials([string(credentialsId: 'GHCR_TOKEN', variable: 'GHCR_TOKEN')]) {
+                            sh """
+                            kubectl create secret docker-registry ghcr-registry \\
+                            --docker-server=${DOCKER_REGISTRY} \\
+                            --docker-username=${GITHUB_USERNAME} \\
+                            --docker-password=${GHCR_TOKEN} \\
+                            -n test --dry-run=client -o yaml | kubectl apply -f -
+                            """
+                        }
+                        withCredentials([string(credentialsId: 'CASH_SERVICE_DB_PASSWORD', variable: 'DB_PASSWORD')]) {
+                            sh '''
+                            kubectl create secret generic $RELEASE_NAME-$MODULE-db \\
+                              --from-literal=password=$DB_PASSWORD \\
+                              -n test --dry-run=client -o yaml | kubectl apply -f -
+                            '''
+                        }
+                        withCredentials([string(credentialsId: 'TRANSFER_SERVICE_DB_PASSWORD', variable: 'DB_PASSWORD')]) {
+                            sh '''
+                            kubectl create secret generic $RELEASE_NAME-$MODULE-db \\
+                              --from-literal=password=$DB_PASSWORD \\
+                              -n test --dry-run=client -o yaml | kubectl apply -f -
+                            '''
+                        }
+                        withCredentials([string(credentialsId: 'EXCHANGE_SERVICE_DB_PASSWORD', variable: 'DB_PASSWORD')]) {
+                            sh '''
+                            kubectl create secret generic $RELEASE_NAME-$MODULE-db \\
+                              --from-literal=password=$DB_PASSWORD \\
+                              -n test --dry-run=client -o yaml | kubectl apply -f -
+                            '''
+                        }
+                        withCredentials([string(credentialsId: 'NOTIFICATIONS_SERVICE_DB_PASSWORD', variable: 'DB_PASSWORD')]) {
+                            sh '''
+                            kubectl create secret generic $RELEASE_NAME-$MODULE-db \\
+                              --from-literal=password=$DB_PASSWORD \\
+                              -n test --dry-run=client -o yaml | kubectl apply -f -
+                            '''
+                        }
+                        withCredentials([string(credentialsId: 'ACCOUNTS_SERVICE_DB_PASSWORD', variable: 'DB_PASSWORD')]) {
+                            sh '''
+                            kubectl create secret generic $RELEASE_NAME-$MODULE-db \\
+                              --from-literal=password=$DB_PASSWORD \\
+                              -n test --dry-run=client -o yaml | kubectl apply -f -
+                            '''
+                        }
+                        withCredentials([string(credentialsId: 'NOTIFICATION_CLIENT_SECRET', variable: 'NOTIFICATION_CLIENT_SECRET')]) {
+                            sh '''
+                            kubectl create secret generic oauth2-client-secret-notifications \\
+                              --from-literal=password=$NOTIFICATION_CLIENT_SECRET \\
+                              -n test --dry-run=client -o yaml | kubectl apply -f -
+                            '''
+                        }
+                        withCredentials([string(credentialsId: 'ACCOUNTS_CLIENT_SECRET', variable: 'ACCOUNTS_CLIENT_SECRET')]) {
+                            sh '''
+                            kubectl create secret generic oauth2-client-secret-accounts \\
+                              --from-literal=password=$ACCOUNTS_CLIENT_SECRET \\
+                              -n test --dry-run=client -o yaml | kubectl apply -f -
+                            '''
+                        }
+                        withCredentials([string(credentialsId: 'BLOCKER_CLIENT_SECRET', variable: 'BLOCKER_CLIENT_SECRET')]) {
+                            sh '''
+                            kubectl create secret generic oauth2-client-secret-blocker \\
+                              --from-literal=password=$BLOCKER_CLIENT_SECRET \\
+                              -n test --dry-run=client -o yaml | kubectl apply -f -
+                            '''
+                        }
+                        withCredentials([string(credentialsId: 'EXCHANGE_CLIENT_SECRET', variable: 'EXCHANGE_CLIENT_SECRET')]) {
+                            sh '''
+                            kubectl create secret generic oauth2-client-secret-exchange \\
+                              --from-literal=password=$EXCHANGE_CLIENT_SECRET \\
+                              -n test --dry-run=client -o yaml | kubectl apply -f -
+                            '''
+                        }
+                        withCredentials([string(credentialsId: 'CASH_CLIENT_SECRET', variable: 'CASH_CLIENT_SECRET')]) {
+                            sh '''
+                            kubectl create secret generic oauth2-client-secret-cash \\
+                              --from-literal=password=$CASH_CLIENT_SECRET \\
+                              -n test --dry-run=client -o yaml | kubectl apply -f -
+                            '''
+                        }
+                        withCredentials([string(credentialsId: 'TRANSFER_CLIENT_SECRET', variable: 'TRANSFER_CLIENT_SECRET')]) {
+                            sh '''
+                            kubectl create secret generic oauth2-client-secret-transfer \\
+                              --from-literal=password=$TRANSFER_CLIENT_SECRET \\
+                              -n test --dry-run=client -o yaml | kubectl apply -f -
+                            '''
+                        }
+                        withCredentials([string(credentialsId: 'KEYCLOAK_PASS', variable: 'KEYCLOAK_PASS')]) {
+                            sh '''
+                            kubectl create secret generic keycloak-secret \\
+                              --from-literal=password=$KEYCLOAK_PASS \\
+                              -n test --dry-run=client -o yaml | kubectl apply -f -
+                            '''
+                        }
+                    }
+                }
+                // Необходимо наличие установленных CRD Gateway API в кластере для создания HTTPRoute
+                stage('Install Nginx Gateway Fabric if needed') {
+                    steps {
+                      sh """
+                      if ! kubectl get crd gateways.gateway.networking.k8s.io >/dev/null 2>&1; then
+                        echo "CRD Gateway API not found, installing..."
+                        kubectl kustomize "https://github.com/nginx/nginx-gateway-fabric/config/crd/gateway-api/standard?ref=v2.0.1" | kubectl apply -f -
+                      else
+                        echo "CRD Gateway API already installed - skipping"
+                      fi
+
+                      if ! helm list -n nginx-gateway | grep -q ngf; then
+                        echo "Nginx Gateway Fabric not found, installing..."
+                        helm upgrade --install ngf oci://ghcr.io/nginx/charts/nginx-gateway-fabric \\
+                          --create-namespace -n nginx-gateway \\
+                          --set service.type=LoadBalancer
+
+                        echo "Waiting for NGF deployment to be ready..."
+                        kubectl rollout status deployment/ngf-nginx-gateway-fabric -n nginx-gateway --timeout=60s
+
+                        echo "Creating Gateway object..."
+                        kubectl apply -f bank-app/templates/gateway.yaml
+                      else
+                        echo "Nginx Gateway Fabric already installed — skipping config and upgrade."
+                      fi
+                      """
+                    }
+
+                }
+                stage('Install Keycloak if needed') {
+                    steps {
+                        sh """
+                        # Используется только в учебном проекте!!! Создаем ConfigMap с конфигурацией realm из файла.
+                        # В реальных проектах должно быть создано отдельно и конфигурация не должна храниться в VCS
+
+                        if ! kubectl get configmap my-realm-config >/dev/null 2>&1; then
+                          echo "Keycloak config not found, create..."
+
+                          kubectl create configmap my-realm-config \\
+                            --from-file=keycloak/bank-app-realm.json \\
+                            -n test --dry-run=client -o yaml | kubectl apply -f -
+
+                        else
+                          echo "Keycloak config already installed — skipping config."
+                        fi
+                        """
+                    }
+                }
+                stage('Helm Deploy to TEST') {
+                    steps {
+                        dir('bank-app') {
+                            sh """
+                            helm upgrade --install ${RELEASE_NAME} . \\
+                              --namespace test --create-namespace \\
+                              --set accounts-service.image.repository=${DOCKER_REGISTRY}/accounts-service \\
+                              --set accounts-service.image.tag=${env.ACCOUNTS_BUILD_NUMBER} \\
+                              --set cash-service.image.repository=${DOCKER_REGISTRY}/cash-service \\
+                              --set cash-service.image.tag=${env.CASH_BUILD_NUMBER} \\
+                              --set transfer-service.image.repository=${DOCKER_REGISTRY}/transfer-service \\
+                              --set transfer-service.image.tag=${env.TRANSFER_BUILD_NUMBER} \\
+                              --set exchange-service.image.repository=${DOCKER_REGISTRY}/exchange-service \\
+                              --set exchange-service.image.tag=${env.EXCHANGE_BUILD_NUMBER} \\
+                              --set exchange-generator.image.repository=${DOCKER_REGISTRY}/exchange-generator \\
+                              --set accounts-service.image.tag=${env.EXCHANGE_GENERATOR_BUILD_NUMBER} \\
+                              --set blocker-service.image.repository=${DOCKER_REGISTRY}/blocker-service \\
+                              --set blocker-service.image.tag=${env.BLOCKER_BUILD_NUMBER} \\
+                              --set notifications-service.image.repository=${DOCKER_REGISTRY}/notifications-service \\
+                              --set notifications-service.image.tag=${env.NOTIFICATIONS_BUILD_NUMBER} \\
+                              --set front-ui.image.repository=${DOCKER_REGISTRY}/front-ui \\
+                              --set front-ui.image.tag=${env.FRONT_UI_BUILD_NUMBER}
+                            """
+                        }
+                    }
+                }
+            }
+        }
+        stage('Ручное подтверждение для PROD') {
             steps {
-                sh 'chmod +x ./gradlew'
+                input message: 'Установить в PROD?', ok: 'Да, установить'
             }
         }
-        stage("Build And Test Services Without Consumer Contracts") {
-            parallel {
-                stage('Build And Test Exchange Service') {
+        stage("Развертывание на PROD") {
+            stages {
+                stage('Создание пространства имен') {
                     steps {
-                        sh './gradlew :exchange-service:clean :exchange-service:build -PnexusUsername=jenkins -PnexusPassword=$NEXUS_PASSWORD'
+                        sh 'kubectl get namespace prod >/dev/null 2>&1 || kubectl create namespace prod'
                     }
                 }
-                stage('Build And Test Notifications Service') {
+                stage('Create Secrets for PROD') {
                     steps {
-                        sh './gradlew :notifications-service:clean :notifications-service:build -PnexusUsername=jenkins -PnexusPassword=$NEXUS_PASSWORD'
+                        withCredentials([string(credentialsId: 'GHCR_TOKEN', variable: 'GHCR_TOKEN')]) {
+                            sh """
+                            kubectl create secret docker-registry ghcr-registry \\
+                            --docker-server=${DOCKER_REGISTRY} \\
+                            --docker-username=${GITHUB_USERNAME} \\
+                            --docker-password=${GHCR_TOKEN} \\
+                            -n prod --dry-run=client -o yaml | kubectl apply -f -
+                            """
+                        }
+                        withCredentials([string(credentialsId: 'CASH_SERVICE_DB_PASSWORD', variable: 'DB_PASSWORD')]) {
+                            sh '''
+                            kubectl create secret generic $RELEASE_NAME-$MODULE-db \\
+                              --from-literal=password=$DB_PASSWORD \\
+                              -n prod --dry-run=client -o yaml | kubectl apply -f -
+                            '''
+                        }
+                        withCredentials([string(credentialsId: 'TRANSFER_SERVICE_DB_PASSWORD', variable: 'DB_PASSWORD')]) {
+                            sh '''
+                            kubectl create secret generic $RELEASE_NAME-$MODULE-db \\
+                              --from-literal=password=$DB_PASSWORD \\
+                              -n prod --dry-run=client -o yaml | kubectl apply -f -
+                            '''
+                        }
+                        withCredentials([string(credentialsId: 'EXCHANGE_SERVICE_DB_PASSWORD', variable: 'DB_PASSWORD')]) {
+                            sh '''
+                            kubectl create secret generic $RELEASE_NAME-$MODULE-db \\
+                              --from-literal=password=$DB_PASSWORD \\
+                              -n prod --dry-run=client -o yaml | kubectl apply -f -
+                            '''
+                        }
+                        withCredentials([string(credentialsId: 'NOTIFICATIONS_SERVICE_DB_PASSWORD', variable: 'DB_PASSWORD')]) {
+                            sh '''
+                            kubectl create secret generic $RELEASE_NAME-$MODULE-db \\
+                              --from-literal=password=$DB_PASSWORD \\
+                              -n prod --dry-run=client -o yaml | kubectl apply -f -
+                            '''
+                        }
+                        withCredentials([string(credentialsId: 'ACCOUNTS_SERVICE_DB_PASSWORD', variable: 'DB_PASSWORD')]) {
+                            sh '''
+                            kubectl create secret generic $RELEASE_NAME-$MODULE-db \\
+                              --from-literal=password=$DB_PASSWORD \\
+                              -n prod --dry-run=client -o yaml | kubectl apply -f -
+                            '''
+                        }
+                        withCredentials([string(credentialsId: 'NOTIFICATION_CLIENT_SECRET', variable: 'NOTIFICATION_CLIENT_SECRET')]) {
+                            sh '''
+                            kubectl create secret generic oauth2-client-secret-notifications \\
+                              --from-literal=password=$NOTIFICATION_CLIENT_SECRET \\
+                              -n prod --dry-run=client -o yaml | kubectl apply -f -
+                            '''
+                        }
+                        withCredentials([string(credentialsId: 'ACCOUNTS_CLIENT_SECRET', variable: 'ACCOUNTS_CLIENT_SECRET')]) {
+                            sh '''
+                            kubectl create secret generic oauth2-client-secret-accounts \\
+                              --from-literal=password=$ACCOUNTS_CLIENT_SECRET \\
+                              -n prod --dry-run=client -o yaml | kubectl apply -f -
+                            '''
+                        }
+                        withCredentials([string(credentialsId: 'BLOCKER_CLIENT_SECRET', variable: 'BLOCKER_CLIENT_SECRET')]) {
+                            sh '''
+                            kubectl create secret generic oauth2-client-secret-blocker \\
+                              --from-literal=password=$BLOCKER_CLIENT_SECRET \\
+                              -n prod --dry-run=client -o yaml | kubectl apply -f -
+                            '''
+                        }
+                        withCredentials([string(credentialsId: 'EXCHANGE_CLIENT_SECRET', variable: 'EXCHANGE_CLIENT_SECRET')]) {
+                            sh '''
+                            kubectl create secret generic oauth2-client-secret-exchange \\
+                              --from-literal=password=$EXCHANGE_CLIENT_SECRET \\
+                              -n prod --dry-run=client -o yaml | kubectl apply -f -
+                            '''
+                        }
+                        withCredentials([string(credentialsId: 'CASH_CLIENT_SECRET', variable: 'CASH_CLIENT_SECRET')]) {
+                            sh '''
+                            kubectl create secret generic oauth2-client-secret-cash \\
+                              --from-literal=password=$CASH_CLIENT_SECRET \\
+                              -n prod --dry-run=client -o yaml | kubectl apply -f -
+                            '''
+                        }
+                        withCredentials([string(credentialsId: 'TRANSFER_CLIENT_SECRET', variable: 'TRANSFER_CLIENT_SECRET')]) {
+                            sh '''
+                            kubectl create secret generic oauth2-client-secret-transfer \\
+                              --from-literal=password=$TRANSFER_CLIENT_SECRET \\
+                              -n prod --dry-run=client -o yaml | kubectl apply -f -
+                            '''
+                        }
+                        withCredentials([string(credentialsId: 'KEYCLOAK_PASS', variable: 'KEYCLOAK_PASS')]) {
+                            sh '''
+                            kubectl create secret generic keycloak-secret \\
+                              --from-literal=password=$KEYCLOAK_PASS \\
+                              -n prod --dry-run=client -o yaml | kubectl apply -f -
+                            '''
+                        }
                     }
                 }
-                stage('Build And Test Blocker Service') {
+                // Необходимо наличие установленных CRD Gateway API в кластере для создания HTTPRoute
+                stage('Install Nginx Gateway Fabric if needed') {
                     steps {
-                        sh './gradlew :blocker-service:clean :blocker-service:build -PnexusUsername=jenkins -PnexusPassword=$NEXUS_PASSWORD'
+                      sh """
+                      if ! kubectl get crd gateways.gateway.networking.k8s.io >/dev/null 2>&1; then
+                        echo "CRD Gateway API not found, installing..."
+                        kubectl kustomize "https://github.com/nginx/nginx-gateway-fabric/config/crd/gateway-api/standard?ref=v2.0.1" | kubectl apply -f -
+                      else
+                        echo "CRD Gateway API already installed - skipping"
+                      fi
+
+                      if ! helm list -n nginx-gateway | grep -q ngf; then
+                        echo "Nginx Gateway Fabric not found, installing..."
+                        helm upgrade --install ngf oci://ghcr.io/nginx/charts/nginx-gateway-fabric \\
+                          --create-namespace -n nginx-gateway \\
+                          --set service.type=LoadBalancer
+
+                        echo "Waiting for NGF deployment to be ready..."
+                        kubectl rollout status deployment/ngf-nginx-gateway-fabric -n nginx-gateway --timeout=60s
+
+                        echo "Creating Gateway object..."
+                        kubectl apply -f bank-app/templates/gateway.yaml
+                      else
+                        echo "Nginx Gateway Fabric already installed — skipping config and upgrade."
+                      fi
+                      """
+                    }
+
+                }
+                stage('Install Keycloak if needed') {
+                    steps {
+                        sh """
+                        # Используется только в учебном проекте!!! Создаем ConfigMap с конфигурацией realm из файла.
+                        # В реальных проектах должно быть создано отдельно и конфигурация не должна храниться в VCS
+
+                        if ! kubectl get configmap my-realm-config >/dev/null 2>&1; then
+                          echo "Keycloak config not found, create..."
+
+                          kubectl create configmap my-realm-config \\
+                            --from-file=keycloak/bank-app-realm.json \\
+                            -n prod --dry-run=client -o yaml | kubectl apply -f -
+
+                        else
+                          echo "Keycloak config already installed — skipping config."
+                        fi
+                        """
                     }
                 }
-            }
-        }
-        stage("Build And Test Exchange Generator And Accounts Service") {
-            parallel {
-                stage('Build And Test Exchange Generator') {
+                stage('Helm Deploy to PROD') {
                     steps {
-                        sh './gradlew :exchange-generator:clean :exchange-generator:build -PnexusUsername=jenkins -PnexusPassword=$NEXUS_PASSWORD'
+                        dir('bank-app') {
+                            sh """
+                            helm upgrade --install ${RELEASE_NAME} . \\
+                              --namespace prod --create-namespace \\
+                              --set accounts-service.image.repository=${DOCKER_REGISTRY}/accounts-service \\
+                              --set accounts-service.image.tag=${env.ACCOUNTS_BUILD_NUMBER} \\
+                              --set cash-service.image.repository=${DOCKER_REGISTRY}/cash-service \\
+                              --set cash-service.image.tag=${env.CASH_BUILD_NUMBER} \\
+                              --set transfer-service.image.repository=${DOCKER_REGISTRY}/transfer-service \\
+                              --set transfer-service.image.tag=${env.TRANSFER_BUILD_NUMBER} \\
+                              --set exchange-service.image.repository=${DOCKER_REGISTRY}/exchange-service \\
+                              --set exchange-service.image.tag=${env.EXCHANGE_BUILD_NUMBER} \\
+                              --set exchange-generator.image.repository=${DOCKER_REGISTRY}/exchange-generator \\
+                              --set accounts-service.image.tag=${env.EXCHANGE_GENERATOR_BUILD_NUMBER} \\
+                              --set blocker-service.image.repository=${DOCKER_REGISTRY}/blocker-service \\
+                              --set blocker-service.image.tag=${env.BLOCKER_BUILD_NUMBER} \\
+                              --set notifications-service.image.repository=${DOCKER_REGISTRY}/notifications-service \\
+                              --set notifications-service.image.tag=${env.NOTIFICATIONS_BUILD_NUMBER} \\
+                              --set front-ui.image.repository=${DOCKER_REGISTRY}/front-ui \\
+                              --set front-ui.image.tag=${env.FRONT_UI_BUILD_NUMBER}
+                            """
+                        }
                     }
                 }
-                stage('Build And Test Accounts Service') {
-                    steps {
-                        sh './gradlew :accounts-service:clean :accounts-service:build -PnexusUsername=jenkins -PnexusPassword=$NEXUS_PASSWORD'
-                    }
-                }
-            }
-        }
-        stage("Build And Test Cash And Transfer Services") {
-            parallel {
-                stage('Build And Test Cash Service') {
-                    steps {
-                        sh './gradlew :cash-service:clean :cash-service:build -PnexusUsername=jenkins -PnexusPassword=$NEXUS_PASSWORD'
-                    }
-                }
-                stage('Build And Test Transfer Service') {
-                    steps {
-                        sh './gradlew :transfer-service:clean :transfer-service:build -PnexusUsername=jenkins -PnexusPassword=$NEXUS_PASSWORD'
-                    }
-                }
-            }
-        }
-        stage('Build And Test Front UI') {
-            steps {
-                sh './gradlew :front-ui:clean :front-ui:build -PnexusUsername=jenkins -PnexusPassword=$NEXUS_PASSWORD'
             }
         }
     }

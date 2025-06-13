@@ -12,15 +12,11 @@ accounts-service:
     tag: "1.0.0"
     pullPolicy: IfNotPresent
     # -----------------------------
+  imagePullSecrets:
+    - name: ghcr-registry
   service:
     type: ClusterIP
     port: 8080
-  ingress:
-    enabled: true
-    className: "nginx" # Specify your ingress controller class
-    host: accounts-service.bankapp.local
-    path: /
-    pathType: ImplementationSpecific
   config:
     service_db_user: accounts_user
     oauth2:
@@ -41,12 +37,9 @@ accounts-service:
   gateway:
     gatewayName: gateway
     gatewayNamespace: nginx-gateway
-
     routes:
       - name: accounts-service-route
         path: /accounts-service
-        service: accounts-service
-        port: http
 
 cash-service:
   replicaCount: 1
@@ -56,15 +49,11 @@ cash-service:
     tag: "1.0.0"
     pullPolicy: IfNotPresent # Use IfNotPresent for local images
     # -----------------------------
+  imagePullSecrets:
+    - name: ghcr-registry
   service:
     type: ClusterIP
     port: 8081
-  ingress:
-    enabled: true
-    className: "nginx"
-    host: cash-service.bankapp.local
-    path: /
-    pathType: ImplementationSpecific
   config:
     service_db_user: cash_user
     oauth2:
@@ -91,12 +80,9 @@ cash-service:
   gateway:
     gatewayName: gateway
     gatewayNamespace: nginx-gateway
-
     routes:
       - name: cash-service-route
         path: /cash-service
-        service: cash-service
-        port: http
 
 transfer-service:
   replicaCount: 1
@@ -106,15 +92,11 @@ transfer-service:
     tag: "1.0.0"
     pullPolicy: IfNotPresent # Use IfNotPresent for local images
     # -----------------------------
+  imagePullSecrets:
+    - name: ghcr-registry
   service:
     type: ClusterIP
     port: 8082
-  ingress:
-    enabled: true
-    className: "nginx"
-    host: transfer-service.bankapp.local
-    path: /
-    pathType: ImplementationSpecific
   config:
     service_db_user: transfer_user
     oauth2:
@@ -144,12 +126,10 @@ transfer-service:
   gateway:
     gatewayName: gateway
     gatewayNamespace: nginx-gateway
-
     routes:
       - name: transfer-service-route
         path: /transfer-service
-        service: transfer-service
-        port: http
+
 
 blocker-service:
   replicaCount: 1
@@ -159,24 +139,17 @@ blocker-service:
     tag: "1.0.0"
     pullPolicy: IfNotPresent # Use IfNotPresent for local images
     # -----------------------------
+  imagePullSecrets:
+    - name: ghcr-registry
   service:
     type: ClusterIP
     port: 8083
-  ingress:
-    enabled: true
-    className: "nginx"
-    host: blocker-service.bankapp.local
-    path: /
-    pathType: ImplementationSpecific
   gateway:
     gatewayName: gateway
     gatewayNamespace: nginx-gateway
-
     routes:
       - name: blocker-service-route
         path: /blocker-service
-        service: blocker-service
-        port: http
 
 exchange-service:
   replicaCount: 1
@@ -186,15 +159,11 @@ exchange-service:
     tag: "1.0.0"
     pullPolicy: IfNotPresent # Use IfNotPresent for local images
     # -----------------------------
+  imagePullSecrets:
+    - name: ghcr-registry
   service:
     type: ClusterIP
     port: 8084
-  ingress:
-    enabled: true
-    className: "nginx"
-    host: exchange-service.bankapp.local
-    path: /
-    pathType: ImplementationSpecific
   config:
     service_db_user: exchange_user
   # Configuration for the exchange-db (PostgreSQL dependency)
@@ -214,8 +183,6 @@ exchange-service:
     routes:
       - name: exchange-service-route
         path: /exchange-service
-        service: exchange-service
-        port: http
 
 exchange-generator:
   replicaCount: 1
@@ -225,15 +192,11 @@ exchange-generator:
     tag: "1.0.0"
     pullPolicy: IfNotPresent # Use IfNotPresent for local images
     # -----------------------------
+  imagePullSecrets:
+    - name: ghcr-registry
   service:
     type: ClusterIP
     port: 8085
-  ingress:
-    enabled: true
-    className: "nginx"
-    host: exchange-generator.bankapp.local
-    path: /
-    pathType: ImplementationSpecific
   config:
     oauth2:
       - client_id: exchange-client
@@ -248,15 +211,11 @@ notifications-service:
     tag: "1.0.0"
     pullPolicy: IfNotPresent # Use IfNotPresent for local images
     # -----------------------------
+  imagePullSecrets:
+    - name: ghcr-registry
   service:
     type: ClusterIP
     port: 8086
-  ingress:
-    enabled: true
-    className: "nginx"
-    host: notifications-service.bankapp.local
-    path: /
-    pathType: ImplementationSpecific
   config:
     service_db_user: notifications_user
   # Configuration for the notifications-db (PostgreSQL dependency)
@@ -273,12 +232,9 @@ notifications-service:
   gateway:
     gatewayName: gateway
     gatewayNamespace: nginx-gateway
-
     routes:
       - name: notifications-service-route
         path: /notifications-service
-        service: notifications-service
-        port: http
 
 front-ui:
   replicaCount: 1
@@ -288,17 +244,11 @@ front-ui:
     tag: "1.0.0"
     pullPolicy: IfNotPresent # Use IfNotPresent for local images
     # -----------------------------
+  imagePullSecrets:
+    - name: ghcr-registry
   service:
     type: ClusterIP
     port: 8087
-  ingress:
-    enabled: true
-    className: "nginx"
-    hosts:
-      - host: front-ui.bankapp.local
-        paths:
-          - path: /
-            pathType: ImplementationSpecific
   config:
     oauth2:
       - client_id: accounts-client
@@ -313,12 +263,9 @@ front-ui:
   gateway:
     gatewayName: gateway
     gatewayNamespace: nginx-gateway
-
     routes:
       - name: front-ui-route
-        path: /front-ui
-        service: front-ui
-        port: http
+        path: /bank-app
 
 keycloak:
   enabled: true
@@ -334,7 +281,3 @@ keycloak:
       mountPath: /opt/bitnami/keycloak/data/import
       readOnly: true
   extraStartupArgs: "--import-realm"
-  ingress:
-    enabled: true
-    ingressClassName: "nginx"
-    hostname: "keycloak.bankapp.local"
