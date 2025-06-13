@@ -14,7 +14,7 @@ pipeline {
                 stage('Accounts Service') {
                     steps {
                         script {
-                            def childBuild = build job: 'accounts-service',
+                            def childBuild = build job: 'accounts-service/master',
                                 parameters: [
                                     booleanParam(name: 'SKIP_DEPLOY', value: true)
                                 ],
@@ -28,7 +28,7 @@ pipeline {
                 stage('Blocker Service') {
                     steps {
                         script {
-                            def childBuild = build job: 'blocker-service',
+                            def childBuild = build job: 'blocker-service/master',
                                 parameters: [
                                     booleanParam(name: 'SKIP_DEPLOY', value: true)
                                 ],
@@ -42,7 +42,7 @@ pipeline {
                 stage('Cash Service') {
                     steps {
                         script {
-                            def childBuild = build job: 'cash-service',
+                            def childBuild = build job: 'cash-service/master',
                                 parameters: [
                                     booleanParam(name: 'SKIP_DEPLOY', value: true)
                                 ],
@@ -56,7 +56,7 @@ pipeline {
                 stage('Transfer Service') {
                     steps {
                         script {
-                            def childBuild = build job: 'transfer-service',
+                            def childBuild = build job: 'transfer-service/master',
                                 parameters: [
                                     booleanParam(name: 'SKIP_DEPLOY', value: true)
                                 ],
@@ -70,7 +70,7 @@ pipeline {
                 stage('Exchange Service') {
                     steps {
                         script {
-                            def childBuild = build job: 'exchange-service',
+                            def childBuild = build job: 'exchange-service/master',
                                 parameters: [
                                     booleanParam(name: 'SKIP_DEPLOY', value: true)
                                 ],
@@ -84,7 +84,7 @@ pipeline {
                 stage('Exchange Generator') {
                     steps {
                         script {
-                            def childBuild = build job: 'exchange-generator',
+                            def childBuild = build job: 'exchange-generator/master',
                                 parameters: [
                                     booleanParam(name: 'SKIP_DEPLOY', value: true)
                                 ],
@@ -98,7 +98,7 @@ pipeline {
                 stage('Notifications Service') {
                     steps {
                         script {
-                            def childBuild = build job: 'notifications-service',
+                            def childBuild = build job: 'notifications-service/master',
                                 parameters: [
                                     booleanParam(name: 'SKIP_DEPLOY', value: true)
                                 ],
@@ -112,7 +112,7 @@ pipeline {
                 stage('Front UI') {
                     steps {
                         script {
-                            def childBuild = build job: 'front-ui',
+                            def childBuild = build job: 'front-ui/master',
                                 parameters: [
                                     booleanParam(name: 'SKIP_DEPLOY', value: true)
                                 ],
