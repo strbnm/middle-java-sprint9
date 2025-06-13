@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableReactiveMethodSecurity;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
@@ -24,6 +25,7 @@ public class WebSecurityConfig {
         .authorizeExchange(
             exchange ->
                 exchange
+                    .pathMatchers(HttpMethod.GET, "/api/v1/rates").permitAll() // <-- разрешаем GET
                     .pathMatchers("/actuator/health/**", "/actuator/info").permitAll()
                     .pathMatchers("/api/v1/rates", "/api/v1/convert")
                     .hasAuthority("SCOPE_resource.readwrite")
