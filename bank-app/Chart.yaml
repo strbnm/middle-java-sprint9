@@ -6,13 +6,6 @@ version: 0.1.0
 appVersion: "1.0.0"
 
 dependencies:
-  # Dependency for Keycloak
-  - name: keycloak
-    version: "24.7.3"
-    repository: "file://./charts/keycloak"
-    alias: keycloak
-    condition: keycloak.enabled
-
   # Subchart for Accounts Service
   - name: accounts-service
     version: "0.1.0"

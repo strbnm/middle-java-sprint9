@@ -23,8 +23,5 @@ dependencies:
 - name: front-ui
   repository: file://./charts/front-ui
   version: 0.1.0
-- name: keycloak
-  repository: file://./charts/keycloak
-  version: 24.7.3
-digest: sha256:8ae18bfbfdee8f79aa5922aa31f48dd4f2871bb54b424d4b0e9e30b847916fe7
-generated: "2025-06-13T14:23:02.5493562+03:00"
+digest: sha256:6536e4a375288565715923937b6fd2b055377b766e2f7e366f9518361a9d5783
+generated: "2025-06-14T00:19:25.378466+03:00"
