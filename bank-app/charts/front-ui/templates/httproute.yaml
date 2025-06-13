@@ -17,6 +17,12 @@ spec:
       backendRefs:
         - name: {{ include "front-ui.fullname" $ }}
           port: {{ $.Values.service.port }}
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: {{ $route.path }}
 ---
 {{- end }}
 {{- end }}
