@@ -6,8 +6,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+import org.springframework.http.HttpHeaders;
+import org.springframework.security.oauth2.client.OAuth2AuthorizeRequest;
 import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientManager;
 import org.springframework.security.oauth2.client.web.reactive.function.client.ServerOAuth2AuthorizedClientExchangeFilterFunction;
+import org.springframework.web.reactive.function.client.ClientRequest;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
@@ -24,11 +27,21 @@ public class NotificationsWebClientConfig {
     @Profile("default")
     @Bean("notificationsWebClient")
     public WebClient notificationsWebClient(ReactiveOAuth2AuthorizedClientManager authorizedClientManager) {
-        ServerOAuth2AuthorizedClientExchangeFilterFunction oauth2Filter =
-                new ServerOAuth2AuthorizedClientExchangeFilterFunction(authorizedClientManager);
+        ExchangeFilterFunction oauth2Filter = (request, next) -> {
+            OAuth2AuthorizeRequest authorizeRequest = OAuth2AuthorizeRequest
+                    .withClientRegistrationId("notifications-client")
+                    .principal("accounts-service")
+                    .build();
 
-        oauth2Filter.setDefaultClientRegistrationId("notifications-client");
-
+            return authorizedClientManager.authorize(authorizeRequest)
+                    .flatMap(client -> {
+                        ClientRequest filteredRequest = ClientRequest.from(request)
+                                .header(HttpHeaders.AUTHORIZATION,
+                                        "Bearer " + client.getAccessToken().getTokenValue())
+                                .build();
+                        return next.exchange(filteredRequest);
+                    });
+        };
         return WebClient.builder()
                 .filter(oauth2Filter)
                 .baseUrl(baseUrl)

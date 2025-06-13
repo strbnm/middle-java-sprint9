@@ -10,9 +10,7 @@ import org.springframework.security.config.annotation.web.reactive.EnableWebFlux
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientManager;
-import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientProvider;
-import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientProviderBuilder;
+import org.springframework.security.oauth2.client.*;
 import org.springframework.security.oauth2.client.registration.ReactiveClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.DefaultReactiveOAuth2AuthorizedClientManager;
 import org.springframework.security.oauth2.client.web.server.ServerOAuth2AuthorizedClientRepository;
@@ -44,20 +42,21 @@ public class WebSecurityConfig {
   @Bean
   public ReactiveOAuth2AuthorizedClientManager authorizedClientManager(
           ReactiveClientRegistrationRepository clientRegistrationRepository,
-          ServerOAuth2AuthorizedClientRepository authorizedClientRepository
-  ) {
+          ReactiveOAuth2AuthorizedClientService authorizedClientService) {
+
     ReactiveOAuth2AuthorizedClientProvider authorizedClientProvider =
             ReactiveOAuth2AuthorizedClientProviderBuilder.builder()
                     .clientCredentials()
                     .refreshToken()
                     .build();
 
-    DefaultReactiveOAuth2AuthorizedClientManager authorizedClientManager =
-            new DefaultReactiveOAuth2AuthorizedClientManager(
-                    clientRegistrationRepository, authorizedClientRepository);
+    AuthorizedClientServiceReactiveOAuth2AuthorizedClientManager authorizedClientManager =
+            new AuthorizedClientServiceReactiveOAuth2AuthorizedClientManager(
+                    clientRegistrationRepository, authorizedClientService);
 
     authorizedClientManager.setAuthorizedClientProvider(authorizedClientProvider);
 
     return authorizedClientManager;
   }
+
 }
