@@ -65,7 +65,7 @@ public class ExchangeRatesController implements ExchangeServiceApi {
         .thenReturn(ResponseEntity.status(HttpStatus.CREATED).body("Success"));
   }
 
-  @CrossOrigin(origins = "http://bankapp.local")
+  @CrossOrigin(origins = {"http://bankapp.test.local", "http://bankapp.prod.local"})
   @RequestMapping(
       method = RequestMethod.GET,
       value = "/api/v1/rates",
