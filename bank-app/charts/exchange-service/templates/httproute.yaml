@@ -1,7 +1,9 @@
+{{- if and .Values.gateway .Values.gateway.routes }}
+{{- range $route := .Values.gateway.routes }}
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
-  name: {{ .Values.gateway.routes.name }}
+  name: {{ $route.name }}
   namespace: {{ $.Release.Namespace }}
 spec:
   parentRefs:
@@ -11,7 +13,7 @@ spec:
     - matches:
         - path:
             type: PathPrefix
-            value: {{ .Values.gateway.routes.path }}
+            value: {{ $route.path }}
       filters:
         - type: URLRewrite
           urlRewrite:
@@ -19,5 +21,8 @@ spec:
               type: ReplacePrefixMatch
               replacePrefixMatch: /
       backendRefs:
-        - name: {{ .Values.gateway.routes.service }}
-          port: {{ .Values.gateway.routes.port }}
+        - name: {{ $route.service }}
+          port: {{ $route.port }}
+---
+{{- end }}
+{{- end }}

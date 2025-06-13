@@ -211,7 +211,6 @@ exchange-service:
   gateway:
     gatewayName: ngf
     gatewayNamespace: nginx-gateway
-
     routes:
       - name: exchange-service-route
         path: /exchange-service
