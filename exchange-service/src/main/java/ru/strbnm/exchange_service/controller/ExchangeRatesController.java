@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -64,6 +65,7 @@ public class ExchangeRatesController implements ExchangeServiceApi {
         .thenReturn(ResponseEntity.status(HttpStatus.CREATED).body("Success"));
   }
 
+  @CrossOrigin(origins = "http://bankapp.local")
   @RequestMapping(
       method = RequestMethod.GET,
       value = "/api/v1/rates",
