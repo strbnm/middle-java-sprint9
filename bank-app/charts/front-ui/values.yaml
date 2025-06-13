@@ -89,11 +89,8 @@ config:
       secret_name: OAUTH2_CLIENT_SECRET_TRANSFER
 
 gateway:
-  gatewayName: ngf
+  gatewayName: gateway
   gatewayNamespace: nginx-gateway
-
   routes:
     - name: front-ui-route
       path: /front-ui
-      service: front-ui
-      port: http

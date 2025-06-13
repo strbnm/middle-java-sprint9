@@ -39,7 +39,7 @@ accounts-service:
         enabled: true
         size: 1Gi # Small size for example
   gateway:
-    gatewayName: ngf
+    gatewayName: gateway
     gatewayNamespace: nginx-gateway
 
     routes:
@@ -89,7 +89,7 @@ cash-service:
         enabled: true
         size: 1Gi # Small size for example
   gateway:
-    gatewayName: ngf
+    gatewayName: gateway
     gatewayNamespace: nginx-gateway
 
     routes:
@@ -142,7 +142,7 @@ transfer-service:
         enabled: true
         size: 1Gi # Small size for example
   gateway:
-    gatewayName: ngf
+    gatewayName: gateway
     gatewayNamespace: nginx-gateway
 
     routes:
@@ -169,7 +169,7 @@ blocker-service:
     path: /
     pathType: ImplementationSpecific
   gateway:
-    gatewayName: ngf
+    gatewayName: gateway
     gatewayNamespace: nginx-gateway
 
     routes:
@@ -209,7 +209,7 @@ exchange-service:
         enabled: true
         size: 1Gi # Small size for example
   gateway:
-    gatewayName: ngf
+    gatewayName: gateway
     gatewayNamespace: nginx-gateway
     routes:
       - name: exchange-service-route
@@ -271,7 +271,7 @@ notifications-service:
         enabled: true
         size: 1Gi # Small size for example
   gateway:
-    gatewayName: ngf
+    gatewayName: gateway
     gatewayNamespace: nginx-gateway
 
     routes:
@@ -311,7 +311,7 @@ front-ui:
         scope: resource.readwrite
         secret_name: OAUTH2_CLIENT_SECRET_TRANSFER
   gateway:
-    gatewayName: ngf
+    gatewayName: gateway
     gatewayNamespace: nginx-gateway
 
     routes:

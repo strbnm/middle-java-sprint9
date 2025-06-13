@@ -104,11 +104,8 @@ transfer-db:
       size: 1Gi # Small size for example
 
 gateway:
-  gatewayName: ngf
+  gatewayName: gateway
   gatewayNamespace: nginx-gateway
-
   routes:
     - name: transfer-service-route
       path: /transfer-service
-      service: transfer-service
-      port: http
