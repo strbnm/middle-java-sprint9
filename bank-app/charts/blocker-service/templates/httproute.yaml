@@ -21,7 +21,7 @@ spec:
               type: ReplacePrefixMatch
               replacePrefixMatch: /
       backendRefs:
-        - name: {{ include "transfer-service.fullname" $ }}
+        - name: {{ include "blocker-service.fullname" $ }}
           port: {{ $.Values.service.port }}
 ---
 {{- end }}
