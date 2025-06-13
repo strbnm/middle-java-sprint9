@@ -14,7 +14,7 @@ spec:
             value: /
         - path:
             type: Exact
-            value: /maim
+            value: /main
         - path:
             type: PathPrefix
             value: /login
@@ -23,13 +23,16 @@ spec:
             value: /logout
         - path:
             type: Exact
-            value: /signin
+            value: /signup
         - path:
             type: PathPrefix
             value: /actuator
         - path:
             type: PathPrefix
             value: /css
+        - path:
+            type: PathPrefix
+            value: /user
       backendRefs:
         - name: {{ include "front-ui.fullname" $ }}
           port: {{ $.Values.service.port }}

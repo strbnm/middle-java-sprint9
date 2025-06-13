@@ -13,7 +13,6 @@ public class WebConfig {
 
   @Bean
   public RouterFunction<ServerResponse> staticResourceRouter() {
-    return RouterFunctions.resources("/css/**", new ClassPathResource("static/css/"))
-        .and(RouterFunctions.resources("/imgs/**", new ClassPathResource("static/imgs/")));
+    return RouterFunctions.resources("/**", new ClassPathResource("static/"));
   }
 }
