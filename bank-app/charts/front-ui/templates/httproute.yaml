@@ -10,10 +10,10 @@ spec:
   rules:
     - matches:
         - path:
-            type: PathPrefix
-            value: "^/$"
+            type: Exact
+            value: /
         - path:
-            type: PathPrefix
+            type: Exact
             value: /maim
         - path:
             type: PathPrefix
@@ -22,7 +22,7 @@ spec:
             type: PathPrefix
             value: /logout
         - path:
-            type: PathPrefix
+            type: Exact
             value: /signin
         - path:
             type: PathPrefix
