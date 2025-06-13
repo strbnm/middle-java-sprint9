@@ -249,10 +249,7 @@ pipeline {
                             --set extraVolumeMounts[0].name=realm-config \\
                             --set extraVolumeMounts[0].mountPath=/opt/bitnami/keycloak/data/import \\
                             --set extraVolumeMounts[0].readOnly=true \\
-                            --set extraStartupArgs="--import-realm" \\
-                            --set ingress.enabled=true \\
-                            --set ingress.ingressClassName=nginx \\
-                            --set ingress.hostname=keycloak.bankapp.local
+                            --set extraStartupArgs="--import-realm"
 
                         else
                           echo "Keycloak already installed — skipping config and upgrade."
