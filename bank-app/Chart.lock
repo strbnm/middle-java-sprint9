@@ -26,8 +26,5 @@ dependencies:
 - name: keycloak
   repository: file://./charts/keycloak
   version: 24.7.3
-- name: rabbitmq
-  repository: file://./charts/rabbitmq
-  version: 16.0.6
-digest: sha256:86fd5666df4f2a38363c3f1be6dd03a9238bc24321dc397b09e8732327b31082
-generated: "2025-06-10T22:08:43.4491974+03:00"
+digest: sha256:8ae18bfbfdee8f79aa5922aa31f48dd4f2871bb54b424d4b0e9e30b847916fe7
+generated: "2025-06-13T14:23:02.5493562+03:00"
