@@ -7,32 +7,13 @@ spec:
   parentRefs:
     - name: {{ $.Values.gateway.gatewayName }}
       namespace: {{ $.Values.gateway.gatewayNamespace }}
+  hostnames:
+    - "bankapp.local"
   rules:
     - matches:
         - path:
-            type: Exact
+            type: PathPrefix
             value: /
-        - path:
-            type: Exact
-            value: /main
-        - path:
-            type: PathPrefix
-            value: /login
-        - path:
-            type: PathPrefix
-            value: /logout
-        - path:
-            type: Exact
-            value: /signup
-        - path:
-            type: PathPrefix
-            value: /actuator
-        - path:
-            type: PathPrefix
-            value: /css
-        - path:
-            type: PathPrefix
-            value: /user
       backendRefs:
         - name: {{ include "front-ui.fullname" $ }}
           port: {{ $.Values.service.port }}

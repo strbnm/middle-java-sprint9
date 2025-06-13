@@ -29,7 +29,7 @@ public class NotificationsWebClientConfig {
     public WebClient notificationsWebClient(ReactiveOAuth2AuthorizedClientManager authorizedClientManager) {
         ExchangeFilterFunction oauth2Filter = (request, next) -> {
             OAuth2AuthorizeRequest authorizeRequest = OAuth2AuthorizeRequest
-                    .withClientRegistrationId("notifications-client")
+                    .withClientRegistrationId("notification-client")
                     .principal("accounts-service")
                     .build();
 

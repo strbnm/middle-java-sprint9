@@ -33,15 +33,9 @@ public class NotificationsWebClientConfig {
     @Bean("notificationsWebClient")
     public WebClient notificationsWebClient(ReactiveOAuth2AuthorizedClientManager authorizedClientManager) {
         ExchangeFilterFunction oauth2Filter = (request, next) -> {
-            Authentication principal = new AnonymousAuthenticationToken(
-                    "system",
-                    "accounts-service",
-                    List.of(new SimpleGrantedAuthority("ROLE_SYSTEM"))
-            );
-
             OAuth2AuthorizeRequest authorizeRequest = OAuth2AuthorizeRequest
-                    .withClientRegistrationId("notifications-client")
-                    .principal(principal)
+                    .withClientRegistrationId("notification-client")
+                    .principal("transfer-service")
                     .build();
 
             return authorizedClientManager.authorize(authorizeRequest)
