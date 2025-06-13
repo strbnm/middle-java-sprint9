@@ -10,7 +10,7 @@ pipeline {
 
     stages {
         stage("Build, Test And Push Images") {
-            parallel {
+            stages {
                 stage('Accounts Service') {
                     steps {
                         script {
