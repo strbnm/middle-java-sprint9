@@ -13,7 +13,7 @@ import ru.strbnm.cash_service.domain.CashOperationResponse;
 import ru.strbnm.cash_service.service.CashService;
 
 @Controller
-@RequestMapping("${openapi.cashService.base-path:/}")
+@RequestMapping("${openapi.service.base-path:/}")
 public class CashController implements CashServiceApi {
 
     private final CashService cashService;

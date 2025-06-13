@@ -13,7 +13,7 @@ import ru.strbnm.accounts_service.domain.*;
 import ru.strbnm.accounts_service.service.UserService;
 
 @Controller
-@RequestMapping("${openapi.accountsService.base-path:/}")
+@RequestMapping("${openapi.service.base-path:/}")
 public class AccountsController implements AccountsServiceApi {
 
     private final UserService userService;

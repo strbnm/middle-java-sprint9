@@ -13,7 +13,7 @@ import ru.strbnm.transfer_service.domain.TransferOperationResponse;
 import ru.strbnm.transfer_service.service.TransferService;
 
 @Controller
-@RequestMapping("${openapi.cashService.base-path:/}")
+@RequestMapping("${openapi.service.base-path:/}")
 public class TransferController implements TransferServiceApi {
 
     private final TransferService transferService;

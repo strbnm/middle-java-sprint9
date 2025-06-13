@@ -17,7 +17,7 @@ import ru.strbnm.notifications_service.entity.Notification;
 import ru.strbnm.notifications_service.repository.NotificationRepository;
 
 @Controller
-@RequestMapping("${openapi.notificationsService.base-path:/}")
+@RequestMapping("${openapi.service.base-path:/}")
 public class NotificationsController implements NotificationsServiceApi {
   private final NotificationRepository notificationRepository;
 

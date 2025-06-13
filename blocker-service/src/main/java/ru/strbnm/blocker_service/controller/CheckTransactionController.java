@@ -13,7 +13,7 @@ import ru.strbnm.blocker_service.domain.CheckTransferTransactionRequest;
 import ru.strbnm.blocker_service.service.CheckTransactionService;
 
 @Controller
-@RequestMapping("${openapi.blockerService.base-path:/}")
+@RequestMapping("${openapi.service.base-path:/}")
 public class CheckTransactionController implements BlockerServiceApi {
   private final CheckTransactionService checkTransactionService;
 

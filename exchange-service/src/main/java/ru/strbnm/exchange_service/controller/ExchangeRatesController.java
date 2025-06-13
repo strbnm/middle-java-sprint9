@@ -20,7 +20,7 @@ import ru.strbnm.exchange_service.domain.Rate;
 import ru.strbnm.exchange_service.service.ExchangeService;
 
 @Controller
-@RequestMapping("${openapi.exchangeService.base-path:/}")
+@RequestMapping("${openapi.service.base-path:/}")
 public class ExchangeRatesController implements ExchangeServiceApi {
   private final ExchangeService exchangeService;
 
