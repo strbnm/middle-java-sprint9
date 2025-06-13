@@ -41,11 +41,11 @@ public class WebSecurityConfig {
                 )
                 .authorizeExchange(exchange -> exchange
                     .pathMatchers("/actuator/health/**", "/actuator/info").permitAll()
-                    .pathMatchers("/", "/signup", "/css/**", "/login").permitAll()
+                    .pathMatchers("/bank-app", "/bank-app/signup", "/bank-app/css/**", "/bank-app/login").permitAll()
                     .anyExchange().authenticated()
                 )
                 .formLogin(Customizer.withDefaults())
-                .logout(logout -> logout.logoutUrl("/logout"))
+                .logout(logout -> logout.logoutUrl("/bank-app/logout"))
                 .headers(headers -> headers.frameOptions(Customizer.withDefaults()).disable())
                 .exceptionHandling(handling -> handling
                         .accessDeniedHandler((exchange, denied) ->
