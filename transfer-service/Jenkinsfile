@@ -251,7 +251,7 @@ pipeline {
                             --set extraVolumeMounts[0].readOnly=true \\
                             --set extraStartupArgs="--import-realm"
 
-                          helm template keycloak . -n test -s templates/keycloak_httproute.yaml | kubectl apply -f -
+                          helm template keycloak ./bank-app -n test -s bank-app/templates/keycloak_httproute.yaml | kubectl apply -f -
 
                         else
                           echo "Keycloak already installed — skipping config and upgrade."
@@ -411,7 +411,7 @@ pipeline {
                             --set extraVolumeMounts[0].readOnly=true \\
                             --set extraStartupArgs="--import-realm"
 
-                          helm template keycloak . -n test -s templates/keycloak_httproute.yaml | kubectl apply -f -
+                          helm template keycloak ./bank-app -n test -s bank-app/templates/keycloak_httproute.yaml | kubectl apply -f -
 
                         else
                           echo "Keycloak already installed — skipping config and upgrade."
