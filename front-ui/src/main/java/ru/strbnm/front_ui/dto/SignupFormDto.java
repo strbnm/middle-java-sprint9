@@ -8,7 +8,7 @@ import java.time.LocalDate;
 public class SignupFormDto {
     private String login;
     private String password;
-    private String confirmPassword;
+    private String confirm_password;
     private String name;
     private String email;
     private LocalDate birthdate;

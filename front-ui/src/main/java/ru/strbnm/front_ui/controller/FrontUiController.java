@@ -219,7 +219,7 @@ public class FrontUiController {
                   if (userLogin.isEmpty())  errors.add("Заполните логин");
                   if (!form.getLogin().matches("^[A-Za-z\\d_-]+$")) errors.add("Логин может содержать только латинские буквы, цифры, дефис или подчёркивание");
                   if (form.getPassword().isEmpty()) errors.add("Заполните пароль");
-                  if (form.getConfirmPassword().isEmpty() || !form.getConfirmPassword().equals(form.getPassword())) errors.add("Пароли не совпадают");
+                  if (form.getConfirm_password().isEmpty() || !form.getConfirm_password().equals(form.getPassword())) errors.add("Пароли не совпадают");
                   if (form.getName().isEmpty()) errors.add("Заполните поле Фамилия Имя");
                   if (form.getEmail().isEmpty()) errors.add("Заполните электронную почту");
                   if (calculateAge(form.getBirthdate()) == 0) errors.add("Дата рождения не может быть пустой или позже текущей даты");
