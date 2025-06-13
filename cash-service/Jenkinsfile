@@ -196,20 +196,29 @@ pipeline {
                 // Необходимо наличие установленных CRD Gateway API в кластере для создания HTTPRoute
                 stage('Install Nginx Gateway Fabric if needed') {
                     steps {
-                        sh """
-                        if ! kubectl get crds | grep gateway; then
-                          echo "CRD Gateway API not found, installing..."
-                          kubectl kustomize "https://github.com/nginx/nginx-gateway-fabric/config/crd/gateway-api/standard?ref=v2.0.1" | kubectl apply -f -
-                        else
-                            echo "CRD Gateway API already installed - skipping"
-                            if ! helm list -n nginx-gateway | grep -q ngf; then
-                                echo "Nginx Gateway Fabric not found, installing..."
-                                helm upgrade --install ngf oci://ghcr.io/nginx/charts/nginx-gateway-fabric --create-namespace -n nginx-gateway
-                            else
-                              echo "Nginx Gateway Fabric already installed — skipping config and upgrade."
-                            fi
-                        fi
-                        """
+                      sh """
+                      if ! kubectl get crd gateways.gateway.networking.k8s.io >/dev/null 2>&1; then
+                        echo "CRD Gateway API not found, installing..."
+                        kubectl kustomize "https://github.com/nginx/nginx-gateway-fabric/config/crd/gateway-api/standard?ref=v2.0.1" | kubectl apply -f -
+                      else
+                        echo "CRD Gateway API already installed - skipping"
+                      fi
+
+                      if ! helm list -n nginx-gateway | grep -q ngf; then
+                        echo "Nginx Gateway Fabric not found, installing..."
+                        helm upgrade --install ngf oci://ghcr.io/nginx/charts/nginx-gateway-fabric \\
+                          --create-namespace -n nginx-gateway \\
+                          --set service.type=LoadBalancer
+
+                        echo "Waiting for NGF deployment to be ready..."
+                        kubectl rollout status deployment/ngf-nginx-gateway-fabric -n nginx-gateway --timeout=60s
+
+                        echo "Creating Gateway object..."
+                        kubectl apply -f bank-app/templates/gateway.yaml
+                      else
+                        echo "Nginx Gateway Fabric already installed — skipping config and upgrade."
+                      fi
+                      """
                     }
                 }
                 stage('Install Keycloak if needed') {
@@ -246,6 +255,156 @@ pipeline {
                             sh """
                             helm upgrade --install ${RELEASE_NAME} charts/${MODULE} \\
                               --namespace test --create-namespace \\
+                              --set image.repository=${DOCKER_REGISTRY}/${MODULE} \\
+                              --set image.tag=${IMAGE_TAG} \\
+                              --set cash-db.auth.existingSecret=$RELEASE_NAME-$MODULE-db \\
+                              --set imagePullSecrets[0].name=ghcr-registry
+                            """
+                        }
+                    }
+                }
+            }
+        }
+        stage('Ручное подтверждение для PROD') {
+            when {
+                 expression { return !params.SKIP_DEPLOY }
+            }
+            steps {
+                input message: 'Установить в PROD?', ok: 'Да, установить'
+            }
+        }
+        stage('Деплой на PROD') {
+            when {
+                 expression { return !params.SKIP_DEPLOY }
+            }
+            stages {
+                stage('Создание пространства имен') {
+                    steps {
+                        sh 'kubectl get namespace prod >/dev/null 2>&1 || kubectl create namespace prod'
+                    }
+                }
+                stage('Create Secrets for PROD') {
+                    steps {
+                        withCredentials([string(credentialsId: 'GHCR_TOKEN', variable: 'GHCR_TOKEN')]) {
+                            sh """
+                            kubectl create secret docker-registry ghcr-registry \\
+                            --docker-server=${DOCKER_REGISTRY} \\
+                            --docker-username=${GITHUB_USERNAME} \\
+                            --docker-password=${GHCR_TOKEN} \\
+                            -n prod --dry-run=client -o yaml | kubectl apply -f -
+                            """
+                        }
+                        withCredentials([string(credentialsId: 'CASH_SERVICE_DB_PASSWORD', variable: 'DB_PASSWORD')]) {
+                            sh '''
+                            kubectl create secret generic $RELEASE_NAME-$MODULE-db \\
+                              --from-literal=password=$DB_PASSWORD \\
+                              -n prod --dry-run=client -o yaml | kubectl apply -f -
+                            '''
+                        }
+                        withCredentials([string(credentialsId: 'NOTIFICATION_CLIENT_SECRET', variable: 'NOTIFICATION_CLIENT_SECRET')]) {
+                            sh '''
+                            kubectl create secret generic oauth2-client-secret-notifications \\
+                              --from-literal=password=$NOTIFICATION_CLIENT_SECRET \\
+                              -n prod --dry-run=client -o yaml | kubectl apply -f -
+                            '''
+                        }
+                        withCredentials([string(credentialsId: 'ACCOUNTS_CLIENT_SECRET', variable: 'ACCOUNTS_CLIENT_SECRET')]) {
+                            sh '''
+                            kubectl create secret generic oauth2-client-secret-accounts \\
+                              --from-literal=password=$ACCOUNTS_CLIENT_SECRET \\
+                              -n prod --dry-run=client -o yaml | kubectl apply -f -
+                            '''
+                        }
+                        withCredentials([string(credentialsId: 'BLOCKER_CLIENT_SECRET', variable: 'BLOCKER_CLIENT_SECRET')]) {
+                            sh '''
+                            kubectl create secret generic oauth2-client-secret-blocker \\
+                              --from-literal=password=$BLOCKER_CLIENT_SECRET \\
+                              -n prod --dry-run=client -o yaml | kubectl apply -f -
+                            '''
+                        }
+                        withCredentials([string(credentialsId: 'KEYCLOAK_PASS', variable: 'KEYCLOAK_PASS')]) {
+                            sh '''
+                            kubectl create secret generic keycloak-secret \\
+                              --from-literal=password=$KEYCLOAK_PASS \\
+                              -n prod --dry-run=client -o yaml | kubectl apply -f -
+                            '''
+                        }
+                    }
+                }
+                stage('Установка глобальных переменных') {
+                    steps {
+                        dir('bank-app') {
+                            sh """
+                            echo "Рендерим шаблон c глобальными переменными и устанавливаем/обновляем его в кластере"
+                            helm template $RELEASE_NAME . \\
+                            -n prod \\
+                            -s templates/configmap.yaml | kubectl apply -n prod -f -
+                            """
+                        }
+                    }
+                }
+                // Необходимо наличие установленных CRD Gateway API в кластере для создания HTTPRoute
+                stage('Install Nginx Gateway Fabric if needed') {
+                    steps {
+                      sh """
+                      if ! kubectl get crd gateways.gateway.networking.k8s.io >/dev/null 2>&1; then
+                        echo "CRD Gateway API not found, installing..."
+                        kubectl kustomize "https://github.com/nginx/nginx-gateway-fabric/config/crd/gateway-api/standard?ref=v2.0.1" | kubectl apply -f -
+                      else
+                        echo "CRD Gateway API already installed - skipping"
+                      fi
+
+                      if ! helm list -n nginx-gateway | grep -q ngf; then
+                        echo "Nginx Gateway Fabric not found, installing..."
+                        helm upgrade --install ngf oci://ghcr.io/nginx/charts/nginx-gateway-fabric \\
+                          --create-namespace -n nginx-gateway \\
+                          --set service.type=LoadBalancer
+
+                        echo "Waiting for NGF deployment to be ready..."
+                        kubectl rollout status deployment/ngf-nginx-gateway-fabric -n nginx-gateway --timeout=60s
+
+                        echo "Creating Gateway object..."
+                        kubectl apply -f bank-app/templates/gateway.yaml
+                      else
+                        echo "Nginx Gateway Fabric already installed — skipping config and upgrade."
+                      fi
+                      """
+                    }
+                }
+                stage('Install Keycloak if needed') {
+                    steps {
+                        sh """
+                        # Используется только в учебном проекте!!! Создаем ConfigMap с конфигурацией realm из файла.
+                        # В реальных проектах должно быть создано отдельно и конфигурация не должна храниться в VCS
+
+                        if ! helm list -n prod | grep -q keycloak; then
+                          echo "Keycloak not found, installing..."
+
+                          kubectl create configmap my-realm-config \\
+                            --from-file=keycloak/bank-app-realm.json \\
+                            -n prod --dry-run=client -o yaml | kubectl apply -f -
+
+                          helm upgrade --install keycloak bank-app/charts/keycloak \\
+                            -n prod --create-namespace \\
+                            --set extraVolumes[0].name=realm-config \\
+                            --set extraVolumes[0].configMap.name=my-realm-config \\
+                            --set extraVolumeMounts[0].name=realm-config \\
+                            --set extraVolumeMounts[0].mountPath=/opt/bitnami/keycloak/data/import \\
+                            --set extraVolumeMounts[0].readOnly=true \\
+                            --set extraStartupArgs="--import-realm"
+
+                        else
+                          echo "Keycloak already installed — skipping config and upgrade."
+                        fi
+                        """
+                    }
+                }
+                stage('Helm Deploy to PROD') {
+                    steps {
+                        dir('bank-app') {
+                            sh """
+                            helm upgrade --install ${RELEASE_NAME} charts/${MODULE} \\
+                              --namespace prod --create-namespace \\
                               --set image.repository=${DOCKER_REGISTRY}/${MODULE} \\
                               --set image.tag=${IMAGE_TAG} \\
                               --set cash-db.auth.existingSecret=$RELEASE_NAME-$MODULE-db \\

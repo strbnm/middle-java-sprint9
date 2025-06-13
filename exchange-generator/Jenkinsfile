@@ -215,5 +215,105 @@ pipeline {
                 }
             }
         }
+        stage('Ручное подтверждение для PROD') {
+            when {
+                 expression { return !params.SKIP_DEPLOY }
+            }
+            steps {
+                input message: 'Установить в PROD?', ok: 'Да, установить'
+            }
+        }
+        stage('Деплой на PROD') {
+            when {
+                 expression { return !params.SKIP_DEPLOY }
+            }
+            stages {
+                stage('Создание пространства имен') {
+                    steps {
+                        sh 'kubectl get namespace prod >/dev/null 2>&1 || kubectl create namespace prod'
+                    }
+                }
+                stage('Create Secrets for PROD') {
+                    steps {
+                        withCredentials([string(credentialsId: 'GHCR_TOKEN', variable: 'GHCR_TOKEN')]) {
+                            sh """
+                            kubectl create secret docker-registry ghcr-registry \\
+                            --docker-server=${DOCKER_REGISTRY} \\
+                            --docker-username=${GITHUB_USERNAME} \\
+                            --docker-password=${GHCR_TOKEN} \\
+                            -n prod --dry-run=client -o yaml | kubectl apply -f -
+                            """
+                        }
+                        withCredentials([string(credentialsId: 'EXCHANGE_CLIENT_SECRET', variable: 'EXCHANGE_CLIENT_SECRET')]) {
+                            sh '''
+                            kubectl create secret generic oauth2-client-secret-exchange \\
+                              --from-literal=password=$EXCHANGE_CLIENT_SECRET \\
+                              -n prod --dry-run=client -o yaml | kubectl apply -f -
+                            '''
+                        }
+                        withCredentials([string(credentialsId: 'KEYCLOAK_PASS', variable: 'KEYCLOAK_PASS')]) {
+                            sh '''
+                            kubectl create secret generic keycloak-secret \\
+                              --from-literal=password=$KEYCLOAK_PASS \\
+                              -n prod --dry-run=client -o yaml | kubectl apply -f -
+                            '''
+                        }
+                    }
+                }
+                stage('Установка глобальных переменных') {
+                    steps {
+                        dir('bank-app') {
+                            sh """
+                            echo "Рендерим шаблон c глобальными переменными и устанавливаем/обновляем его в кластере"
+                            helm template $RELEASE_NAME . \\
+                            -n prod \\
+                            -s templates/configmap.yaml | kubectl apply -n prod -f -
+                            """
+                        }
+                    }
+                }
+                stage('Install Keycloak if needed') {
+                    steps {
+                        sh """
+                        # Используется только в учебном проекте!!! Создаем ConfigMap с конфигурацией realm из файла.
+                        # В реальных проектах должно быть создано отдельно и конфигурация не должна храниться в VCS
+
+                        if ! helm list -n prod | grep -q keycloak; then
+                          echo "Keycloak not found, installing..."
+
+                          kubectl create configmap my-realm-config \\
+                            --from-file=keycloak/bank-app-realm.json \\
+                            -n prod --dry-run=client -o yaml | kubectl apply -f -
+
+                          helm upgrade --install keycloak bank-app/charts/keycloak \\
+                            -n prod --create-namespace \\
+                            --set extraVolumes[0].name=realm-config \\
+                            --set extraVolumes[0].configMap.name=my-realm-config \\
+                            --set extraVolumeMounts[0].name=realm-config \\
+                            --set extraVolumeMounts[0].mountPath=/opt/bitnami/keycloak/data/import \\
+                            --set extraVolumeMounts[0].readOnly=true \\
+                            --set extraStartupArgs="--import-realm"
+
+                        else
+                          echo "Keycloak already installed — skipping config and upgrade."
+                        fi
+                        """
+                    }
+                }
+                stage('Helm Deploy to PROD') {
+                    steps {
+                        dir('bank-app') {
+                            sh """
+                            helm upgrade --install ${RELEASE_NAME} charts/${MODULE} \\
+                              --namespace prod --create-namespace \\
+                              --set image.repository=${DOCKER_REGISTRY}/${MODULE} \\
+                              --set image.tag=${IMAGE_TAG} \\
+                              --set imagePullSecrets[0].name=ghcr-registry
+                            """
+                        }
+                    }
+                }
+            }
+        }
     }
 }
