@@ -5,7 +5,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.access.method.P;
+import org.springframework.security.oauth2.client.OAuth2AuthorizeRequest;
 import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientManager;
 import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientProvider;
 import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientProviderBuilder;
@@ -13,6 +15,7 @@ import org.springframework.security.oauth2.client.registration.ReactiveClientReg
 import org.springframework.security.oauth2.client.web.DefaultReactiveOAuth2AuthorizedClientManager;
 import org.springframework.security.oauth2.client.web.reactive.function.client.ServerOAuth2AuthorizedClientExchangeFilterFunction;
 import org.springframework.security.oauth2.client.web.server.ServerOAuth2AuthorizedClientRepository;
+import org.springframework.web.reactive.function.client.ClientRequest;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
@@ -29,10 +32,21 @@ public class WebClientConfig {
     @Profile("default")
     @Bean
     public WebClient webClient(ReactiveOAuth2AuthorizedClientManager authorizedClientManager) {
-        ServerOAuth2AuthorizedClientExchangeFilterFunction oauth2Filter =
-                new ServerOAuth2AuthorizedClientExchangeFilterFunction(authorizedClientManager);
+        ExchangeFilterFunction oauth2Filter = (request, next) -> {
+            OAuth2AuthorizeRequest authorizeRequest = OAuth2AuthorizeRequest
+                    .withClientRegistrationId("exchange-client")
+                    .principal("exchange-generator")
+                    .build();
 
-        oauth2Filter.setDefaultClientRegistrationId("exchange-client");
+            return authorizedClientManager.authorize(authorizeRequest)
+                    .flatMap(client -> {
+                        ClientRequest filteredRequest = ClientRequest.from(request)
+                                .header(HttpHeaders.AUTHORIZATION,
+                                        "Bearer " + client.getAccessToken().getTokenValue())
+                                .build();
+                        return next.exchange(filteredRequest);
+                    });
+        };
         return WebClient.builder()
                 .filter(oauth2Filter)
                 .baseUrl(baseUrl)
