@@ -248,9 +248,6 @@ pipeline {
                               --namespace test --create-namespace \\
                               --set image.repository=${DOCKER_REGISTRY}/${MODULE} \\
                               --set image.tag=${IMAGE_TAG} \\
-                              --set ingress.enabled=true \\
-                              --set ingress.host="${MODULE}.test.local" \\
-                              --set ingress.pathType="ImplementationSpecific" \\
                               --set cash-db.auth.existingSecret=$RELEASE_NAME-$MODULE-db \\
                               --set imagePullSecrets[0].name=ghcr-registry
                             """
