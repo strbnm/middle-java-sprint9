@@ -58,5 +58,4 @@ public class WebSecurityConfig {
 
     return authorizedClientManager;
   }
-
 }

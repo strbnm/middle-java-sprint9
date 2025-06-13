@@ -7,6 +7,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpHeaders;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.OAuth2AuthorizeRequest;
 import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientManager;
 import org.springframework.security.oauth2.client.web.reactive.function.client.ServerOAuth2AuthorizedClientExchangeFilterFunction;
@@ -16,6 +19,8 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import ru.strbnm.transfer_service.client.notifications.ApiClient;
 import ru.strbnm.transfer_service.client.notifications.api.NotificationsServiceApi;
+
+import java.util.List;
 
 @Slf4j
 @Profile("!contracts")
@@ -28,9 +33,15 @@ public class NotificationsWebClientConfig {
     @Bean("notificationsWebClient")
     public WebClient notificationsWebClient(ReactiveOAuth2AuthorizedClientManager authorizedClientManager) {
         ExchangeFilterFunction oauth2Filter = (request, next) -> {
+            Authentication principal = new AnonymousAuthenticationToken(
+                    "system",
+                    "accounts-service",
+                    List.of(new SimpleGrantedAuthority("ROLE_SYSTEM"))
+            );
+
             OAuth2AuthorizeRequest authorizeRequest = OAuth2AuthorizeRequest
                     .withClientRegistrationId("notifications-client")
-                    .principal("accounts-service")
+                    .principal(principal)
                     .build();
 
             return authorizedClientManager.authorize(authorizeRequest)
