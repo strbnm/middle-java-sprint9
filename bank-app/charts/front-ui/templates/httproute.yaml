@@ -22,7 +22,7 @@ spec:
           urlRewrite:
             path:
               type: ReplacePrefixMatch
-              replacePrefixMatch: {{ $route.path }}
+              replacePrefixMatch: {{ $route.path }}/
 ---
 {{- end }}
 {{- end }}
