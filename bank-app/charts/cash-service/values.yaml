@@ -99,3 +99,12 @@ cash-db:
     persistence:
       enabled: true
       size: 1Gi # Small size for example
+gateway:
+  gatewayName: ngf
+  gatewayNamespace: nginx-gateway
+
+  routes:
+    - name: cash-service-route
+      path: /cash-service
+      service: cash-service
+      port: http

@@ -13,6 +13,3 @@ data:
 
   SERVER_PORT: {{ .Values.service.port | quote }}
   SPRING_APPLICATION_NAME: {{ include "front-ui.fullname" . }}
-  SPRING_REST_ACCOUNTS_SERVICE_URL: {{ printf "http://accounts-service.%s.local" .Release.Namespace }}
-  SPRING_REST_TRANSFER_SERVICE_URL: {{ printf "http://transfer-service.%s.local" .Release.Namespace }}
-  SPRING_REST_CASH_SERVICE_URL: {{ printf "http://cash-service.%s.local" .Release.Namespace }}

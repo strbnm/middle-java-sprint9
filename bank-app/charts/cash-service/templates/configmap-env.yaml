@@ -13,7 +13,4 @@ data:
 
     SERVER_PORT: {{ .Values.service.port | quote }}
     SPRING_APPLICATION_NAME: {{ include "cash-service.fullname" . }}
-    SPRING_REST_NOTIFICATIONS_SERVICE_URL: {{ printf "http://notifications-service.%s.local" .Release.Namespace }}
-    SPRING_REST_ACCOUNTS_SERVICE_URL: {{ printf "http://accounts-service.%s.local" .Release.Namespace }}
-    SPRING_REST_BLOCKER_SERVICE_URL: {{ printf "http://blocker-service.%s.local" .Release.Namespace }}
     SERVICE_DB_HOST: {{ .Release.Name }}-cash-db.{{ .Release.Namespace }}.svc.cluster.local

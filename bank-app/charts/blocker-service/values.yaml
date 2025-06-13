@@ -76,3 +76,12 @@ tolerations: []
 
 affinity: {}
 
+gateway:
+  gatewayName: ngf
+  gatewayNamespace: nginx-gateway
+
+  routes:
+    - name: blocker-service-route
+      path: /blocker-service
+      service: blocker-service
+      port: http

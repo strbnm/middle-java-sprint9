@@ -38,6 +38,15 @@ accounts-service:
       persistence:
         enabled: true
         size: 1Gi # Small size for example
+  gateway:
+    gatewayName: ngf
+    gatewayNamespace: nginx-gateway
+
+    routes:
+      - name: accounts-service-route
+        path: /accounts-service
+        service: accounts-service
+        port: http
 
 cash-service:
   replicaCount: 1
@@ -79,6 +88,15 @@ cash-service:
       persistence:
         enabled: true
         size: 1Gi # Small size for example
+  gateway:
+    gatewayName: ngf
+    gatewayNamespace: nginx-gateway
+
+    routes:
+      - name: cash-service-route
+        path: /cash-service
+        service: cash-service
+        port: http
 
 transfer-service:
   replicaCount: 1
@@ -123,6 +141,15 @@ transfer-service:
       persistence:
         enabled: true
         size: 1Gi # Small size for example
+  gateway:
+    gatewayName: ngf
+    gatewayNamespace: nginx-gateway
+
+    routes:
+      - name: transfer-service-route
+        path: /transfer-service
+        service: transfer-service
+        port: http
 
 blocker-service:
   replicaCount: 1
@@ -141,6 +168,15 @@ blocker-service:
     host: blocker-service.bankapp.local
     path: /
     pathType: ImplementationSpecific
+  gateway:
+    gatewayName: ngf
+    gatewayNamespace: nginx-gateway
+
+    routes:
+      - name: blocker-service-route
+        path: /blocker-service
+        service: blocker-service
+        port: http
 
 exchange-service:
   replicaCount: 1
@@ -172,6 +208,15 @@ exchange-service:
       persistence:
         enabled: true
         size: 1Gi # Small size for example
+  gateway:
+    gatewayName: ngf
+    gatewayNamespace: nginx-gateway
+
+    routes:
+      - name: exchange-service-route
+        path: /exchange-service
+        service: exchange-service
+        port: http
 
 exchange-generator:
   replicaCount: 1
@@ -226,6 +271,15 @@ notifications-service:
       persistence:
         enabled: true
         size: 1Gi # Small size for example
+  gateway:
+    gatewayName: ngf
+    gatewayNamespace: nginx-gateway
+
+    routes:
+      - name: notifications-service-route
+        path: /notifications-service
+        service: notifications-service
+        port: http
 
 front-ui:
   replicaCount: 1
@@ -257,6 +311,15 @@ front-ui:
       - client_id: transfer-client
         scope: resource.readwrite
         secret_name: OAUTH2_CLIENT_SECRET_TRANSFER
+  gateway:
+    gatewayName: ngf
+    gatewayNamespace: nginx-gateway
+
+    routes:
+      - name: front-ui-route
+        path: /front-ui
+        service: front-ui
+        port: http
 
 keycloak:
   enabled: true

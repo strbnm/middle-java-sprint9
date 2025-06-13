@@ -68,7 +68,13 @@ data:
       sql:
         init:
           mode: never
-
+      rest:
+        notifications-service:
+          url: ${GATEWAY_API_URL}/notifications-service
+        blocker-service:
+          url: ${GATEWAY_API_URL}/blocker-service
+        accounts-service:
+          url: ${GATEWAY_API_URL}/accounts-service
     application:
       notification:
         limit: 10

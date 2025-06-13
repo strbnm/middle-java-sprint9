@@ -93,3 +93,13 @@ accounts-db:
     persistence:
       enabled: true
       size: 1Gi # Small size for example
+
+gateway:
+  gatewayName: ngf
+  gatewayNamespace: nginx-gateway
+
+  routes:
+    - name: accounts-service-route
+      path: /accounts-service
+      service: accounts-service
+      port: http

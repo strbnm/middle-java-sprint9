@@ -10,3 +10,4 @@ data:
   {{- end }}
 
   KEYCLOAK_ISSUER_URL: {{ printf "http://keycloak.%s.svc.cluster.local/realms/bank-app" .Release.Namespace }}
+  GATEWAY_API_URL: "http://ngf.nginx-gateway.svc.cluster.local"

@@ -68,6 +68,9 @@ data:
       sql:
         init:
           mode: never
+      rest:
+        notifications-service:
+          url: ${GATEWAY_API_URL}/notifications-service
 
     application:
       notification:

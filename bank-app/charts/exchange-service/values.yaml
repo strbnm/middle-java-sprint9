@@ -89,3 +89,13 @@ exchange-db:
     persistence:
       enabled: true
       size: 1Gi # Small size for example
+
+gateway:
+  gatewayName: ngf
+  gatewayNamespace: nginx-gateway
+
+  routes:
+    - name: exchange-service-route
+      path: /exchange-service
+      service: exchange-service
+      port: http

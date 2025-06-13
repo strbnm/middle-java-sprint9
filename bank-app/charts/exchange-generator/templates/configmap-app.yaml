@@ -44,3 +44,6 @@ data:
                 clientAuthenticationMethod: client_secret_post
               {{- end }}
             {{- end }}
+      rest:
+        exchange-service:
+          url: ${GATEWAY_API_URL}/exchange-service

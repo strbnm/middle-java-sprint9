@@ -13,4 +13,3 @@ data:
 
   SERVER_PORT: {{ .Values.service.port | quote }}
   SPRING_APPLICATION_NAME: {{ include "exchange-generator.fullname" . }}
-  SPRING_REST_EXCHANGE_SERVICE_URL: {{ printf "http://exchange-service.%s.local" .Release.Namespace }}

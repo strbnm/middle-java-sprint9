@@ -58,3 +58,10 @@ data:
                 clientAuthenticationMethod: client_secret_post
               {{- end }}
             {{- end }}
+      rest:
+        cash-service:
+          url: ${GATEWAY_API_URL}/cash-service
+        transfer-service:
+          url: ${GATEWAY_API_URL}/transfer-service
+        accounts-service:
+          url: ${GATEWAY_API_URL}/accounts-service

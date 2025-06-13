@@ -87,3 +87,13 @@ config:
     - client_id: transfer-client
       scope: resource.readwrite
       secret_name: OAUTH2_CLIENT_SECRET_TRANSFER
+
+gateway:
+  gatewayName: ngf
+  gatewayNamespace: nginx-gateway
+
+  routes:
+    - name: front-ui-route
+      path: /front-ui
+      service: front-ui
+      port: http

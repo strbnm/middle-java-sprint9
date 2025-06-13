@@ -13,5 +13,4 @@ data:
 
     SERVER_PORT: {{ .Values.service.port | quote }}
     SPRING_APPLICATION_NAME: {{ include "accounts-service.fullname" . }}
-    SPRING_REST_NOTIFICATIONS_SERVICE_URL: {{ printf "http://notifications-service.%s.local" .Release.Namespace }}
     SERVICE_DB_HOST: {{ .Release.Name }}-accounts-db.{{ .Release.Namespace }}.svc.cluster.local

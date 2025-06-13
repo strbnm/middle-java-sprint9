@@ -186,6 +186,25 @@ pipeline {
                         }
                     }
                 }
+                // Необходимо наличие установленных CRD Gateway API в кластере для создания HTTPRoute
+                stage('Install Nginx Gateway Fabric if needed') {
+                    steps {
+                        sh """
+                        if ! kubectl get crds | grep gateway; then
+                          echo "CRD Gateway API not found, installing..."
+                          kubectl kustomize "https://github.com/nginx/nginx-gateway-fabric/config/crd/gateway-api/standard?ref=v2.0.1" | kubectl apply -f -
+                        else
+                            echo "CRD Gateway API already installed - skipping"
+                            if ! helm list -n nginx-gateway | grep -q ngf; then
+                                echo "Nginx Gateway Fabric not found, installing..."
+                                helm upgrade --install ngf oci://ghcr.io/nginx/charts/nginx-gateway-fabric --create-namespace -n nginx-gateway
+                            else
+                              echo "Nginx Gateway Fabric already installed — skipping config and upgrade."
+                            fi
+                        fi
+                        """
+                    }
+                }
                 stage('Install Keycloak if needed') {
                     steps {
                         sh """
