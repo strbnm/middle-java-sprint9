@@ -78,10 +78,11 @@ affinity: {}
 
 config:
   service_db_user: exchange_user
-# Configuration for the exchange-db (PostgreSQL dependency)
-exchange-db:
+# Configuration for the exchangeDatabase (PostgreSQL dependency)
+exchangeDatabase:
   enabled: true
   # Override values from the official postgresql chart
+  fullnameOverride: exchange-postgresql
   auth:
     database: app_db
     username: exchange_user

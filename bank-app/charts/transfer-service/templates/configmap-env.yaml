@@ -13,4 +13,4 @@ data:
 
   SERVER_PORT: {{ .Values.service.port | quote }}
   SPRING_APPLICATION_NAME: {{ include "transfer-service.fullname" . }}
-  SERVICE_DB_HOST: {{ .Release.Name }}-transfer-db.{{ .Release.Namespace }}.svc.cluster.local
+  SERVICE_DB_HOST: {{ .Values.transferDatabase.fullnameOverride }}.{{ .Release.Namespace }}.svc.cluster.local

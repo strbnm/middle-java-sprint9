@@ -10,5 +10,5 @@ dependencies:
   - name: postgresql
     version: "16.7.10"
     repository: "file://../postgresql"
-    alias: transfer-db
-    condition: transfer-db.enabled
+    alias: transferDatabase
+    condition: transferDatabase.enabled

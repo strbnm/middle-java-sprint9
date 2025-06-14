@@ -13,4 +13,4 @@ data:
 
     SERVER_PORT: {{ .Values.service.port | quote }}
     SPRING_APPLICATION_NAME: {{ include "accounts-service.fullname" . }}
-    SERVICE_DB_HOST: {{ .Release.Name }}-accounts-db.{{ .Release.Namespace }}.svc.cluster.local
+    SERVICE_DB_HOST: {{ .Values.accountsDatabase.fullnameOverride }}.{{ .Release.Namespace }}.svc.cluster.local

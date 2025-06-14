@@ -231,7 +231,7 @@ pipeline {
                               --namespace test --create-namespace \\
                               --set image.repository=${DOCKER_REGISTRY}/${MODULE} \\
                               --set image.tag=${IMAGE_TAG} \\
-                              --set transfer-db.auth.existingSecret=$RELEASE_NAME-$MODULE-db \\
+                              --set transferDatabase.auth.existingSecret=$RELEASE_NAME-$MODULE-db \\
                               --set imagePullSecrets[0].name=ghcr-registry
                             """
                         }
@@ -355,7 +355,7 @@ pipeline {
                               --namespace prod --create-namespace \\
                               --set image.repository=${DOCKER_REGISTRY}/${MODULE} \\
                               --set image.tag=${IMAGE_TAG} \\
-                              --set transfer-db.auth.existingSecret=$RELEASE_NAME-$MODULE-db \\
+                              --set transferDatabase.auth.existingSecret=$RELEASE_NAME-$MODULE-db \\
                               --set imagePullSecrets[0].name=ghcr-registry
                             """
                         }

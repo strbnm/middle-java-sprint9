@@ -91,10 +91,11 @@ config:
     - client_id: exchange-client
       scope: resource.readwrite
       secret_name: OAUTH2_CLIENT_SECRET_EXCHANGE
-# Configuration for the transfer-db (PostgreSQL dependency)
-transfer-db:
+# Configuration for the transferDatabase (PostgreSQL dependency)
+transferDatabase:
   enabled: true
   # Override values from the official postgresql chart
+  fullnameOverride: transfer-postgresql
   auth:
     database: app_db
     username: transfer_user

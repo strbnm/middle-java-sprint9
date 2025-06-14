@@ -83,7 +83,7 @@ if (dockerRegistry) {
     store.addCredentials(Domain.global(), registryCred)
 }
 
-// Создаём пароль базы accounts-db данных (используется в helm и kubectl)
+// Создаём пароль базы accountsDatabase данных (используется в helm и kubectl)
 if (dbAccountsPassword) {
     println "--> Creating credential: ACCOUNTS_SERVICE_DB_PASSWORD"
     def accountsDbCred = new StringCredentialsImpl(
@@ -94,7 +94,7 @@ if (dbAccountsPassword) {
     )
     store.addCredentials(Domain.global(), accountsDbCred)
 }
-// Создаём пароль базы cash-db данных (используется в helm и kubectl)
+// Создаём пароль базы cashDatabase данных (используется в helm и kubectl)
 if (dbCashPassword) {
     println "--> Creating credential: CASH_SERVICE_DB_PASSWORD"
     def cashDbCred = new StringCredentialsImpl(
@@ -105,7 +105,7 @@ if (dbCashPassword) {
     )
     store.addCredentials(Domain.global(), cashDbCred)
 }
-// Создаём пароль базы transfer-db данных (используется в helm и kubectl)
+// Создаём пароль базы transferDatabase данных (используется в helm и kubectl)
 if (dbTransferPassword) {
     println "--> Creating credential: TRANSFER_SERVICE_DB_PASSWORD"
     def transferDbCred = new StringCredentialsImpl(
@@ -116,7 +116,7 @@ if (dbTransferPassword) {
     )
     store.addCredentials(Domain.global(), transferDbCred)
 }
-// Создаём пароль базы exchange-db данных (используется в helm и kubectl)
+// Создаём пароль базы exchangeDatabase данных (используется в helm и kubectl)
 if (dbExchangePassword) {
     println "--> Creating credential: EXCHANGE_SERVICE_DB_PASSWORD"
     def exchangeDbCred = new StringCredentialsImpl(
@@ -127,7 +127,7 @@ if (dbExchangePassword) {
     )
     store.addCredentials(Domain.global(), exchangeDbCred)
 }
-// Создаём пароль базы notifications-db данных (используется в helm и kubectl)
+// Создаём пароль базы notificationsDatabase данных (используется в helm и kubectl)
 if (dbNotificationsPassword) {
     println "--> Creating credential: NOTIFICATIONS_SERVICE_DB_PASSWORD"
     def notificationsDbCred = new StringCredentialsImpl(

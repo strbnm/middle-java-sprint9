@@ -82,10 +82,11 @@ config:
     - client_id: notification-client
       scope: resource.readwrite
       secret_name: OAUTH2_CLIENT_SECRET_NOTIFICATIONS
-# Configuration for the accounts-db (PostgreSQL dependency)
-accounts-db:
+# Configuration for the accountsDatabase (PostgreSQL dependency)
+accountsDatabase:
   enabled: true
   # Override values from the official postgresql chart
+  fullnameOverride: accounts-postgresql
   auth:
     database: app_db
     username: accounts_user
