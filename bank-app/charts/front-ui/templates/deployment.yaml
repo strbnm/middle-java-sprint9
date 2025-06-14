@@ -52,7 +52,7 @@ spec:
               path: /actuator/health/liveness
               port: http
             initialDelaySeconds: 60
-            periodSeconds: 10
+            periodSeconds: 30
           readinessProbe: # Example for Spring Boot Actuator
             httpGet:
               path: /actuator/health/readiness
