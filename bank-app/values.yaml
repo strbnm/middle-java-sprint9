@@ -20,7 +20,7 @@ accounts-service:
   config:
     service_db_user: accounts_user
     oauth2:
-      - client_id: notifications-client
+      - client_id: notification-client
         scope: resource.readwrite
         secret_name: OAUTH2_CLIENT_SECRET_NOTIFICATIONS
   # Configuration for the postgresql (PostgreSQL dependency)
@@ -61,7 +61,7 @@ cash-service:
   config:
     service_db_user: cash_user
     oauth2:
-      - client_id: notifications-client
+      - client_id: notification-client
         scope: resource.readwrite
         secret_name: OAUTH2_CLIENT_SECRET_NOTIFICATIONS
       - client_id: accounts-client
@@ -108,7 +108,7 @@ transfer-service:
   config:
     service_db_user: transfer_user
     oauth2:
-      - client_id: notifications-client
+      - client_id: notification-client
         scope: resource.readwrite
         secret_name: OAUTH2_CLIENT_SECRET_NOTIFICATIONS
       - client_id: accounts-client
