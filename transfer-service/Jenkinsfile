@@ -233,7 +233,7 @@ pipeline {
                           echo "Keycloak not found, installing..."
 
                           kubectl create configmap my-realm-config \\
-                            --from-file=keycloak/bank-app-realm.json \\
+                            --from-file=keycloak/bank-app-realm-test.json \\
                             -n test --dry-run=client -o yaml | kubectl apply -f -
 
                           helm upgrade --install keycloak oci://registry-1.docker.io/bitnamicharts/keycloak \\
@@ -393,7 +393,7 @@ pipeline {
                           echo "Keycloak not found, installing..."
 
                           kubectl create configmap my-realm-config \\
-                            --from-file=keycloak/bank-app-realm.json \\
+                            --from-file=keycloak/bank-app-realm-prod.json \\
                             -n prod --dry-run=client -o yaml | kubectl apply -f -
 
                           helm upgrade --install keycloak oci://registry-1.docker.io/bitnamicharts/keycloak \\
