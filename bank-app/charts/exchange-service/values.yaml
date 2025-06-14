@@ -83,6 +83,7 @@ postgresql:
   enabled: true
   # Override values from the official postgresql chart
   fullnameOverride: exchange-postgresql
+  nameOverride: exchange-postgresql
   auth:
     database: app_db
     username: exchange_user

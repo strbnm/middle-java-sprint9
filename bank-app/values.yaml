@@ -26,8 +26,9 @@ accounts-service:
   # Configuration for the postgresql (PostgreSQL dependency)
   postgresql:
     enabled: true
-    fullnameOverride: accounts-postgresql
     # Override values from the official postgresql chart
+    fullnameOverride: accounts-postgresql
+    nameOverride: accounts-postgresql
     auth:
       database: app_db
       username: accounts_user
@@ -74,6 +75,7 @@ cash-service:
     enabled: true
     # Override values from the official postgresql chart
     fullnameOverride: cash-postgresql
+    nameOverride: cash-postgresql
     auth:
       database: app_db
       username: cash_user
@@ -123,6 +125,7 @@ transfer-service:
     enabled: true
     # Override values from the official postgresql chart
     fullnameOverride: transfer-postgresql
+    nameOverride: transfer-postgresql
     auth:
       database: app_db
       username: transfer_user
@@ -180,6 +183,7 @@ exchange-service:
     enabled: true
     # Override values from the official postgresql chart
     fullnameOverride: exchange-postgresql
+    nameOverride: exchange-postgresql
     auth:
       database: app_db
       username: exchange_user
@@ -235,6 +239,7 @@ notifications-service:
     enabled: true
     # Override values from the official postgresql chart
     fullnameOverride: notifications-postgresql
+    nameOverride: notifications-postgresql
     auth:
       database: app_db
       username: notifications_user

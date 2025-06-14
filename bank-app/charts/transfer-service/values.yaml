@@ -96,6 +96,7 @@ postgresql:
   enabled: true
   # Override values from the official postgresql chart
   fullnameOverride: transfer-postgresql
+  nameOverride: transfer-postgresql
   auth:
     database: app_db
     username: transfer_user
