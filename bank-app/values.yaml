@@ -10,7 +10,7 @@ accounts-service:
     # --- REVERTED TO LOCAL REPO ---
     repository: accounts-service
     tag: "1.0.0"
-    pullPolicy: IfNotPresent
+    pullPolicy: Always
     # -----------------------------
   imagePullSecrets:
     - name: ghcr-registry
@@ -51,7 +51,7 @@ cash-service:
     # --- REVERTED TO LOCAL REPO ---
     repository: cash-service # Removed registry prefix
     tag: "1.0.0"
-    pullPolicy: IfNotPresent # Use IfNotPresent for local images
+    pullPolicy: Always # Use IfNotPresent for local images
     # -----------------------------
   imagePullSecrets:
     - name: ghcr-registry
@@ -98,7 +98,7 @@ transfer-service:
     # --- REVERTED TO LOCAL REPO ---
     repository: transfer-service # Removed registry prefix
     tag: "1.0.0"
-    pullPolicy: IfNotPresent # Use IfNotPresent for local images
+    pullPolicy: Always # Use IfNotPresent for local images
     # -----------------------------
   imagePullSecrets:
     - name: ghcr-registry
@@ -149,7 +149,7 @@ blocker-service:
     # --- REVERTED TO LOCAL REPO ---
     repository: blocker-service # Removed registry prefix
     tag: "1.0.0"
-    pullPolicy: IfNotPresent # Use IfNotPresent for local images
+    pullPolicy: Always # Use IfNotPresent for local images
     # -----------------------------
   imagePullSecrets:
     - name: ghcr-registry
@@ -169,7 +169,7 @@ exchange-service:
     # --- REVERTED TO LOCAL REPO ---
     repository: exchange-service # Removed registry prefix
     tag: "1.0.0"
-    pullPolicy: IfNotPresent # Use IfNotPresent for local images
+    pullPolicy: Always # Use IfNotPresent for local images
     # -----------------------------
   imagePullSecrets:
     - name: ghcr-registry
@@ -206,7 +206,7 @@ exchange-generator:
     # --- REVERTED TO LOCAL REPO ---
     repository: exchange-generator # Removed registry prefix
     tag: "1.0.0"
-    pullPolicy: IfNotPresent # Use IfNotPresent for local images
+    pullPolicy: Always # Use IfNotPresent for local images
     # -----------------------------
   imagePullSecrets:
     - name: ghcr-registry
@@ -225,7 +225,7 @@ notifications-service:
     # --- REVERTED TO LOCAL REPO ---
     repository: notifications-service # Removed registry prefix
     tag: "1.0.0"
-    pullPolicy: IfNotPresent # Use IfNotPresent for local images
+    pullPolicy: Always # Use IfNotPresent for local images
     # -----------------------------
   imagePullSecrets:
     - name: ghcr-registry
@@ -262,7 +262,7 @@ front-ui:
     # --- REVERTED TO LOCAL REPO ---
     repository: front-ui # Removed registry prefix
     tag: "1.0.0"
-    pullPolicy: IfNotPresent # Use IfNotPresent for local images
+    pullPolicy: Always # Use IfNotPresent for local images
     # -----------------------------
   imagePullSecrets:
     - name: ghcr-registry
