@@ -35,7 +35,7 @@ pipeline {
                 }
             }
         }
-        stage("Получение исходников") {
+        stage("Разрешения Gradlew") {
             steps {
                 sh 'chmod +x ./gradlew'
             }
