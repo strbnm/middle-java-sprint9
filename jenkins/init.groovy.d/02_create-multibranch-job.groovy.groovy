@@ -2,6 +2,7 @@ import jenkins.model.*
 import org.jenkinsci.plugins.github_branch_source.*
 import jenkins.branch.*
 import org.jenkinsci.plugins.workflow.multibranch.*
+import jenkins.plugins.git.traits.CleanBeforeCheckoutTrait
 
 def env = System.getenv()
 def instance = Jenkins.get()
@@ -54,7 +55,8 @@ mapJobNameToScriptPath.forEach { jobName, scriptPath ->
     source.setTraits([
             new BranchDiscoveryTrait(1),
             new OriginPullRequestDiscoveryTrait(1),
-            new ForkPullRequestDiscoveryTrait(1, new ForkPullRequestDiscoveryTrait.TrustPermission())
+            new ForkPullRequestDiscoveryTrait(1, new ForkPullRequestDiscoveryTrait.TrustPermission()),
+            new CleanBeforeCheckoutTrait()
     ])
 
     def branchSource = new BranchSource(source)
