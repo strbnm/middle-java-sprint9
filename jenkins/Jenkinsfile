@@ -145,35 +145,35 @@ pipeline {
                         }
                         withCredentials([string(credentialsId: 'CASH_SERVICE_DB_PASSWORD', variable: 'DB_PASSWORD')]) {
                             sh '''
-                            kubectl create secret generic $RELEASE_NAME-$MODULE-db \\
+                            kubectl create secret generic $RELEASE_NAME-cash-service-db \\
                               --from-literal=password=$DB_PASSWORD \\
                               -n test --dry-run=client -o yaml | kubectl apply -f -
                             '''
                         }
                         withCredentials([string(credentialsId: 'TRANSFER_SERVICE_DB_PASSWORD', variable: 'DB_PASSWORD')]) {
                             sh '''
-                            kubectl create secret generic $RELEASE_NAME-$MODULE-db \\
+                            kubectl create secret generic $RELEASE_NAME-transfer-service-db \\
                               --from-literal=password=$DB_PASSWORD \\
                               -n test --dry-run=client -o yaml | kubectl apply -f -
                             '''
                         }
                         withCredentials([string(credentialsId: 'EXCHANGE_SERVICE_DB_PASSWORD', variable: 'DB_PASSWORD')]) {
                             sh '''
-                            kubectl create secret generic $RELEASE_NAME-$MODULE-db \\
+                            kubectl create secret generic $RELEASE_NAME-exchange-service-db \\
                               --from-literal=password=$DB_PASSWORD \\
                               -n test --dry-run=client -o yaml | kubectl apply -f -
                             '''
                         }
                         withCredentials([string(credentialsId: 'NOTIFICATIONS_SERVICE_DB_PASSWORD', variable: 'DB_PASSWORD')]) {
                             sh '''
-                            kubectl create secret generic $RELEASE_NAME-$MODULE-db \\
+                            kubectl create secret generic $RELEASE_NAME-notifications-service-db \\
                               --from-literal=password=$DB_PASSWORD \\
                               -n test --dry-run=client -o yaml | kubectl apply -f -
                             '''
                         }
                         withCredentials([string(credentialsId: 'ACCOUNTS_SERVICE_DB_PASSWORD', variable: 'DB_PASSWORD')]) {
                             sh '''
-                            kubectl create secret generic $RELEASE_NAME-$MODULE-db \\
+                            kubectl create secret generic $RELEASE_NAME-accounts-service-db \\
                               --from-literal=password=$DB_PASSWORD \\
                               -n test --dry-run=client -o yaml | kubectl apply -f -
                             '''
@@ -341,35 +341,35 @@ pipeline {
                         }
                         withCredentials([string(credentialsId: 'CASH_SERVICE_DB_PASSWORD', variable: 'DB_PASSWORD')]) {
                             sh '''
-                            kubectl create secret generic $RELEASE_NAME-$MODULE-db \\
+                            kubectl create secret generic $RELEASE_NAME-cash-service-db \\
                               --from-literal=password=$DB_PASSWORD \\
                               -n prod --dry-run=client -o yaml | kubectl apply -f -
                             '''
                         }
                         withCredentials([string(credentialsId: 'TRANSFER_SERVICE_DB_PASSWORD', variable: 'DB_PASSWORD')]) {
                             sh '''
-                            kubectl create secret generic $RELEASE_NAME-$MODULE-db \\
+                            kubectl create secret generic $RELEASE_NAME-transfer-service-db \\
                               --from-literal=password=$DB_PASSWORD \\
                               -n prod --dry-run=client -o yaml | kubectl apply -f -
                             '''
                         }
                         withCredentials([string(credentialsId: 'EXCHANGE_SERVICE_DB_PASSWORD', variable: 'DB_PASSWORD')]) {
                             sh '''
-                            kubectl create secret generic $RELEASE_NAME-$MODULE-db \\
+                            kubectl create secret generic $RELEASE_NAME-exchange-service-db \\
                               --from-literal=password=$DB_PASSWORD \\
                               -n prod --dry-run=client -o yaml | kubectl apply -f -
                             '''
                         }
                         withCredentials([string(credentialsId: 'NOTIFICATIONS_SERVICE_DB_PASSWORD', variable: 'DB_PASSWORD')]) {
                             sh '''
-                            kubectl create secret generic $RELEASE_NAME-$MODULE-db \\
+                            kubectl create secret generic $RELEASE_NAME-notifications-service-db \\
                               --from-literal=password=$DB_PASSWORD \\
                               -n prod --dry-run=client -o yaml | kubectl apply -f -
                             '''
                         }
                         withCredentials([string(credentialsId: 'ACCOUNTS_SERVICE_DB_PASSWORD', variable: 'DB_PASSWORD')]) {
                             sh '''
-                            kubectl create secret generic $RELEASE_NAME-$MODULE-db \\
+                            kubectl create secret generic $RELEASE_NAME-accounts-service-db \\
                               --from-literal=password=$DB_PASSWORD \\
                               -n prod --dry-run=client -o yaml | kubectl apply -f -
                             '''
