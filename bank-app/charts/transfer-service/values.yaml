@@ -103,6 +103,8 @@ postgresql:
     persistence:
       enabled: true
       size: 1Gi # Small size for example
+  commonLabels:
+    transfer-postgresql
 
 gateway:
   gatewayName: gateway

@@ -90,7 +90,8 @@ postgresql:
     persistence:
       enabled: true
       size: 1Gi # Small size for example
-
+  commonLabels:
+    exchange-postgresql
 gateway:
   gatewayName: gateway
   gatewayNamespace: nginx-gateway

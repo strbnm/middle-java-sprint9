@@ -35,6 +35,8 @@ accounts-service:
       persistence:
         enabled: true
         size: 1Gi # Small size for example
+    commonLabels:
+      accounts-postgresql
   gateway:
     gatewayName: gateway
     gatewayNamespace: nginx-gateway
@@ -79,6 +81,8 @@ cash-service:
       persistence:
         enabled: true
         size: 1Gi # Small size for example
+    commonLabels:
+      cash-postgresql
   gateway:
     gatewayName: gateway
     gatewayNamespace: nginx-gateway
@@ -126,6 +130,8 @@ transfer-service:
       persistence:
         enabled: true
         size: 1Gi # Small size for example
+    commonLabels:
+      transfer-postgresql
   gateway:
     gatewayName: gateway
     gatewayNamespace: nginx-gateway
@@ -181,6 +187,8 @@ exchange-service:
       persistence:
         enabled: true
         size: 1Gi # Small size for example
+    commonLabels:
+      exchange-postgresql
   gateway:
     gatewayName: gateway
     gatewayNamespace: nginx-gateway
@@ -234,6 +242,8 @@ notifications-service:
       persistence:
         enabled: true
         size: 1Gi # Small size for example
+    commonLabels:
+      notifications-postgresql
   gateway:
     gatewayName: gateway
     gatewayNamespace: nginx-gateway
