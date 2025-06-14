@@ -206,7 +206,7 @@ pipeline {
                             --from-file=keycloak/bank-app-realm.json \\
                             -n test --dry-run=client -o yaml | kubectl apply -f -
 
-                          helm upgrade --install keycloak bank-app/charts/keycloak \\
+                          elm upgrade --install keycloak oci://registry-1.docker.io/bitnamicharts/keycloak \\
                             -n test --create-namespace \\
                             --set extraVolumes[0].name=realm-config \\
                             --set extraVolumes[0].configMap.name=my-realm-config \\
@@ -231,7 +231,7 @@ pipeline {
                               --namespace test --create-namespace \\
                               --set image.repository=${DOCKER_REGISTRY}/${MODULE} \\
                               --set image.tag=${IMAGE_TAG} \\
-                              --set transferDatabase.auth.existingSecret=$RELEASE_NAME-$MODULE-db \\
+                              --set postgresql.auth.existingSecret=$RELEASE_NAME-$MODULE-db \\
                               --set imagePullSecrets[0].name=ghcr-registry
                             """
                         }
@@ -330,7 +330,7 @@ pipeline {
                             --from-file=keycloak/bank-app-realm.json \\
                             -n prod --dry-run=client -o yaml | kubectl apply -f -
 
-                          helm upgrade --install keycloak bank-app/charts/keycloak \\
+                          elm upgrade --install keycloak oci://registry-1.docker.io/bitnamicharts/keycloak \\
                             -n prod --create-namespace \\
                             --set extraVolumes[0].name=realm-config \\
                             --set extraVolumes[0].configMap.name=my-realm-config \\
@@ -355,7 +355,7 @@ pipeline {
                               --namespace prod --create-namespace \\
                               --set image.repository=${DOCKER_REGISTRY}/${MODULE} \\
                               --set image.tag=${IMAGE_TAG} \\
-                              --set transferDatabase.auth.existingSecret=$RELEASE_NAME-$MODULE-db \\
+                              --set postgresql.auth.existingSecret=$RELEASE_NAME-$MODULE-db \\
                               --set imagePullSecrets[0].name=ghcr-registry
                             """
                         }

@@ -23,8 +23,8 @@ accounts-service:
       - client_id: notifications-client
         scope: resource.readwrite
         secret_name: OAUTH2_CLIENT_SECRET_NOTIFICATIONS
-  # Configuration for the accountsDatabase (PostgreSQL dependency)
-  accountsDatabase:
+  # Configuration for the postgresql (PostgreSQL dependency)
+  postgresql:
     enabled: true
     fullnameOverride: accounts-postgresql
     # Override values from the official postgresql chart
@@ -67,8 +67,8 @@ cash-service:
       - client_id: blocker-client
         scope: resource.readwrite
         secret_name: OAUTH2_CLIENT_SECRET_BLOCKER
-  # Configuration for the cashDatabase (PostgreSQL dependency)
-  cashDatabase:
+  # Configuration for the postgresql (PostgreSQL dependency)
+  postgresql:
     enabled: true
     # Override values from the official postgresql chart
     fullnameOverride: cash-postgresql
@@ -114,8 +114,8 @@ transfer-service:
       - client_id: exchange-client
         scope: resource.readwrite
         secret_name: OAUTH2_CLIENT_SECRET_EXCHANGE
-  # Configuration for the transferDatabase (PostgreSQL dependency)
-  transferDatabase:
+  # Configuration for the postgresql (PostgreSQL dependency)
+  postgresql:
     enabled: true
     # Override values from the official postgresql chart
     fullnameOverride: transfer-postgresql
@@ -169,8 +169,8 @@ exchange-service:
     port: 8084
   config:
     service_db_user: exchange_user
-  # Configuration for the exchangeDatabase (PostgreSQL dependency)
-  exchangeDatabase:
+  # Configuration for the postgresql (PostgreSQL dependency)
+  postgresql:
     enabled: true
     # Override values from the official postgresql chart
     fullnameOverride: exchange-postgresql
@@ -222,8 +222,8 @@ notifications-service:
     port: 8086
   config:
     service_db_user: notifications_user
-  # Configuration for the notificationsDatabase (PostgreSQL dependency)
-  notificationsDatabase:
+  # Configuration for the postgresql (PostgreSQL dependency)
+  postgresql:
     enabled: true
     # Override values from the official postgresql chart
     fullnameOverride: notifications-postgresql

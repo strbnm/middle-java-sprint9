@@ -13,4 +13,4 @@ data:
 
     SERVER_PORT: {{ .Values.service.port | quote }}
     SPRING_APPLICATION_NAME: {{ include "cash-service.fullname" . }}
-    SERVICE_DB_HOST: {{ .Values.cashDatabase.fullnameOverride }}.{{ .Release.Namespace }}.svc.cluster.local
+    SERVICE_DB_HOST: {{ .Values.postgresql.fullnameOverride }}.{{ .Release.Namespace }}.svc.cluster.local

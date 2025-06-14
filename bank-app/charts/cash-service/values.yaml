@@ -88,8 +88,8 @@ config:
     - client_id: blocker-client
       scope: resource.readwrite
       secret_name: OAUTH2_CLIENT_SECRET_BLOCKER
-# Configuration for the cashDatabase (PostgreSQL dependency)
-cashDatabase:
+# Configuration for the postgresql (PostgreSQL dependency)
+postgresql:
   enabled: true
   # Override values from the official postgresql chart
   fullnameOverride: cash-postgresql

@@ -78,8 +78,8 @@ affinity: {}
 
 config:
   service_db_user: notifications_user
-# Configuration for the notificationsDatabase (PostgreSQL dependency)
-notificationsDatabase:
+# Configuration for the postgresql (PostgreSQL dependency)
+postgresql:
   enabled: true
   # Override values from the official postgresql chart
   fullnameOverride: notifications-postgresql
