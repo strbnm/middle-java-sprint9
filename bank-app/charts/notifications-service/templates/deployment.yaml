@@ -30,6 +30,15 @@ spec:
               until nc -z keycloak.{{ .Release.Namespace }}.svc.cluster.local 80; do
                 echo "Waiting for keycloak..."; sleep 3;
               done
+        - name: wait-for-postgresql
+          image: busybox
+          command:
+            - sh
+            - -c
+            - |
+              until nc -z {{ .Values.postgresql.fullnameOverride }}.{{ .Release.Namespace }}.svc.cluster.local 5432; do
+                echo "Waiting for PostgreSQL..."; sleep 3;
+              done
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
