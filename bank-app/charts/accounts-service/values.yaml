@@ -95,7 +95,7 @@ postgresql:
       enabled: true
       size: 1Gi # Small size for example
   commonLabels:
-    accounts-postgresql
+    component-name: accounts-postgresql
 
 gateway:
   gatewayName: gateway

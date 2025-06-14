@@ -101,7 +101,7 @@ postgresql:
       enabled: true
       size: 1Gi # Small size for example
   commonLabels:
-    cash-postgresql
+    component-name: cash-postgresql
 gateway:
   gatewayName: gateway
   gatewayNamespace: nginx-gateway

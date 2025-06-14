@@ -36,7 +36,7 @@ accounts-service:
         enabled: true
         size: 1Gi # Small size for example
     commonLabels:
-      accounts-postgresql
+      component-name: accounts-postgresql
   gateway:
     gatewayName: gateway
     gatewayNamespace: nginx-gateway
@@ -82,7 +82,7 @@ cash-service:
         enabled: true
         size: 1Gi # Small size for example
     commonLabels:
-      cash-postgresql
+      component-name: cash-postgresql
   gateway:
     gatewayName: gateway
     gatewayNamespace: nginx-gateway
@@ -131,7 +131,7 @@ transfer-service:
         enabled: true
         size: 1Gi # Small size for example
     commonLabels:
-      transfer-postgresql
+      component-name: transfer-postgresql
   gateway:
     gatewayName: gateway
     gatewayNamespace: nginx-gateway
@@ -188,7 +188,7 @@ exchange-service:
         enabled: true
         size: 1Gi # Small size for example
     commonLabels:
-      exchange-postgresql
+      component-name: exchange-postgresql
   gateway:
     gatewayName: gateway
     gatewayNamespace: nginx-gateway
@@ -243,7 +243,7 @@ notifications-service:
         enabled: true
         size: 1Gi # Small size for example
     commonLabels:
-      notifications-postgresql
+      component-name: notifications-postgresql
   gateway:
     gatewayName: gateway
     gatewayNamespace: nginx-gateway

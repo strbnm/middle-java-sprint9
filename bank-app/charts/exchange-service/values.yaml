@@ -91,7 +91,7 @@ postgresql:
       enabled: true
       size: 1Gi # Small size for example
   commonLabels:
-    exchange-postgresql
+    component-name: exchange-postgresql
 gateway:
   gatewayName: gateway
   gatewayNamespace: nginx-gateway

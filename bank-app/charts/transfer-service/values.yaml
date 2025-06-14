@@ -104,7 +104,7 @@ postgresql:
       enabled: true
       size: 1Gi # Small size for example
   commonLabels:
-    transfer-postgresql
+    component-name: transfer-postgresql
 
 gateway:
   gatewayName: gateway

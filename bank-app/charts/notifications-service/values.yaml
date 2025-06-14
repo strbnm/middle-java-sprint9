@@ -91,7 +91,7 @@ postgresql:
       enabled: true
       size: 1Gi # Small size for example
   commonLabels:
-    notifications-postgresql
+    component-name: notifications-postgresql
 gateway:
   gatewayName: gateway
   gatewayNamespace: nginx-gateway
