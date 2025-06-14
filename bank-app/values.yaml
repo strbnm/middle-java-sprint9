@@ -268,16 +268,6 @@ front-ui:
         path: /bank-app
 
 keycloak:
-  enabled: true
-  auth:
-    adminUser: admin
-    existingSecret:
-  extraVolumes:
-    - name: realm-config
-      configMap:
-        name: my-realm-config
-  extraVolumeMounts:
-    - name: realm-config
-      mountPath: /opt/bitnami/keycloak/data/import
-      readOnly: true
-  extraStartupArgs: "--import-realm"
+  enabled: false
+gateway:
+  enabled: false

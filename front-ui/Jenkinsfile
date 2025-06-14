@@ -6,7 +6,7 @@ pipeline {
     }
 
     parameters {
-        booleanParam(name: 'SKIP_DEPLOY', defaultValue: false, description: 'Skip deploy stage?')
+        booleanParam(name: 'SKIP_DEPLOY', defaultValue: true, description: 'Skip deploy stage?')
     }
 
     environment {
@@ -207,7 +207,7 @@ pipeline {
                         kubectl rollout status deployment/ngf-nginx-gateway-fabric -n nginx-gateway --timeout=60s
 
                         echo "Creating Gateway object..."
-                        kubectl apply -f bank-app/templates/_gateway.yaml
+                        helm template gateway ./bank-app -n nginx-gateway -s templates/gateway.yaml --set gateway.enabled=true | kubectl apply -n nginx-gateway -f -
                       else
                         echo "Nginx Gateway Fabric already installed — skipping config and upgrade."
                       fi
@@ -236,7 +236,7 @@ pipeline {
                             --set extraVolumeMounts[0].readOnly=true \\
                             --set extraStartupArgs="--import-realm"
 
-                          helm template keycloak ./bank-app -n test -s templates/_keycloak_httproute.yaml | kubectl apply -f -
+                          helm template keycloak ./bank-app -n test -s templates/keycloak_httproute.yaml --set keycloak.enabled=true | kubectl apply -f -
 
                         else
                           echo "Keycloak already installed — skipping config and upgrade."
@@ -351,7 +351,7 @@ pipeline {
                         kubectl rollout status deployment/ngf-nginx-gateway-fabric -n nginx-gateway --timeout=60s
 
                         echo "Creating Gateway object..."
-                        kubectl apply -f bank-app/templates/_gateway.yaml
+                        helm template gateway ./bank-app -n nginx-gateway -s templates/gateway.yaml --set gateway.enabled=true | kubectl apply -n nginx-gateway -f -
                       else
                         echo "Nginx Gateway Fabric already installed — skipping config and upgrade."
                       fi
@@ -380,7 +380,7 @@ pipeline {
                             --set extraVolumeMounts[0].readOnly=true \\
                             --set extraStartupArgs="--import-realm"
 
-                          helm template keycloak ./bank-app -n test -s templates/_keycloak_httproute.yaml | kubectl apply -f -
+                          helm template keycloak ./bank-app -n prod -s templates/keycloak_httproute.yaml --set keycloak.enabled=true | kubectl apply -f -
 
                         else
                           echo "Keycloak already installed — skipping config and upgrade."

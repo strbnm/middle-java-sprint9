@@ -250,7 +250,7 @@ pipeline {
                         kubectl rollout status deployment/ngf-nginx-gateway-fabric -n nginx-gateway --timeout=60s
 
                         echo "Creating Gateway object..."
-                        kubectl apply -f bank-app/templates/_gateway.yaml
+                        helm template gateway ./bank-app -n nginx-gateway -s templates/gateway.yaml --set gateway.enabled=true | kubectl apply -n nginx-gateway -f -
                       else
                         echo "Nginx Gateway Fabric already installed — skipping config and upgrade."
                       fi
@@ -264,14 +264,23 @@ pipeline {
                         # Используется только в учебном проекте!!! Создаем ConfigMap с конфигурацией realm из файла.
                         # В реальных проектах должно быть создано отдельно и конфигурация не должна храниться в VCS
 
-                        if ! kubectl get configmap my-realm-config >/dev/null 2>&1; then
-                          echo "Keycloak config not found, create..."
+                        if ! helm list -n test | grep -q keycloak; then
+                          echo "Keycloak not found, installing..."
 
                           kubectl create configmap my-realm-config \\
                             --from-file=keycloak/bank-app-realm.json \\
                             -n test --dry-run=client -o yaml | kubectl apply -f -
 
-                          helm template keycloak ./bank-app -n test -s templates/_keycloak_httproute.yaml | kubectl apply -f -
+                          helm upgrade --install keycloak bank-app/charts/keycloak \\
+                            -n test --create-namespace \\
+                            --set extraVolumes[0].name=realm-config \\
+                            --set extraVolumes[0].configMap.name=my-realm-config \\
+                            --set extraVolumeMounts[0].name=realm-config \\
+                            --set extraVolumeMounts[0].mountPath=/opt/bitnami/keycloak/data/import \\
+                            --set extraVolumeMounts[0].readOnly=true \\
+                            --set extraStartupArgs="--import-realm"
+
+                          helm template keycloak ./bank-app -n test -s templates/keycloak_httproute.yaml --set keycloak.enabled=true | kubectl apply -f -
 
                         else
                           echo "Keycloak already installed — skipping config and upgrade."
@@ -437,7 +446,7 @@ pipeline {
                         kubectl rollout status deployment/ngf-nginx-gateway-fabric -n nginx-gateway --timeout=60s
 
                         echo "Creating Gateway object..."
-                        kubectl apply -f bank-app/templates/_gateway.yaml
+                        helm template gateway ./bank-app -n nginx-gateway -s templates/gateway.yaml --set gateway.enabled=true | kubectl apply -n nginx-gateway -f -
                       else
                         echo "Nginx Gateway Fabric already installed — skipping config and upgrade."
                       fi
@@ -451,15 +460,26 @@ pipeline {
                         # Используется только в учебном проекте!!! Создаем ConfigMap с конфигурацией realm из файла.
                         # В реальных проектах должно быть создано отдельно и конфигурация не должна храниться в VCS
 
-                        if ! kubectl get configmap my-realm-config >/dev/null 2>&1; then
-                          echo "Keycloak config not found, create..."
+                        if ! helm list -n prod | grep -q keycloak; then
+                          echo "Keycloak not found, installing..."
 
                           kubectl create configmap my-realm-config \\
                             --from-file=keycloak/bank-app-realm.json \\
                             -n prod --dry-run=client -o yaml | kubectl apply -f -
 
+                          helm upgrade --install keycloak bank-app/charts/keycloak \\
+                            -n prod --create-namespace \\
+                            --set extraVolumes[0].name=realm-config \\
+                            --set extraVolumes[0].configMap.name=my-realm-config \\
+                            --set extraVolumeMounts[0].name=realm-config \\
+                            --set extraVolumeMounts[0].mountPath=/opt/bitnami/keycloak/data/import \\
+                            --set extraVolumeMounts[0].readOnly=true \\
+                            --set extraStartupArgs="--import-realm"
+
+                          helm template keycloak ./bank-app -n prod -s templates/keycloak_httproute.yaml --set keycloak.enabled=true | kubectl apply -f -
+
                         else
-                          echo "Keycloak config already installed — skipping config."
+                          echo "Keycloak already installed — skipping config and upgrade."
                         fi
                         """
                     }
