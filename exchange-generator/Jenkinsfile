@@ -185,7 +185,7 @@ pipeline {
                             --from-file=keycloak/bank-app-realm.json \\
                             -n test --dry-run=client -o yaml | kubectl apply -f -
 
-                          elm upgrade --install keycloak oci://registry-1.docker.io/bitnamicharts/keycloak \\
+                          helm upgrade --install keycloak oci://registry-1.docker.io/bitnamicharts/keycloak \\
                             -n test --create-namespace \\
                             --set extraVolumes[0].name=realm-config \\
                             --set extraVolumes[0].configMap.name=my-realm-config \\
@@ -287,7 +287,7 @@ pipeline {
                             --from-file=keycloak/bank-app-realm.json \\
                             -n prod --dry-run=client -o yaml | kubectl apply -f -
 
-                          elm upgrade --install keycloak oci://registry-1.docker.io/bitnamicharts/keycloak \\
+                          helm upgrade --install keycloak oci://registry-1.docker.io/bitnamicharts/keycloak \\
                             -n prod --create-namespace \\
                             --set extraVolumes[0].name=realm-config \\
                             --set extraVolumes[0].configMap.name=my-realm-config \\
