@@ -10,6 +10,9 @@ pipeline {
 
     stages {
         stage("Build, Test And Push Images") {
+            when {
+                branch 'master'
+            }
             stages {
                 stage('Accounts Service') {
                     steps {
@@ -126,6 +129,9 @@ pipeline {
             }
         }
         stage("Deploy All On TEST") {
+            when {
+                branch 'master'
+            }
             stages {
                 stage('Создание пространства имен') {
                     steps {
@@ -317,11 +323,17 @@ pipeline {
             }
         }
         stage('Ручное подтверждение для PROD') {
+            when {
+                branch 'master'
+            }
             steps {
                 input message: 'Установить в PROD?', ok: 'Да, установить'
             }
         }
         stage("Развертывание на PROD") {
+            when {
+                branch 'master'
+            }
             stages {
                 stage('Создание пространства имен') {
                     steps {
