@@ -303,7 +303,7 @@ pipeline {
                               --set exchange-service.image.repository=${DOCKER_REGISTRY}/exchange-service \\
                               --set exchange-service.image.tag=${env.EXCHANGE_BUILD_NUMBER} \\
                               --set exchange-generator.image.repository=${DOCKER_REGISTRY}/exchange-generator \\
-                              --set accounts-service.image.tag=${env.EXCHANGE_GENERATOR_BUILD_NUMBER} \\
+                              --set exchange-generator.image.tag=${env.EXCHANGE_GENERATOR_BUILD_NUMBER} \\
                               --set blocker-service.image.repository=${DOCKER_REGISTRY}/blocker-service \\
                               --set blocker-service.image.tag=${env.BLOCKER_BUILD_NUMBER} \\
                               --set notifications-service.image.repository=${DOCKER_REGISTRY}/notifications-service \\
@@ -499,7 +499,7 @@ pipeline {
                               --set exchange-service.image.repository=${DOCKER_REGISTRY}/exchange-service \\
                               --set exchange-service.image.tag=${env.EXCHANGE_BUILD_NUMBER} \\
                               --set exchange-generator.image.repository=${DOCKER_REGISTRY}/exchange-generator \\
-                              --set accounts-service.image.tag=${env.EXCHANGE_GENERATOR_BUILD_NUMBER} \\
+                              --set exchange-generator.image.tag=${env.EXCHANGE_GENERATOR_BUILD_NUMBER} \\
                               --set blocker-service.image.repository=${DOCKER_REGISTRY}/blocker-service \\
                               --set blocker-service.image.tag=${env.BLOCKER_BUILD_NUMBER} \\
                               --set notifications-service.image.repository=${DOCKER_REGISTRY}/notifications-service \\
