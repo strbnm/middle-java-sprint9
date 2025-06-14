@@ -3,11 +3,6 @@ kind: Gateway
 metadata:
   name: gateway
   namespace: nginx-gateway
-  labels:
-    app.kubernetes.io/managed-by: Helm
-  annotations:
-    meta.helm.sh/release-name: {{ .Release.Name }}
-    meta.helm.sh/release-namespace: {{ .Release.Namespace }}
 spec:
   gatewayClassName: nginx
   listeners:
