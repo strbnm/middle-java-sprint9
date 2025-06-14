@@ -302,18 +302,23 @@ pipeline {
                               --namespace test --create-namespace \\
                               --set accounts-service.image.repository=${DOCKER_REGISTRY}/accounts-service \\
                               --set accounts-service.image.tag=${env.ACCOUNTS_BUILD_NUMBER} \\
+                              --set accounts-service.postgresql.auth.existingSecret=$RELEASE_NAME-accounts-service-db \\
                               --set cash-service.image.repository=${DOCKER_REGISTRY}/cash-service \\
                               --set cash-service.image.tag=${env.CASH_BUILD_NUMBER} \\
+                              --set cash-service.postgresql.auth.existingSecret=$RELEASE_NAME-cash-service-db \\
                               --set transfer-service.image.repository=${DOCKER_REGISTRY}/transfer-service \\
                               --set transfer-service.image.tag=${env.TRANSFER_BUILD_NUMBER} \\
+                              --set transfer-service.postgresql.auth.existingSecret=$RELEASE_NAME-transfer-service-db \\
                               --set exchange-service.image.repository=${DOCKER_REGISTRY}/exchange-service \\
                               --set exchange-service.image.tag=${env.EXCHANGE_BUILD_NUMBER} \\
+                              --set exchange-service.postgresql.auth.existingSecret=$RELEASE_NAME-exchange-service-db \\
                               --set exchange-generator.image.repository=${DOCKER_REGISTRY}/exchange-generator \\
                               --set exchange-generator.image.tag=${env.EXCHANGE_GENERATOR_BUILD_NUMBER} \\
                               --set blocker-service.image.repository=${DOCKER_REGISTRY}/blocker-service \\
                               --set blocker-service.image.tag=${env.BLOCKER_BUILD_NUMBER} \\
                               --set notifications-service.image.repository=${DOCKER_REGISTRY}/notifications-service \\
                               --set notifications-service.image.tag=${env.NOTIFICATIONS_BUILD_NUMBER} \\
+                              --set notifications-service.postgresql.auth.existingSecret=$RELEASE_NAME-notifications-service-db \\
                               --set front-ui.image.repository=${DOCKER_REGISTRY}/front-ui \\
                               --set front-ui.image.tag=${env.FRONT_UI_BUILD_NUMBER}
                             """
@@ -504,18 +509,23 @@ pipeline {
                               --namespace prod --create-namespace \\
                               --set accounts-service.image.repository=${DOCKER_REGISTRY}/accounts-service \\
                               --set accounts-service.image.tag=${env.ACCOUNTS_BUILD_NUMBER} \\
+                              --set accounts-service.postgresql.auth.existingSecret=$RELEASE_NAME-accounts-service-db \\
                               --set cash-service.image.repository=${DOCKER_REGISTRY}/cash-service \\
                               --set cash-service.image.tag=${env.CASH_BUILD_NUMBER} \\
+                              --set cash-service.postgresql.auth.existingSecret=$RELEASE_NAME-cash-service-db \\
                               --set transfer-service.image.repository=${DOCKER_REGISTRY}/transfer-service \\
                               --set transfer-service.image.tag=${env.TRANSFER_BUILD_NUMBER} \\
+                              --set transfer-service.postgresql.auth.existingSecret=$RELEASE_NAME-transfer-service-db \\
                               --set exchange-service.image.repository=${DOCKER_REGISTRY}/exchange-service \\
                               --set exchange-service.image.tag=${env.EXCHANGE_BUILD_NUMBER} \\
+                              --set exchange-service.postgresql.auth.existingSecret=$RELEASE_NAME-exchange-service-db \\
                               --set exchange-generator.image.repository=${DOCKER_REGISTRY}/exchange-generator \\
                               --set exchange-generator.image.tag=${env.EXCHANGE_GENERATOR_BUILD_NUMBER} \\
                               --set blocker-service.image.repository=${DOCKER_REGISTRY}/blocker-service \\
                               --set blocker-service.image.tag=${env.BLOCKER_BUILD_NUMBER} \\
                               --set notifications-service.image.repository=${DOCKER_REGISTRY}/notifications-service \\
                               --set notifications-service.image.tag=${env.NOTIFICATIONS_BUILD_NUMBER} \\
+                              --set notifications-service.postgresql.auth.existingSecret=$RELEASE_NAME-notifications-service-db \\
                               --set front-ui.image.repository=${DOCKER_REGISTRY}/front-ui \\
                               --set front-ui.image.tag=${env.FRONT_UI_BUILD_NUMBER}
                             """
