@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kafka-topics-check
+  annotations:
+    "helm.sh/hook": test
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  restartPolicy: Never
+  containers:
+    - name: kafka-topic-checker
+      image: docker.io/bitnami/kafka:4.0.0-debian-12-r7
+      command:
+        - /bin/bash
+        - -c
+        - |
+          set -e
+          echo "Checking Kafka topics..."
+          existing_topics=$(kafka-topics.sh --bootstrap-server kafka.{{ .Release.Namespace }}.svc.cluster.local:9092 --list)
+
+          {{- range .Values.kafka.topics }}
+          if echo "$existing_topics" | grep -q "^{{ .name }}$"; then
+            echo "Topic {{ .name }} exists"
+          else
+            echo "Topic {{ .name }} is missing"
+            exit 1
+          fi
+          {{- end }}
+
+          echo "All expected topics are present"
