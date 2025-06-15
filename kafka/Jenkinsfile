@@ -21,10 +21,10 @@ pipeline {
         }
         stage('Запуск Helm Tests') {
             steps {
-                sh '''
+                sh """
                 echo "Тестируем, что созданы все топики..."
                 helm test ${env.RELEASE_NAME} -n ${env.NAMESPACE} --timeout 2m
-                '''
+                """
             }
         }
     }
