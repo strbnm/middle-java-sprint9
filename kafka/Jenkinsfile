@@ -1,0 +1,41 @@
+pipeline {
+    agent any
+
+    environment {
+        RELEASE_NAME    = 'kafka'
+        NAMESPACE       = 'kafka'
+    }
+
+    stages {
+        stage('Deploy Kafka') {
+            steps {
+                dir('kafka/kafka-cluster') {
+                    sh """
+                      echo "Установка kafka в кластер. Топики создаются в рамках post-install/post-upgrade Job."
+                      helm upgrade --install ${env.RELEASE_NAME} . \\
+                      -n ${env.NAMESPACE} --create-namespace \\
+                      --wait
+                    """
+                }
+            }
+        }
+        stage('Запуск Helm Tests') {
+            steps {
+                sh '''
+                echo "Тестируем, что созданы все топики..."
+                helm test ${env.RELEASE_NAME} -n ${env.NAMESPACE} --timeout 2m
+                '''
+            }
+        }
+    }
+
+    post {
+        failure {
+            echo 'Произошел сбой конвейера. Изучите журналы, приведенные выше.'
+        }
+        success {
+            echo 'Кластер Kafka был развернут и тесты прошли успешно.'
+        }
+    }
+}
+
