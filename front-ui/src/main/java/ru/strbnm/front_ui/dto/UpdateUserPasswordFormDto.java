@@ -5,5 +5,5 @@ import lombok.Data;
 @Data
 public class UpdateUserPasswordFormDto {
   private String password;
-  private String confirmPassword;
+  private String confirm_password;
 }

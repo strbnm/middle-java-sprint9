@@ -85,7 +85,7 @@ public class FrontUiController {
                 List<String> errors = new ArrayList<>();
                 if (!userLogin.equals(login)) errors.add("Логин не совпадает с логином аутентифицированного пользователя. Операция отклонена.");
                 if (form.getPassword().isEmpty()) errors.add("Пароль не может быть пустым");
-                if (!form.getPassword().equals(form.getConfirmPassword())) errors.add("Пароли должны совпадать");
+                if (!form.getPassword().equals(form.getConfirm_password())) errors.add("Пароли должны совпадать");
                 if (!errors.isEmpty()) {
                     session.getAttributes().put("passwordErrors", errors);
                     return Mono.just(new AccountOperationResponse(AccountOperationResponse.OperationStatusEnum.FAILED, errors));
