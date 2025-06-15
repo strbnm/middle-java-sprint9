@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ include "cash-service.fullname" . }}-test-httproute"
+  labels:
+    {{- include "cash-service.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+spec:
+  containers:
+    {{- if and .Values.gateway .Values.gateway.routes }}
+    {{- range $route := .Values.gateway.routes }}
+    - name: wget
+      image: busybox
+      command: ['wget']
+      args: ['http://gateway-nginx.nginx-gateway.svc.cluster.local{{ $route.path }}/actuator/health']
+    {{- end }}
+    {{- end }}
+  restartPolicy: Never
