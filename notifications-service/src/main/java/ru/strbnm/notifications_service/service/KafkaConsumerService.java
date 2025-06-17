@@ -37,6 +37,7 @@ public class KafkaConsumerService {
             idIsGroup = false
     )
     public Mono<Void> listen(NotificationMessage message) {
+        log.info(String.valueOf(message));
         return processNotification(message)
                 .doOnError(error -> log.error("Ошибка при сохранении уведомлений в БД", error))
                 .then();
