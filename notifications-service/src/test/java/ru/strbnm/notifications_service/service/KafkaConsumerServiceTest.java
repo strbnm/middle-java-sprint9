@@ -7,6 +7,8 @@ import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
+
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +32,7 @@ public class KafkaConsumerServiceTest {
     private KafkaTemplate<String, NotificationMessage> kafkaTemplate;
 
     @Test
-    void testProcessNotificationMessages() {
+    void testProcessNotificationMessages() throws ExecutionException, InterruptedException {
 
         NotificationMessage accountsNotificationMessage = NotificationMessage.builder()
                 .email("test@example.ru")
@@ -44,8 +46,8 @@ public class KafkaConsumerServiceTest {
                 .application("cash-service")
                 .build();
 
-        kafkaTemplate.send("accounts-notifications", UUID.randomUUID().toString(), accountsNotificationMessage);
-        kafkaTemplate.send("cash-notifications", UUID.randomUUID().toString(), cashNotificationMessage);
+        kafkaTemplate.send("accounts-notifications", UUID.randomUUID().toString(), accountsNotificationMessage).get();
+        kafkaTemplate.send("cash-notifications", UUID.randomUUID().toString(), cashNotificationMessage).get();
 
         // ждём, пока сообщения обработаются и попадут в БД
         Awaitility.await()
