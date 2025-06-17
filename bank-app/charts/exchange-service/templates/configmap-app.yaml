@@ -52,7 +52,15 @@ data:
       sql:
         init:
           mode: never
-
+      kafka:
+        bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+        consumer:
+          key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+          value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+          group-id: exchange-service-group
+          auto-offset-reset: latest
+          enable-auto-commit: false
+          properties.spring.json.trusted.packages: ru.strbnm.kafka
     application:
       notification:
         limit: 10

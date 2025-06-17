@@ -2,7 +2,7 @@
 global:
   domain: bankapp.local # Example domain for ingress
   spring_config_import: "file:/app/config/application.yml"
-
+  kafka_bootstrap_servers: "kafka-controller-0.kafka-controller-headless.kafka.svc.cluster.local:9092,kafka-controller-1.kafka-controller-headless.kafka.svc.cluster.local:9092"
 
 accounts-service:
   replicaCount: 1
@@ -19,10 +19,6 @@ accounts-service:
     port: 8080
   config:
     service_db_user: accounts_user
-    oauth2:
-      - client_id: notification-client
-        scope: resource.readwrite
-        secret_name: OAUTH2_CLIENT_SECRET_NOTIFICATIONS
   # Configuration for the postgresql (PostgreSQL dependency)
   postgresql:
     enabled: true
@@ -61,9 +57,6 @@ cash-service:
   config:
     service_db_user: cash_user
     oauth2:
-      - client_id: notification-client
-        scope: resource.readwrite
-        secret_name: OAUTH2_CLIENT_SECRET_NOTIFICATIONS
       - client_id: accounts-client
         scope: resource.readwrite
         secret_name: OAUTH2_CLIENT_SECRET_ACCOUNTS
@@ -108,9 +101,6 @@ transfer-service:
   config:
     service_db_user: transfer_user
     oauth2:
-      - client_id: notification-client
-        scope: resource.readwrite
-        secret_name: OAUTH2_CLIENT_SECRET_NOTIFICATIONS
       - client_id: accounts-client
         scope: resource.readwrite
         secret_name: OAUTH2_CLIENT_SECRET_ACCOUNTS
@@ -213,11 +203,6 @@ exchange-generator:
   service:
     type: ClusterIP
     port: 8085
-  config:
-    oauth2:
-      - client_id: exchange-client
-        scope: resource.readwrite
-        secret_name: OAUTH2_CLIENT_SECRET_EXCHANGE
 
 notifications-service:
   replicaCount: 1

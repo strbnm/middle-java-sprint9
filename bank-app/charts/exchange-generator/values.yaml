@@ -75,9 +75,3 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
-
-config:
-  oauth2:
-    - client_id: exchange-client
-      scope: resource.readwrite
-      secret_name: OAUTH2_CLIENT_SECRET_EXCHANGE

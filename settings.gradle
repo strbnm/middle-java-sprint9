@@ -1,4 +1,5 @@
 rootProject.name = 'bank-app'
+include 'api'
 include 'notifications-service'
 include 'exchange-service'
 include 'exchange-generator'
@@ -7,4 +8,5 @@ include 'accounts-service'
 include 'cash-service'
 include 'transfer-service'
 include 'front-ui'
+
 

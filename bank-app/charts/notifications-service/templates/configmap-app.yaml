@@ -4,12 +4,6 @@ metadata:
   name: {{ include "notifications-service.fullname" . }}-config
 data:
   application.yml: |
-    openapi:
-      service:
-        base-path: /
-    springdoc:
-      swagger-ui:
-        enabled: true
     management:
       endpoints:
         web:
@@ -31,6 +25,15 @@ data:
           resourceserver:
             jwt:
               issuer-uri: ${KEYCLOAK_ISSUER_URL}
+      kafka:
+        bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+        consumer:
+          key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+          value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+          group-id: notifications-service-group
+          auto-offset-reset: latest
+          enable-auto-commit: false
+          properties.spring.json.trusted.packages: ru.strbnm.kafka
       r2dbc:
         url: r2dbc:postgresql://${SERVICE_DB_HOST}:5432/app_db
         username: ${SERVICE_DB_USER}
@@ -52,7 +55,3 @@ data:
       sql:
         init:
           mode: never
-
-    application:
-      notification:
-        limit: 10

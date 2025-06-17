@@ -78,10 +78,6 @@ affinity: {}
 
 config:
   service_db_user: accounts_user
-  oauth2:
-    - client_id: notification-client
-      scope: resource.readwrite
-      secret_name: OAUTH2_CLIENT_SECRET_NOTIFICATIONS
 # Configuration for the postgresql (PostgreSQL dependency)
 postgresql:
   enabled: true

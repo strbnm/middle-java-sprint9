@@ -69,12 +69,15 @@ data:
         init:
           mode: never
       rest:
-        notifications-service:
-          url: ${GATEWAY_API_URL}/notifications-service
         blocker-service:
           url: ${GATEWAY_API_URL}/blocker-service
         accounts-service:
           url: ${GATEWAY_API_URL}/accounts-service
+      kafka:
+        bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+        producer:
+          key-serializer: org.apache.kafka.common.serialization.StringSerializer
+          value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
     application:
       notification:
         limit: 10
