@@ -6,14 +6,18 @@ spring:
     enabled: false
 
   rest:
-    notifications-service:
-      url: http://localhost:7091
     blocker-service:
       url: http://localhost:7092
     accounts-service:
       url: http://localhost:7093
     exchange-service:
       url: http://localhost:7094
+
+  kafka:
+    bootstrap-servers: kafka:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
 
 openapi:
   transferService:

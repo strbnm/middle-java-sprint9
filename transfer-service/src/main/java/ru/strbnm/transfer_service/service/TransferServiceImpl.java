@@ -4,16 +4,18 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
-
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.clients.producer.RecordMetadata;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClientRequestException;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
+import ru.strbnm.kafka.dto.NotificationMessage;
 import ru.strbnm.transfer_service.client.accounts.api.AccountsServiceApi;
 import ru.strbnm.transfer_service.client.accounts.domain.*;
 import ru.strbnm.transfer_service.client.blocker.api.BlockerServiceApi;
@@ -25,13 +27,11 @@ import ru.strbnm.transfer_service.client.exchange.domain.ConvertRequest;
 import ru.strbnm.transfer_service.client.exchange.domain.ConvertedAmount;
 import ru.strbnm.transfer_service.domain.TransferOperationRequest;
 import ru.strbnm.transfer_service.domain.TransferOperationResponse;
-import ru.strbnm.transfer_service.entity.OutboxNotification;
 import ru.strbnm.transfer_service.entity.TransferTransactionInfo;
 import ru.strbnm.transfer_service.exception.AccountsServiceException;
 import ru.strbnm.transfer_service.exception.BlockerServiceException;
 import ru.strbnm.transfer_service.exception.CashOperationException;
 import ru.strbnm.transfer_service.exception.UnavailabilityAccountsServiceException;
-import ru.strbnm.transfer_service.repository.OutboxNotificationRepository;
 import ru.strbnm.transfer_service.repository.TransferTransactionInfoRepository;
 
 @Slf4j
@@ -42,20 +42,19 @@ public class TransferServiceImpl implements TransferService {
   private final BlockerServiceApi blockerServiceApi;
   private final ExchangeServiceApi exchangeServiceApi;
   private final TransferTransactionInfoRepository transferTransactionInfoRepository;
-  private final OutboxNotificationRepository outboxNotificationRepository;
   private final ObjectMapper objectMapper = new ObjectMapper();
+  private final KafkaTemplate<String, NotificationMessage> kafkaTemplate;
 
   @Autowired
   public TransferServiceImpl(
           @Qualifier("accountsServiceApi") AccountsServiceApi accountsServiceApi,
           BlockerServiceApi blockerServiceApi, ExchangeServiceApi exchangeServiceApi,
-          TransferTransactionInfoRepository transferTransactionInfoRepository,
-          OutboxNotificationRepository outboxNotificationRepository) {
+          TransferTransactionInfoRepository transferTransactionInfoRepository, KafkaTemplate<String, NotificationMessage> kafkaTemplate) {
     this.accountsServiceApi = accountsServiceApi;
     this.blockerServiceApi = blockerServiceApi;
       this.exchangeServiceApi = exchangeServiceApi;
       this.transferTransactionInfoRepository = transferTransactionInfoRepository;
-    this.outboxNotificationRepository = outboxNotificationRepository;
+      this.kafkaTemplate = kafkaTemplate;
   }
 
     @Override
@@ -186,7 +185,7 @@ public class TransferServiceImpl implements TransferService {
                     info.setUpdatedAt(Instant.now().getEpochSecond());
 
                     return transferTransactionInfoRepository.save(info)
-                            .flatMap(saved -> saveOutboxNotification(saved.getId(), user.getEmail(), msg)
+                            .flatMap(saved -> sendNotification(saved.getId(), user.getEmail(), msg)
                                     .then(getTransferOperationResponse(
                                             isSuccess ? TransferOperationResponse.OperationStatusEnum.SUCCESS : TransferOperationResponse.OperationStatusEnum.FAILED,
                                             isSuccess ? List.of() : response.getErrors()
@@ -214,11 +213,11 @@ public class TransferServiceImpl implements TransferService {
                     return transferTransactionInfoRepository.save(info)
                             .flatMap(saved -> {
                                 if (saved.isSuccess()) {
-                                    return saveOutboxNotification(saved.getId(), fromUser.getEmail(), fromUserMessage)
-                                            .then(saveOutboxNotification(saved.getId(), toUser.getEmail(), toUserMessage))
+                                    return sendNotification(saved.getId(), fromUser.getEmail(), fromUserMessage)
+                                            .then(sendNotification(saved.getId(), toUser.getEmail(), toUserMessage))
                                             .then(getTransferOperationResponse(TransferOperationResponse.OperationStatusEnum.SUCCESS, List.of()));
                                 } else {
-                                    return saveOutboxNotification(saved.getId(), fromUser.getEmail(), fromUserMessage)
+                                    return sendNotification(saved.getId(), fromUser.getEmail(), fromUserMessage)
                                             .then(getTransferOperationResponse(TransferOperationResponse.OperationStatusEnum.FAILED, response.getErrors()));
                                 }
                             });
@@ -247,7 +246,7 @@ public class TransferServiceImpl implements TransferService {
         info.setSuccess(false);
         info.setUpdatedAt(Instant.now().getEpochSecond());
         return transferTransactionInfoRepository.save(info)
-                .flatMap(saved -> saveOutboxNotification(saved.getId(), user.getEmail(), message)
+                .flatMap(saved -> sendNotification(saved.getId(), user.getEmail(), message)
                         .then(getTransferOperationResponse(TransferOperationResponse.OperationStatusEnum.FAILED, errors)));
     }
 
@@ -260,7 +259,7 @@ public class TransferServiceImpl implements TransferService {
                 .flatMap(saved -> {
                     if (error instanceof CashOperationException err) return Mono.error(err);
                     String message = "Ошибка при обработке перевода: " + error.getMessage();
-                    return saveOutboxNotification(saved.getId(), info.getFromLogin(), message)
+                    return sendNotification(saved.getId(), info.getFromLogin(), message)
                             .then(getTransferOperationResponse(TransferOperationResponse.OperationStatusEnum.FAILED, List.of(message)));
                 });
     }
@@ -348,13 +347,24 @@ public class TransferServiceImpl implements TransferService {
                         new AccountsServiceException("Ошибка при получении данных клиента: " + ex.getMessage())));
     }
 
-    private Mono<Void> saveOutboxNotification(Long transactionId, String email, String message) {
-        OutboxNotification outboxNotification = OutboxNotification.builder()
-                .transactionId(transactionId)
-                .email(email)
-                .message(message)
-                .build();
-        return outboxNotificationRepository.save(outboxNotification).then();
+    private Mono<Void> sendNotification(Long userId, String email, String message) {
+        NotificationMessage notificationMessage =
+                NotificationMessage.builder()
+                        .email(email)
+                        .message(message)
+                        .application("transfer-service")
+                        .build();
+        log.info("sendNotification: {}", notificationMessage);
+        return Mono.fromFuture(() ->
+                        kafkaTemplate.send("transfer-notifications", notificationMessage)
+                )
+                .doOnSuccess(result -> {
+                    RecordMetadata metadata = result.getRecordMetadata();
+                    log.info("Сообщение отправлено. Topic = {}, partition = {}, offset = {}",
+                            metadata.topic(), metadata.partition(), metadata.offset());
+                })
+                .doOnError(e -> log.error("Ошибка при отправке сообщения", e))
+                .then(); // Mono<Void>
     }
 
     private Mono<TransferOperationResponse> getTransferOperationResponse(TransferOperationResponse.OperationStatusEnum status, List<String> errors) {

@@ -90,4 +90,10 @@
             <dropForeignKeyConstraint baseTableName="outbox_notifications" constraintName="FK_TRANSFER_TRANSACTION_OUTBOX_NOTIFICATION" />
         </rollback>
     </changeSet>
+    <changeSet id="1750084185006-1" author="strbnm (generated)" context="default,test">
+        <preConditions>
+            <tableExists tableName="outbox_notifications"/>
+        </preConditions>
+        <dropTable tableName="outbox_notifications"/>
+    </changeSet>
 </databaseChangeLog>

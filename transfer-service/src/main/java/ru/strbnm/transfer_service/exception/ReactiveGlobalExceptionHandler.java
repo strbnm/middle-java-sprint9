@@ -46,7 +46,6 @@ public class ReactiveGlobalExceptionHandler {
     @ExceptionHandler({
             UnavailabilityAccountsServiceException.class,
             UnavailabilityBlockerServiceException.class,
-            UnavailabilityNotificationsServiceException.class,
             UnavailabilityExchangeServiceException.class
     })
     public Mono<ResponseEntity<TransferErrorResponse>> handleCashOperationException(CashOperationException exception) {
