@@ -38,37 +38,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/ExchangeErrorResponse'
   /api/v1/rates:
-    post:
-      summary: Регистрация новых курсов конвертации
-      description: Производит сохранение новых курсов конвертации, полученных от Exchange Generator
-      operationId: createRates
-      tags:
-        - Exchange Service
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ExchangeRateRequest'
-      responses:
-        '201':
-          description: Успешно
-          content:
-            application/json:
-              schema:
-                type: string
-        '400':
-          description: Ошибочный запрос
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ExchangeErrorResponse'
-        '500':
-          description: Внутренняя ошибка сервера
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ExchangeErrorResponse'
     get:
       summary: Получение курсов конвертации валют
       description: Возвращает значение текущего курса конвертации валют
@@ -126,21 +95,6 @@ components:
           type: number
           format: double
           example: 1058,8
-
-    ExchangeRateRequest:
-      type: object
-      properties:
-        timestamp:
-          type: integer
-          format: int64
-          description: Unix timestamp в секундах, когда были сгенерированы курсы
-        rates:
-          type: array
-          items:
-            $ref: '#/components/schemas/Rate'
-      required:
-        - timestamp
-        - rates
 
     Rate:
       type: object
