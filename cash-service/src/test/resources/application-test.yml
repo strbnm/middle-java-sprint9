@@ -26,12 +26,22 @@ spring:
       mode: never
 
   rest:
-    notifications-service:
-      url: http://localhost:7084
     blocker-service:
       url: http://localhost:7085
     accounts-service:
       url: http://localhost:7086
+
+  kafka:
+    bootstrap-servers: kafka:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      group-id: notifications-service-group
+      auto-offset-reset: earliest
+      properties.spring.json.trusted.packages: ru.strbnm.kafka.*
 
 logging:
   level:

@@ -46,7 +46,6 @@ public class ReactiveGlobalExceptionHandler {
     @ExceptionHandler({
             UnavailabilityAccountsServiceException.class,
             UnavailabilityBlockerServiceException.class,
-            UnavailabilityNotificationsServiceException.class
     })
     public Mono<ResponseEntity<CashErrorResponse>> handleCashOperationException(CashOperationException exception) {
         log.error("Ошибка {}", exception.getMessage(), exception);

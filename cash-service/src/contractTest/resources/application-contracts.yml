@@ -6,13 +6,15 @@ spring:
     enabled: false
 
   rest:
-    notifications-service:
-      url: http://localhost:7081
     blocker-service:
       url: http://localhost:7082
     accounts-service:
       url: http://localhost:7083
-
+  kafka:
+    bootstrap-servers: kafka:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
 openapi:
   accountsService:
     base-path: /

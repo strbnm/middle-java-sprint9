@@ -14,6 +14,7 @@ import org.springframework.cloud.contract.stubrunner.spring.AutoConfigureStubRun
 import org.springframework.cloud.contract.stubrunner.spring.StubRunnerProperties;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.reactive.server.WebTestClient;
@@ -30,12 +31,16 @@ import static org.springframework.security.test.web.reactive.server.SecurityMock
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
     properties = {"spring.config.name=application-test"})
-@AutoConfigureWebTestClient
+@AutoConfigureWebTestClient(timeout = "36000")
 @AutoConfigureStubRunner(
-    ids = {"ru.strbnm:accounts-service:+:stubs:7086", "ru.strbnm:blocker-service:+:stubs:7085"},
+    ids = {
+            "ru.strbnm:accounts-service:+:stubs:7086",
+            "ru.strbnm:blocker-service:+:stubs:7085"
+    },
     stubsMode = StubRunnerProperties.StubsMode.REMOTE,
     repositoryRoot = "http://localhost:8081/repository/maven-public/,http://nexus:8081/repository/maven-public/")
 @Import(TestSecurityConfig.class)
+@EmbeddedKafka(topics = "cash-notifications")
 class CashControllerIntegrationTest {
 
   @Autowired private DatabaseClient databaseClient;

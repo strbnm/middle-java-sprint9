@@ -22,7 +22,7 @@ public class ContractVerifierTest extends BaseContractTest {
 			WebTestClientRequestSpecification request = given()
 					.header("Content-Type", "application/json")
 					.header("Accept", "application/json")
-					.body("{\"login\":\"test_user1\",\"currency\":\"RUB\",\"amount\":1000.0,\"action\":\"PUT\"}");
+					.body("{\"login\":\"test_user1\",\"currency\":\"RUB\",\"amount\":1000.0,\"action\":\"GET\"}");
 
 		// when:
 			WebTestClientResponse response = given().spec(request)

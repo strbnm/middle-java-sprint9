@@ -1,14 +1,20 @@
 package ru.strbnm.cash_service.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
+import java.time.Instant;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.clients.producer.RecordMetadata;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClientRequestException;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 import reactor.util.retry.Retry;
 import ru.strbnm.cash_service.client.accounts.api.AccountsServiceApi;
 import ru.strbnm.cash_service.client.accounts.domain.AccountCurrencyEnum;
@@ -22,17 +28,12 @@ import ru.strbnm.cash_service.client.blocker.domain.CheckTransactionResponse;
 import ru.strbnm.cash_service.domain.CashOperationRequest;
 import ru.strbnm.cash_service.domain.CashOperationResponse;
 import ru.strbnm.cash_service.entity.CashTransactionInfo;
-import ru.strbnm.cash_service.entity.OutboxNotification;
 import ru.strbnm.cash_service.exception.AccountsServiceException;
 import ru.strbnm.cash_service.exception.BlockerServiceException;
 import ru.strbnm.cash_service.exception.CashOperationException;
 import ru.strbnm.cash_service.exception.UnavailabilityAccountsServiceException;
 import ru.strbnm.cash_service.repository.CashTransactionInfoRepository;
-import ru.strbnm.cash_service.repository.OutboxNotificationRepository;
-
-import java.io.IOException;
-import java.time.Instant;
-import java.util.List;
+import ru.strbnm.kafka.dto.NotificationMessage;
 
 @Slf4j
 @Service
@@ -41,19 +42,19 @@ public class CashServiceImpl implements CashService {
   private final AccountsServiceApi accountsServiceApi;
   private final BlockerServiceApi blockerServiceApi;
   private final CashTransactionInfoRepository cashTransactionInfoRepository;
-  private final OutboxNotificationRepository outboxNotificationRepository;
+  private final KafkaTemplate<String, NotificationMessage> kafkaTemplate;
   private final ObjectMapper objectMapper = new ObjectMapper();
 
   @Autowired
   public CashServiceImpl(
-      @Qualifier("accountsServiceApi") AccountsServiceApi accountsServiceApi,
-      BlockerServiceApi blockerServiceApi,
-      CashTransactionInfoRepository cashTransactionInfoRepository,
-      OutboxNotificationRepository outboxNotificationRepository) {
+          @Qualifier("accountsServiceApi") AccountsServiceApi accountsServiceApi,
+          BlockerServiceApi blockerServiceApi,
+          CashTransactionInfoRepository cashTransactionInfoRepository,
+          KafkaTemplate<String, NotificationMessage> kafkaTemplate) {
     this.accountsServiceApi = accountsServiceApi;
     this.blockerServiceApi = blockerServiceApi;
     this.cashTransactionInfoRepository = cashTransactionInfoRepository;
-    this.outboxNotificationRepository = outboxNotificationRepository;
+    this.kafkaTemplate = kafkaTemplate;
   }
 
     @Override
@@ -108,7 +109,7 @@ public class CashServiceImpl implements CashService {
                     info.setUpdatedAt(Instant.now().getEpochSecond());
 
                     return cashTransactionInfoRepository.save(info)
-                            .flatMap(saved -> saveOutboxNotification(saved.getId(), user.getEmail(), msg)
+                            .flatMap(saved -> sendNotification(saved.getId(), user.getEmail(), msg)
                                     .then(getCashOperationResponse(
                                             isSuccess ? CashOperationResponse.OperationStatusEnum.SUCCESS : CashOperationResponse.OperationStatusEnum.FAILED,
                                             isSuccess ? List.of() : response.getErrors()
@@ -122,7 +123,7 @@ public class CashServiceImpl implements CashService {
         info.setSuccess(false);
         info.setUpdatedAt(Instant.now().getEpochSecond());
         return cashTransactionInfoRepository.save(info)
-                .flatMap(saved -> saveOutboxNotification(saved.getId(), user.getEmail(), message)
+                .flatMap(saved -> sendNotification(saved.getId(), user.getEmail(), message)
                         .then(getCashOperationResponse(CashOperationResponse.OperationStatusEnum.FAILED, errors)));
     }
 
@@ -135,7 +136,7 @@ public class CashServiceImpl implements CashService {
                 .flatMap(saved -> {
                     if (error instanceof CashOperationException err) return Mono.error(err);
                     String message = "Ошибка при обработке операции с наличными: " + error.getMessage();
-                    return saveOutboxNotification(saved.getId(), info.getLogin(), message)
+                    return sendNotification(saved.getId(), info.getLogin(), message)
                             .then(getCashOperationResponse(CashOperationResponse.OperationStatusEnum.FAILED, List.of(message)));
                 });
     }
@@ -221,13 +222,24 @@ public class CashServiceImpl implements CashService {
                         new AccountsServiceException("Ошибка при получении данных клиента: " + ex.getMessage())));
     }
 
-    private Mono<Void> saveOutboxNotification(Long transactionId, String email, String message) {
-        OutboxNotification outboxNotification = OutboxNotification.builder()
-                .transactionId(transactionId)
-                .email(email)
-                .message(message)
-                .build();
-        return outboxNotificationRepository.save(outboxNotification).then();
+    private Mono<Void> sendNotification(Long userId, String email, String message) {
+        NotificationMessage notificationMessage =
+                NotificationMessage.builder()
+                        .email(email)
+                        .message(message)
+                        .application("cash-service")
+                        .build();
+        log.info("sendNotification: {}", notificationMessage);
+        return Mono.fromFuture(() ->
+                        kafkaTemplate.send("cash-notifications", notificationMessage)
+                )
+                .doOnSuccess(result -> {
+                    RecordMetadata metadata = result.getRecordMetadata();
+                    log.info("Сообщение отправлено. Topic = {}, partition = {}, offset = {}",
+                            metadata.topic(), metadata.partition(), metadata.offset());
+                })
+                .doOnError(e -> log.error("Ошибка при отправке сообщения", e))
+                .then(); // Mono<Void>
     }
 
     private Mono<CashOperationResponse> getCashOperationResponse(CashOperationResponse.OperationStatusEnum status, List<String> errors) {
