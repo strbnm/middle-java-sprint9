@@ -8,72 +8,57 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Random;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Component;
-import org.springframework.web.reactive.function.client.WebClientRequestException;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
-import reactor.util.retry.Retry;
-import ru.strbnm.exchange_generator.client.api.ExchangeServiceApi;
-import ru.strbnm.exchange_generator.client.domain.ExchangeRateRequest;
-import ru.strbnm.exchange_generator.client.domain.Rate;
-import ru.strbnm.exchange_generator.exception.ExchangeRatePublicationException;
-import ru.strbnm.exchange_generator.exception.UnavailabilityPaymentServiceException;
+import java.util.UUID;
 
-@Component
+import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.clients.producer.RecordMetadata;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
+import ru.strbnm.kafka.dto.ExchangeRateMessage;
+import ru.strbnm.kafka.dto.Rate;
+
+@Slf4j
+@Service
 public class ExchangeGenerator {
 
-  private final ExchangeServiceApi exchangeServiceApi; // exchange service url
+  private final KafkaTemplate<String, ExchangeRateMessage> kafkaTemplate; // exchange service url
   private final Random random = new Random();
   private final MathContext mathContext = new MathContext(6, RoundingMode.HALF_UP);
 
   @Autowired
-  public ExchangeGenerator(ExchangeServiceApi exchangeServiceApi) {
-    this.exchangeServiceApi = exchangeServiceApi;
+  public ExchangeGenerator(KafkaTemplate<String, ExchangeRateMessage> kafkaTemplate) {
+      this.kafkaTemplate = kafkaTemplate;
   }
 
-  public Mono<String> generateAndSendRates() {
+  public void generateAndSendRates() {
     long timestamp = Instant.now().getEpochSecond();
-
+    UUID uuid = UUID.randomUUID();
     List<Rate> rates =
             List.of(
-                    new Rate("Рубль", "RUB", BigDecimal.ONE),
-                    new Rate("Доллар", "USD", round(randomInRange(0.01, 0.02))),
-                    new Rate("Юань", "CNY", round(randomInRange(0.1, 0.2))));
+                    Rate.builder().title("Рубль").name("RUB").value(BigDecimal.ONE).build(),
+                    Rate.builder().title("Доллар").name("USD").value(round(randomInRange(0.01, 0.02))).build(),
+                    Rate.builder().title("Юань").name("CNY").value(round(randomInRange(0.1, 0.2))).build());
 
-    ExchangeRateRequest request = new ExchangeRateRequest(timestamp);
-    request.setRates(rates);
+    ExchangeRateMessage message = ExchangeRateMessage.builder().timestamp(timestamp).rates(rates).build();
+    kafkaTemplate.send("exchange-rates", "actual_rates", message).whenComplete((result, e) -> {
+          if (e != null) {
+              log.error("Ошибка при отправке сообщения: {}", e.getMessage(), e);
+              return;
+          }
 
-    return exchangeServiceApi
-            .createRates(request)
-            .retryWhen(
-                    Retry.fixedDelay(Long.MAX_VALUE, Duration.ofSeconds(10)) // бесконечные повторы каждые 10 сек
-                            .filter(
-                                    throwable ->
-                                            (throwable instanceof WebClientResponseException
-                                                    && ((WebClientResponseException) throwable).getStatusCode()
-                                                    .is5xxServerError())
-                                                    || throwable instanceof WebClientRequestException)
-            )
-            .onErrorResume(
-                    ex -> {
-                      // Логируем и не прерываем весь поток
-                      System.err.println("Ошибка при публикации курсов валют: " + ex.getMessage());
-                      return Mono.empty();
-                    });
+          RecordMetadata metadata = result.getRecordMetadata();
+          log.info("Сообщение отправлено. Topic = {}, partition = {}, offset = {}",
+                  metadata.topic(), metadata.partition(), metadata.offset());
+      });  ;
   }
 
 
-  @PostConstruct
+  @Scheduled(fixedDelay = 1000)
   public void scheduleRateGeneration() {
-    Flux.interval(Duration.ofMinutes(2), Duration.ofSeconds(1))
-            .flatMap(tick -> generateAndSendRates())
-            .subscribe(
-                    success -> {},
-                    error -> System.err.println("Фатальная ошибка в генерации курсов: " + error.getMessage())
-            );
+      generateAndSendRates();
   }
 
   private BigDecimal round(double value) {
