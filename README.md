@@ -63,7 +63,7 @@ API на базе NGINX Gateway Fabric - API Gateway, Load Balancing, Service Di
 cd jenkins
 docker compose up -d --build
 ```
-
+  
 В Jenkins настроены Multibranch Pipeline отдельно для каждого сервиса и зонтичный Multibranch Pipeline для всего приложения:
 ![Перечень пайплайнов](docs/img.png)
 
