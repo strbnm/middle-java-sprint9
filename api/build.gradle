@@ -1,0 +1,30 @@
+plugins {
+    id("java-library")
+    id("org.springframework.boot") apply false
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+dependencies {
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+}
+
+tasks.named("jar") {
+    enabled = true
+}
+
+tasks.named("bootJar") {
+    enabled = false
+}
+
+// Отключаем задачи Spring Cloud Contract
+afterEvaluate {
+    tasks.matching { it.name.startsWith("contract") || it.name.contains("Contract") }.configureEach {
+        enabled = false
+    }
+}
