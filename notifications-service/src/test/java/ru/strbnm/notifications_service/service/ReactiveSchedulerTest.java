@@ -14,7 +14,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
-import ru.strbnm.notifications_service.domain.NotificationRequest;
 import ru.strbnm.notifications_service.entity.Notification;
 import ru.strbnm.notifications_service.repository.NotificationRepository;
 
@@ -38,7 +37,7 @@ class ReactiveSchedulerTest {
                 .id(1L)
                 .email("test1@example.ru")
                 .message("message1")
-                .application(NotificationRequest.ApplicationEnum.ACCOUNTS_SERVICE)
+                .application("accounts-service")
                 .isSent(false)
                 .build();
 
@@ -46,7 +45,7 @@ class ReactiveSchedulerTest {
                 .id(2L)
                 .email("test2@example.ru")
                 .message("message2")
-                .application(NotificationRequest.ApplicationEnum.CASH_SERVICE)
+                .application("cash-service")
                 .isSent(false)
                 .build();
 

@@ -12,7 +12,7 @@ import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 
 @Slf4j
-@Profile("!contracts & !test")
+@Profile("!test")
 @Configuration
 @EnableWebFluxSecurity
 @EnableReactiveMethodSecurity
@@ -26,8 +26,6 @@ public class WebSecurityConfig {
             exchange ->
                 exchange
                     .pathMatchers("/actuator/health/**", "/actuator/info").permitAll()
-                    .pathMatchers("/api/v1/notifications")
-                    .hasAuthority("SCOPE_resource.readwrite")
                     .anyExchange()
                     .authenticated())
         .csrf(ServerHttpSecurity.CsrfSpec::disable)
