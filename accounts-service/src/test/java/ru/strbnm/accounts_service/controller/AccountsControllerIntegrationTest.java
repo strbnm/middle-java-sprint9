@@ -8,6 +8,7 @@ import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWeb
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.reactive.server.WebTestClient;
@@ -29,8 +30,9 @@ import static org.springframework.security.test.web.reactive.server.SecurityMock
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
         properties = {"spring.config.name=application-test"})
-@AutoConfigureWebTestClient
+@AutoConfigureWebTestClient(timeout = "36000")
 @Import(TestSecurityConfig.class)
+@EmbeddedKafka(topics = "accounts-notifications")
 class AccountsControllerIntegrationTest {
 
     @Autowired

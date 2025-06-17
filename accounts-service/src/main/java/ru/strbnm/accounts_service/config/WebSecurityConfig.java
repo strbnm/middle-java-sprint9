@@ -38,24 +38,4 @@ public class WebSecurityConfig {
         .csrf(ServerHttpSecurity.CsrfSpec::disable)
         .build();
   }
-
-  @Bean
-  public ReactiveOAuth2AuthorizedClientManager authorizedClientManager(
-          ReactiveClientRegistrationRepository clientRegistrationRepository,
-          ReactiveOAuth2AuthorizedClientService authorizedClientService) {
-
-    ReactiveOAuth2AuthorizedClientProvider authorizedClientProvider =
-            ReactiveOAuth2AuthorizedClientProviderBuilder.builder()
-                    .clientCredentials()
-                    .refreshToken()
-                    .build();
-
-    AuthorizedClientServiceReactiveOAuth2AuthorizedClientManager authorizedClientManager =
-            new AuthorizedClientServiceReactiveOAuth2AuthorizedClientManager(
-                    clientRegistrationRepository, authorizedClientService);
-
-    authorizedClientManager.setAuthorizedClientProvider(authorizedClientProvider);
-
-    return authorizedClientManager;
-  }
 }

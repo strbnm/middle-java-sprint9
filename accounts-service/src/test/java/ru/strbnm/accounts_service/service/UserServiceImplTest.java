@@ -2,41 +2,52 @@ package ru.strbnm.accounts_service.service;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
+
 import liquibase.exception.LiquibaseException;
 import liquibase.integration.spring.SpringLiquibase;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.clients.consumer.Consumer;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.apache.kafka.common.TopicPartition;
 import org.junit.jupiter.api.*;
 import org.mapstruct.factory.Mappers;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.data.r2dbc.DataR2dbcTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Import;
+import org.springframework.kafka.core.ConsumerFactory;
+import org.springframework.kafka.test.context.EmbeddedKafka;
+import org.springframework.kafka.test.utils.KafkaTestUtils;
 import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.test.context.ActiveProfiles;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
-import ru.strbnm.accounts_service.config.LiquibaseConfig;
 import ru.strbnm.accounts_service.domain.*;
 import ru.strbnm.accounts_service.exception.AccountNotFoundForCurrencyException;
 import ru.strbnm.accounts_service.exception.UserAlreadyExistsException;
 import ru.strbnm.accounts_service.exception.UserNotFoundException;
 import ru.strbnm.accounts_service.mapper.UserMapper;
 import ru.strbnm.accounts_service.repository.AccountRepository;
-import ru.strbnm.accounts_service.repository.OutboxNotificationRepository;
 import ru.strbnm.accounts_service.repository.UserRepository;
+import ru.strbnm.kafka.dto.NotificationMessage;
 
 @Slf4j
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@DataR2dbcTest(properties = {"spring.config.name=application-test"})
-@Import({LiquibaseConfig.class, UserServiceImpl.class, UserServiceImplTest.TestConfig.class})
+@SpringBootTest
+@EmbeddedKafka(topics = "accounts-notifications")
 class UserServiceImplTest {
 
   @Autowired private DatabaseClient databaseClient;
@@ -44,9 +55,12 @@ class UserServiceImplTest {
 
   @Autowired private UserRepository userRepository;
   @Autowired private AccountRepository accountRepository;
-  @Autowired private OutboxNotificationRepository outboxNotificationRepository;
-
   @Autowired private UserService userService;
+
+    @Autowired
+    private ConsumerFactory<String, NotificationMessage> consumerFactory;
+
+    private Consumer<String, NotificationMessage> consumer;
 
   private static final String INIT_SCRIPT_PATH = "src/test/resources/scripts/INIT_STORE_RECORD.sql";
   private static final String CLEAN_SCRIPT_PATH =
@@ -56,6 +70,14 @@ class UserServiceImplTest {
   void setupSchema() throws LiquibaseException {
     liquibase.afterPropertiesSet(); // Запускаем Liquibase вручную
     databaseClient.sql("SELECT 1").fetch().rowsUpdated().block(); // Ждем завершения
+
+      consumer = consumerFactory.createConsumer();
+      consumer.subscribe(List.of("accounts-notifications"));
+  }
+
+  @AfterAll
+  void tearDown() {
+      if (consumer != null) {consumer.close();}
   }
 
   @BeforeEach
@@ -85,6 +107,7 @@ class UserServiceImplTest {
     }
   }
 
+  @Order(1)
   @Test
   void createUserOk_shouldReturnAccountOperationResponseWithSuccess() {
     UserRequest createUserRequestSuccess =
@@ -129,6 +152,19 @@ class UserServiceImplTest {
                   "Роль должна быть ROLE_CLIENT");
             })
         .verifyComplete();
+
+      // Проверяем, что в топик Kafka было отправлено сообщение
+      NotificationMessage expected = NotificationMessage.builder()
+              .email(createUserRequestSuccess.getEmail())
+              .message("Вы успешно зарегистрированы.")
+              .application("accounts-service")
+              .build();
+      ConsumerRecords<String, NotificationMessage> records = KafkaTestUtils.getRecords(consumer, Duration.ofSeconds(5));
+      NotificationMessage found = StreamSupport.stream(records.spliterator(), false)
+              .map(ConsumerRecord::value)
+              .filter(msg -> msg.equals(expected))
+              .findFirst()
+              .orElseThrow();
   }
 
   @Test
@@ -1203,4 +1239,5 @@ class UserServiceImplTest {
     }
 
   }
+
 }
