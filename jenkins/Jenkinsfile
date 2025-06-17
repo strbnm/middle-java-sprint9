@@ -1,6 +1,11 @@
 pipeline {
     agent any
 
+    parameters {
+        booleanParam(name: 'SKIP_DEPLOY', defaultValue: true, description: 'Skip deploy stage?')
+        booleanParam(name: 'SKIP_TEST', defaultValue: false, description: 'Skip test for build?')
+    }
+
     environment {
         RELEASE_NAME                        = 'bank-app'
 
@@ -19,7 +24,8 @@ pipeline {
                         script {
                             def childBuild = build job: 'accounts-service/master',
                                 parameters: [
-                                    booleanParam(name: 'SKIP_DEPLOY', value: true)
+                                    booleanParam(name: 'SKIP_DEPLOY', value: true),
+                                    booleanParam(name: 'SKIP_TEST', value: params.SKIP_TEST)
                                 ],
                                 propagate: true,
                                 wait: true
@@ -33,7 +39,8 @@ pipeline {
                         script {
                             def childBuild = build job: 'blocker-service/master',
                                 parameters: [
-                                    booleanParam(name: 'SKIP_DEPLOY', value: true)
+                                    booleanParam(name: 'SKIP_DEPLOY', value: true),
+                                    booleanParam(name: 'SKIP_TEST', value: params.SKIP_TEST)
                                 ],
                                 propagate: true,
                                 wait: true
@@ -47,7 +54,8 @@ pipeline {
                         script {
                             def childBuild = build job: 'cash-service/master',
                                 parameters: [
-                                    booleanParam(name: 'SKIP_DEPLOY', value: true)
+                                    booleanParam(name: 'SKIP_DEPLOY', value: true),
+                                    booleanParam(name: 'SKIP_TEST', value: params.SKIP_TEST)
                                 ],
                                 propagate: true,
                                 wait: true
@@ -61,7 +69,8 @@ pipeline {
                         script {
                             def childBuild = build job: 'transfer-service/master',
                                 parameters: [
-                                    booleanParam(name: 'SKIP_DEPLOY', value: true)
+                                    booleanParam(name: 'SKIP_DEPLOY', value: true),
+                                    booleanParam(name: 'SKIP_TEST', value: params.SKIP_TEST)
                                 ],
                                 propagate: true,
                                 wait: true
@@ -75,7 +84,8 @@ pipeline {
                         script {
                             def childBuild = build job: 'exchange-service/master',
                                 parameters: [
-                                    booleanParam(name: 'SKIP_DEPLOY', value: true)
+                                    booleanParam(name: 'SKIP_DEPLOY', value: true),
+                                    booleanParam(name: 'SKIP_TEST', value: params.SKIP_TEST)
                                 ],
                                 propagate: true,
                                 wait: true
@@ -89,7 +99,8 @@ pipeline {
                         script {
                             def childBuild = build job: 'exchange-generator/master',
                                 parameters: [
-                                    booleanParam(name: 'SKIP_DEPLOY', value: true)
+                                    booleanParam(name: 'SKIP_DEPLOY', value: true),
+                                    booleanParam(name: 'SKIP_TEST', value: params.SKIP_TEST)
                                 ],
                                 propagate: true,
                                 wait: true
@@ -103,7 +114,8 @@ pipeline {
                         script {
                             def childBuild = build job: 'notifications-service/master',
                                 parameters: [
-                                    booleanParam(name: 'SKIP_DEPLOY', value: true)
+                                    booleanParam(name: 'SKIP_DEPLOY', value: true),
+                                    booleanParam(name: 'SKIP_TEST', value: params.SKIP_TEST)
                                 ],
                                 propagate: true,
                                 wait: true
@@ -117,7 +129,8 @@ pipeline {
                         script {
                             def childBuild = build job: 'front-ui/master',
                                 parameters: [
-                                    booleanParam(name: 'SKIP_DEPLOY', value: true)
+                                    booleanParam(name: 'SKIP_DEPLOY', value: true),
+                                    booleanParam(name: 'SKIP_TEST', value: params.SKIP_TEST)
                                 ],
                                 propagate: true,
                                 wait: true

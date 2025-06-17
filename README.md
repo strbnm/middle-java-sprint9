@@ -1,12 +1,10 @@
 ### Микросервисное приложение «Банк»
 
-Микросервисное приложение «Банк» с использованием Spring Boot (реактивный стек) и паттернов микросервисной архитектуры, с настроенным CI/CD (Jenkins) и деплоем в k8s
-в рамках выполнения задания спринта 10 курса Middle-Java Яндекс.Практикум.
+Микросервисное приложение «Банк» с использованием Spring Boot (реактивный стек) и паттернов микросервисной архитектуры,
+с настроенным CI/CD (Jenkins), деплоем в k8s, с Apache Kafka для обмена сообщениями между микросервисами
+в рамках выполнения задания спринта 11 курса Middle-Java Яндекс.Практикум.
 - Spring Boot 3.4.4
 - Spring Security
-- Spring Cloud Gateway
-- Spring Cloud Config Server
-- Spring Cloud Netflix Eureka
 - Spring Cloud Contract
 - R2DBC
 - WebFlux
@@ -14,6 +12,8 @@
 - Lombok
 - Jenkins
 - K8s
+- Apache Kafka
+- Spring Kafka
 
 Приложение состоит из следующих микросервисов, реализованных в виде отдельных моделей многомодульного проекта:
 - [фронта (Front UI)](front-ui)
@@ -43,7 +43,8 @@ API на базе NGINX Gateway Fabric - API Gateway, Load Balancing, Service Di
 
 Сервис нотификации имитирует отправку сообщений на электронную почту, распечатывая их в лог.
 
-Отправка уведомлений в сервис нотификации микросервисами Accounts, Cash и Transfer осуществляется с использованием паттерна Transactional Outbox.
+Отправка уведомлений в сервис нотификации микросервисами Accounts, Cash и Transfer осуществляется через Apache Kafka.
+Передача курсов валют exchange-generator для обновления в exchange-service осуществляется через Apache Kafka.
 
 Конфигурации хранятся в виде шаблонов configmap и загружаются при развертывании через helm или обновляются через kubectl apply - паттерн External Configuration.
 
@@ -95,7 +96,6 @@ docker compose up -d --build
 127.0.0.1 bankapp.prod.local
 ```
 
-Генерация курсов валют начинается через 2 минуты после старта exchange-generator.
 
 #### Пользователи
 При первоначальной загрузке приложения создаются тестовые пользователи

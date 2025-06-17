@@ -4,6 +4,7 @@ pipeline {
 
     parameters {
         booleanParam(name: 'SKIP_DEPLOY', defaultValue: true, description: 'Skip deploy stage?')
+        booleanParam(name: 'SKIP_TEST', defaultValue: false, description: 'Skip test for build?')
     }
 
     environment {
@@ -43,7 +44,15 @@ pipeline {
         }
         stage("Сборка и тест") {
             steps {
-                sh './gradlew :$MODULE:clean :$MODULE:build -PnexusUsername=jenkins -PnexusPassword=$NEXUS_PASSWORD'
+                script {
+                    if (!params.SKIP_TEST) {
+                        echo "Сборка с тестами приложения"
+                        sh './gradlew :$MODULE:clean :$MODULE:build -PnexusUsername=jenkins -PnexusPassword=$NEXUS_PASSWORD'
+                    } else {
+                        echo "Сборка без тестов"
+                        sh './gradlew :$MODULE:clean :$MODULE:build -x test -x contractTest -PnexusUsername=jenkins -PnexusPassword=$NEXUS_PASSWORD'
+                    }
+                }
             }
         }
         stage('Генерация метрик') {
