@@ -16,7 +16,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import ru.strbnm.exchange_service.config.LiquibaseConfig;
-import ru.strbnm.exchange_service.domain.ExchangeRateRequest;
 import ru.strbnm.exchange_service.domain.Rate;
 import ru.strbnm.exchange_service.repository.ExchangeRateRepository;
 
@@ -114,29 +113,6 @@ class ExchangeServiceImplTest {
     Mono<BigDecimal> result = exchangeService.convert("CNY", "CNY", amount);
 
     StepVerifier.create(result).expectNext(amount).verifyComplete();
-  }
-
-  @Test
-  @DisplayName("Сохранение новых курсов (saveRates)")
-  void testSaveRates() {
-    ExchangeRateRequest request =
-        ExchangeRateRequest.builder()
-            .timestamp(1748000000L)
-            .rates(
-                List.of(
-                    new Rate("Рубль", "RUB", new BigDecimal("1")),
-                    new Rate("Доллар", "USD", new BigDecimal("0.015")),
-                    new Rate("Юань", "CNY", new BigDecimal("0.13"))))
-            .build();
-
-    Mono<Void> result = exchangeService.saveRates(request);
-
-    StepVerifier.create(result).verifyComplete();
-
-    // Проверяем, что новые курсы добавились
-    StepVerifier.create(exchangeRateRepository.findByCurrencyCode("USD"))
-        .expectNextMatches(rate -> rate.getRateToRub().equals(new BigDecimal("0.01500000")))
-        .verifyComplete();
   }
 
   @Test

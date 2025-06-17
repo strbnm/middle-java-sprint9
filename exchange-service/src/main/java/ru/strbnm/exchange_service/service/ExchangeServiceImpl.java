@@ -7,7 +7,6 @@ import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import ru.strbnm.exchange_service.domain.ExchangeRateRequest;
 import ru.strbnm.exchange_service.domain.Rate;
 import ru.strbnm.exchange_service.entity.ExchangeRate;
 import ru.strbnm.exchange_service.repository.ExchangeRateRepository;
@@ -59,24 +58,6 @@ public class ExchangeServiceImpl implements ExchangeService {
 
   private BigDecimal round(BigDecimal value) {
     return value.setScale(4, RoundingMode.HALF_UP);
-  }
-
-  @Override
-  public Mono<Void> saveRates(ExchangeRateRequest rateRequest) {
-    return exchangeRateRepository
-        .deleteAll()
-        .thenMany(
-            Flux.fromIterable(rateRequest.getRates())
-                .map(
-                    rate ->
-                        ExchangeRate.builder()
-                            .title(rate.getTitle())
-                            .currencyCode(rate.getName())
-                            .rateToRub(rate.getValue())
-                            .createdAt(rateRequest.getTimestamp())
-                            .build()))
-        .transform(exchangeRateRepository::saveAll)
-        .then();
   }
 
   @Override

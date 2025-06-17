@@ -12,7 +12,7 @@ import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 
 @Slf4j
-@Profile("!contracts & !test")
+@Profile("!contracts & !test & !kafka_test")
 @Configuration
 @EnableWebFluxSecurity
 @EnableReactiveMethodSecurity

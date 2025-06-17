@@ -16,7 +16,6 @@ import reactor.core.publisher.Mono;
 import ru.strbnm.exchange_service.api.ExchangeServiceApi;
 import ru.strbnm.exchange_service.domain.ConvertRequest;
 import ru.strbnm.exchange_service.domain.ConvertedAmount;
-import ru.strbnm.exchange_service.domain.ExchangeRateRequest;
 import ru.strbnm.exchange_service.domain.Rate;
 import ru.strbnm.exchange_service.service.ExchangeService;
 
@@ -47,22 +46,6 @@ public class ExchangeRatesController implements ExchangeServiceApi {
                     amount ->
                         Mono.just(
                             ResponseEntity.ok(ConvertedAmount.builder().amount(amount).build()))));
-  }
-
-  @RequestMapping(
-      method = RequestMethod.POST,
-      value = "/api/v1/rates",
-      produces = {"application/json"},
-      consumes = {"application/json"})
-  public Mono<ResponseEntity<String>> createRates(
-      @Parameter(name = "ExchangeRateRequest", description = "", required = true)
-          @Valid
-          @RequestBody
-          Mono<ExchangeRateRequest> exchangeRateRequest,
-      @Parameter(hidden = true) final ServerWebExchange exchange) {
-    return exchangeRateRequest
-        .flatMap(exchangeService::saveRates)
-        .thenReturn(ResponseEntity.status(HttpStatus.CREATED).body("Success"));
   }
 
   @CrossOrigin(origins = {"http://bankapp.test.local", "http://bankapp.prod.local"})

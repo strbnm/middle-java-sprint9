@@ -10,7 +10,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @Configuration
 @EnableTransactionManagement
-@Profile({"test"})
+@Profile({"test", "kafka_test"})
 public class TestConfig {
 
     @Bean

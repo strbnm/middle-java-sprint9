@@ -13,7 +13,6 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.strbnm.exchange_service.config.ContractTestSecurityConfig;
-import ru.strbnm.exchange_service.domain.ExchangeRateRequest;
 import ru.strbnm.exchange_service.domain.Rate;
 import ru.strbnm.exchange_service.service.ExchangeService;
 
@@ -41,7 +40,6 @@ public abstract class BaseContractTest {
     when(exchangeService.convert("USD", "USD", BigDecimal.valueOf(1000.0))).thenReturn(Mono.just(BigDecimal.valueOf(1000)));
     when(exchangeService.convert("CNY", "CNY", BigDecimal.valueOf(1000.0))).thenReturn(Mono.just(BigDecimal.valueOf(1000)));
     when(exchangeService.convert("RUB", "CNY", BigDecimal.valueOf(200000.0))).thenReturn(Mono.just(BigDecimal.valueOf(22000)));
-    when(exchangeService.saveRates(any(ExchangeRateRequest.class))).thenReturn(Mono.empty());
     when(exchangeService.getRates()).thenReturn(Flux.just(
             Rate.builder()
                     .title("Юань")

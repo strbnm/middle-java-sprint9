@@ -27,7 +27,7 @@ import ru.strbnm.exchange_service.repository.ExchangeRateRepository;
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
     properties = {"spring.config.name=application-test"})
-@AutoConfigureWebTestClient
+@AutoConfigureWebTestClient(timeout = "36000")
 @Import(TestSecurityConfig.class)
 public class ExchangeControllerIntegrationTest {
 
@@ -104,54 +104,6 @@ public class ExchangeControllerIntegrationTest {
         .exchange()
         .expectStatus()
         .isUnauthorized();
-  }
-
-  @Test
-  void testCreateRates_shouldUpdateRatesInDatabaseAndReturnSuccess() {
-    StepVerifier.create(exchangeRateRepository.findByCurrencyCode("USD"))
-            .assertNext(usdCurrency -> {
-              assertNotNull(usdCurrency, "Объект не должен быть null.");
-              assertNotEquals(
-                      new BigDecimal("0.01300000"),
-                      usdCurrency.getRateToRub(),
-                      "Значение поля rate_to_rub не должно быть равно '0.01300000'.");
-              assertNotEquals(
-                      "Доллар тест",
-                      usdCurrency.getTitle(),
-                      "Значение поля title не должно быть равно 'Доллар тест'");
-            })
-            .verifyComplete();
-
-    webTestClient
-        .mutateWith(mockJwt())
-        .post()
-        .uri("/api/v1/rates")
-        .contentType(MediaType.APPLICATION_JSON)
-        .bodyValue(
-            "{\"timestamp\":1790988908,\"rates\":[{\"title\":\"Доллар тест\",\"name\":\"USD\",\"value\":0.013},{\"title\":\"Юань\",\"name\":\"CNY\",\"value\":0.13},{\"title\":\"Рубль\",\"name\":\"RUB\",\"value\":1.0}]}")
-        .exchange()
-        .expectStatus()
-        .isCreated()
-        .expectBody(String.class)
-        .value(
-            response -> {
-              assertNotNull(response);
-              assertEquals("Success", response);
-            });
-
-    StepVerifier.create(exchangeRateRepository.findByCurrencyCode("USD"))
-            .assertNext(usdCurrency -> {
-              assertNotNull(usdCurrency, "Объект не должен быть null.");
-              assertEquals(
-                      new BigDecimal("0.01300000"),
-                      usdCurrency.getRateToRub(),
-                      "Значение поля rate_to_rub должно быть равно '0.01300000'.");
-              assertEquals(
-                      "Доллар тест",
-                      usdCurrency.getTitle(),
-                      "Значение поля title должно быть равно 'Доллар тест'");
-            })
-            .verifyComplete();
   }
 
   private Mono<Void> executeSqlScript(String scriptPath) {
