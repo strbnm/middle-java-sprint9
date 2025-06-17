@@ -25,7 +25,8 @@ spec:
               --create --if-not-exists \
               --replication-factor {{ .replicationFactor }} \
               --partitions {{ .partitions }} \
-              --topic {{ .name }} \
+              --topic {{ .name }}{{- if .minInsyncReplicas }} \
               --config min.insync.replicas={{ .minInsyncReplicas }}
+              {{- end }}
               {{- end }}
               echo "Done."

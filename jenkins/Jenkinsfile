@@ -2,7 +2,6 @@ pipeline {
     agent any
 
     parameters {
-        booleanParam(name: 'SKIP_DEPLOY', defaultValue: true, description: 'Skip deploy stage?')
         booleanParam(name: 'SKIP_TEST', defaultValue: false, description: 'Skip test for build?')
     }
 
