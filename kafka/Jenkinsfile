@@ -10,7 +10,7 @@ pipeline {
         stage('Deploy Kafka') {
             steps {
                 dir('kafka') {
-                    sh """
+                    sh '''
                     echo "Установка kafka в кластер"
                     if ! kubectl get namespace | grep kafka; then
                         kubectl create namespace kafka
@@ -39,7 +39,7 @@ pipeline {
                             echo "Все KafkaTopic объекты готовы"
                         fi
                     fi
-                    """
+                    '''
                 }
             }
         }
