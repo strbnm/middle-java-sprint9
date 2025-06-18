@@ -356,7 +356,7 @@ public class TransferServiceImpl implements TransferService {
                         .build();
         log.info("sendNotification: {}", notificationMessage);
         return Mono.fromFuture(() ->
-                        kafkaTemplate.send("transfer-notifications", notificationMessage)
+                        kafkaTemplate.send("notifications", notificationMessage)
                 )
                 .doOnSuccess(result -> {
                     RecordMetadata metadata = result.getRecordMetadata();

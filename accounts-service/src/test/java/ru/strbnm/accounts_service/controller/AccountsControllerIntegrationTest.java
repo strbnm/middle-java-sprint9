@@ -32,7 +32,7 @@ import static org.springframework.security.test.web.reactive.server.SecurityMock
         properties = {"spring.config.name=application-test"})
 @AutoConfigureWebTestClient(timeout = "36000")
 @Import(TestSecurityConfig.class)
-@EmbeddedKafka(topics = "accounts-notifications")
+@EmbeddedKafka(topics = "notifications")
 class AccountsControllerIntegrationTest {
 
     @Autowired

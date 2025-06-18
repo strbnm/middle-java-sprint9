@@ -40,7 +40,7 @@ import static org.springframework.security.test.web.reactive.server.SecurityMock
     stubsMode = StubRunnerProperties.StubsMode.REMOTE,
     repositoryRoot = "http://localhost:8081/repository/maven-public/,http://nexus:8081/repository/maven-public/")
 @Import(TestSecurityConfig.class)
-@EmbeddedKafka(topics = "cash-notifications")
+@EmbeddedKafka(topics = "notifications")
 class CashControllerIntegrationTest {
 
   @Autowired private DatabaseClient databaseClient;

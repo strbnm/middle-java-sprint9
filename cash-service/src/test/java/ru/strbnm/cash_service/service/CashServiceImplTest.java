@@ -51,7 +51,7 @@ import ru.strbnm.kafka.dto.NotificationMessage;
         stubsMode = StubRunnerProperties.StubsMode.REMOTE,
     repositoryRoot = "http://localhost:8081/repository/maven-public/,http://nexus:8081/repository/maven-public/"
 )
-@EmbeddedKafka(topics = "cash-notifications")
+@EmbeddedKafka(topics = "notifications")
 class CashServiceImplTest {
 
   @Autowired private DatabaseClient databaseClient;
@@ -73,7 +73,7 @@ class CashServiceImplTest {
     databaseClient.sql("SELECT 1").fetch().rowsUpdated().block(); // Ждем завершения
 
       consumer = consumerFactory.createConsumer();
-      consumer.subscribe(List.of("cash-notifications"));
+      consumer.subscribe(List.of("notifications"));
   }
 
     @AfterAll

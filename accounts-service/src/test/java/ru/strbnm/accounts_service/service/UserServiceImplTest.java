@@ -47,7 +47,7 @@ import ru.strbnm.kafka.dto.NotificationMessage;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @SpringBootTest
-@EmbeddedKafka(topics = "accounts-notifications")
+@EmbeddedKafka(topics = "notifications")
 class UserServiceImplTest {
 
   @Autowired private DatabaseClient databaseClient;
@@ -72,7 +72,7 @@ class UserServiceImplTest {
     databaseClient.sql("SELECT 1").fetch().rowsUpdated().block(); // Ждем завершения
 
       consumer = consumerFactory.createConsumer();
-      consumer.subscribe(List.of("accounts-notifications"));
+      consumer.subscribe(List.of("notifications"));
   }
 
   @AfterAll

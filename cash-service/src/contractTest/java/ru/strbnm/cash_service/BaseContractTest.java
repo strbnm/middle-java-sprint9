@@ -32,7 +32,7 @@ import ru.strbnm.cash_service.repository.CashTransactionInfoRepository;
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
     properties = {"spring.config.name=application-contracts"})
-@EmbeddedKafka(topics = "cash-notifications")
+@EmbeddedKafka(topics = "notifications")
 public abstract class BaseContractTest {
 
   @Autowired protected WebTestClient webTestClient;

@@ -231,7 +231,7 @@ public class CashServiceImpl implements CashService {
                         .build();
         log.info("sendNotification: {}", notificationMessage);
         return Mono.fromFuture(() ->
-                        kafkaTemplate.send("cash-notifications", notificationMessage)
+                        kafkaTemplate.send("notifications", notificationMessage)
                 )
                 .doOnSuccess(result -> {
                     RecordMetadata metadata = result.getRecordMetadata();

@@ -53,7 +53,7 @@ import ru.strbnm.transfer_service.repository.TransferTransactionInfoRepository;
         stubsMode = StubRunnerProperties.StubsMode.REMOTE,
     repositoryRoot = "http://localhost:8081/repository/maven-public/,http://nexus:8081/repository/maven-public/"
 )
-@EmbeddedKafka(topics = "transfer-notifications")
+@EmbeddedKafka(topics = "notifications")
 class TransferServiceImplTest {
 
   @Autowired private DatabaseClient databaseClient;
@@ -76,7 +76,7 @@ class TransferServiceImplTest {
     databaseClient.sql("SELECT 1").fetch().rowsUpdated().block(); // Ждем завершения
 
       consumer = consumerFactory.createConsumer();
-      consumer.subscribe(List.of("transfer-notifications"));
+      consumer.subscribe(List.of("notifications"));
   }
 
     @AfterAll

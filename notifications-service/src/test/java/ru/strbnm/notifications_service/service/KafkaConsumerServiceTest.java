@@ -22,7 +22,7 @@ import ru.strbnm.notifications_service.repository.NotificationRepository;
 
 @ActiveProfiles("test")
 @SpringBootTest
-@EmbeddedKafka(topics = {"accounts-notifications", "cash-notifications", "transfer-notifications"})
+@EmbeddedKafka(topics = {"notifications"})
 public class KafkaConsumerServiceTest {
 
     @Autowired
@@ -46,8 +46,8 @@ public class KafkaConsumerServiceTest {
                 .application("cash-service")
                 .build();
 
-        kafkaTemplate.send("accounts-notifications", UUID.randomUUID().toString(), accountsNotificationMessage).get();
-        kafkaTemplate.send("cash-notifications", UUID.randomUUID().toString(), cashNotificationMessage).get();
+        kafkaTemplate.send("notifications", UUID.randomUUID().toString(), accountsNotificationMessage).get();
+        kafkaTemplate.send("notifications", UUID.randomUUID().toString(), cashNotificationMessage).get();
 
         // ждём, пока сообщения обработаются и попадут в БД
         Awaitility.await()

@@ -167,7 +167,7 @@ public class UserServiceImpl implements UserService {
             .build();
     log.info("sendNotification: {}", notificationMessage);
     return Mono.fromFuture(() ->
-                    kafkaTemplate.send("accounts-notifications", notificationMessage)
+                    kafkaTemplate.send("notifications", notificationMessage)
             )
             .doOnSuccess(result -> {
               RecordMetadata metadata = result.getRecordMetadata();

@@ -33,7 +33,7 @@ import ru.strbnm.transfer_service.repository.TransferTransactionInfoRepository;
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
     properties = {"spring.config.name=application-contracts"})
-@EmbeddedKafka(topics = "transfer-notifications")
+@EmbeddedKafka(topics = "notifications")
 public abstract class BaseContractTest {
 
   @Autowired protected WebTestClient webTestClient;
