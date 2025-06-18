@@ -59,8 +59,8 @@ data:
           value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
           group-id: exchange-service-group
           auto-offset-reset: latest
-          enable-auto-commit: false
-          properties.spring.json.trusted.packages: ru.strbnm.kafka
+          enable-auto-commit: none
+          properties.spring.json.trusted.packages: ru.strbnm.kafka.*
     application:
       notification:
         limit: 10

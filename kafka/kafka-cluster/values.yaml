@@ -28,3 +28,4 @@ kafka:
     - name: exchange-rates
       partitions: 1
       replicationFactor: 2
+      minInsyncReplicas: 2

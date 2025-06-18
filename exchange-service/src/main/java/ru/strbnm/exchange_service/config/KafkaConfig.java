@@ -21,30 +21,4 @@ import java.util.List;
 @Configuration
 public class KafkaConfig {
 
-    @Bean
-    public ConsumerAwareRebalanceListener lastMessageSeeker() {
-        return new ConsumerAwareRebalanceListener() {
-            @Override
-            public void onPartitionsAssigned(Consumer<?, ?> consumer, Collection<TopicPartition> partitions) {
-                for (TopicPartition partition : partitions) {
-                    consumer.seekToEnd(List.of(partition));
-                    long position = consumer.position(partition);
-                    long seekOffset = (position > 0) ? position - 1 : 0;
-                    consumer.seek(partition, seekOffset);
-                    log.info("Seek to last existing record at offset {} for {}", seekOffset, partition);
-                }
-            }
-        };
-    }
-
-
-    @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, ExchangeRateMessage> kafkaListenerContainerFactory(
-            ConsumerFactory<String, ExchangeRateMessage> consumerFactory,
-            ConsumerAwareRebalanceListener rebalanceListener) {
-        ConcurrentKafkaListenerContainerFactory<String, ExchangeRateMessage> factory = new ConcurrentKafkaListenerContainerFactory<>();
-        factory.setConsumerFactory(consumerFactory);
-        factory.getContainerProperties().setConsumerRebalanceListener(rebalanceListener);
-        return factory;
-    }
 }
