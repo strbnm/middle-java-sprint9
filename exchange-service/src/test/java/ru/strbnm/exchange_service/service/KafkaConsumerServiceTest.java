@@ -59,9 +59,10 @@ public class KafkaConsumerServiceTest {
                     .build();
 
         log.info("Отправка сообщений в топик");
-        kafkaTemplate.send("exchange-rates", "actual-rates", exchangeRateMessage1).get();
-        kafkaTemplate.send("exchange-rates", "actual-rates", exchangeRateMessage2).get();
-
+        var result1 = kafkaTemplate.send("exchange-rates", "actual-rates", exchangeRateMessage1).get();
+        log.info("Отправка сообщения в топик {} партицию {} смещение {}", result1.getRecordMetadata().topic(), result1.getRecordMetadata().partition(), result1.getRecordMetadata().offset());
+        var result2 =kafkaTemplate.send("exchange-rates", "actual-rates", exchangeRateMessage2).get();
+        log.info("Отправка сообщения в топик {} партицию {} смещение {}", result2.getRecordMetadata().topic(), result2.getRecordMetadata().partition(), result2.getRecordMetadata().offset());
         // ждём, пока сообщения обработаются и попадут в БД
         Awaitility.await()
                 .atMost(Duration.ofSeconds(10))
