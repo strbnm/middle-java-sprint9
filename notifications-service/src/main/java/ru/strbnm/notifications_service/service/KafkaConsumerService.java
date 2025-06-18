@@ -27,11 +27,11 @@ public class KafkaConsumerService {
         this.notificationRepository = notificationRepository;
     }
 
-    @RetryableTopic(
-            backoff = @Backoff(delay = 1000, multiplier = 2, maxDelay = 5000),
-            dltTopicSuffix = "-for-analys-dlt",
-            dltStrategy = DltStrategy.FAIL_ON_ERROR
-    )
+//    @RetryableTopic(
+//            backoff = @Backoff(delay = 1000, multiplier = 2, maxDelay = 5000),
+//            dltTopicSuffix = "-for-analys-dlt",
+//            dltStrategy = DltStrategy.FAIL_ON_ERROR
+//    )
     @KafkaListener(
             topics = {"accounts-notifications", "cash-notifications", "transfer-notifications"},
             idIsGroup = false
