@@ -1,3 +1,0 @@
-# This directory can contain templates that apply at the umbrella chart level.
-# For example, a global Ingress or shared resources.
-# Keep empty for now. 

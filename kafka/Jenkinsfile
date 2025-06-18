@@ -9,26 +9,41 @@ pipeline {
     stages {
         stage('Deploy Kafka') {
             steps {
-                dir('kafka/kafka-cluster') {
+                dir('kafka') {
                     sh """
-                      echo "Установка kafka в кластер. Топики создаются в рамках post-install/post-upgrade Job."
-                      helm upgrade --install ${env.RELEASE_NAME} . \\
-                      -n ${env.NAMESPACE} --create-namespace \\
-                      --wait
+                    echo "Установка kafka в кластер"
+                    if ! kubectl get namespace | grep kafka; then
+                        kubectl create namespace kafka
+                    fi
+
+                    if ! kubectl get crd | grep strimzi.io; then
+                        kubectl create -f 'https://strimzi.io/install/latest?namespace=kafka' -n kafka
+                        kubectl rollout status deployment/strimzi-cluster-operator -n kafka
+                    fi
+
+                    if ! kubectl get strimzi -o name -n kafka; then
+                        kubectl apply -f kafka-persistent.yaml -n kafka
+                        kubectl wait kafka/bank-app --for=condition=Ready --timeout=300s -n kafka
+                        kubectl apply -f topics/notifications.yaml -n kafka
+                        kubectl apply -f topics/exchange-rates.yaml -n kafka
+
+                        end=$((SECONDS+15))
+                        until kubectl get kafkatopic -n kafka -o jsonpath='{range .items[*]}{.status.conditions[?(@.type=="Ready")].status}{" "}{end}' | grep -vq True || [ $SECONDS -ge $end ]; do
+                        sleep 2
+                        done
+
+                        if kubectl get kafkatopic -n kafka -o jsonpath='{range .items[*]}{.status.conditions[?(@.type=="Ready")].status}{" "}{end}' | grep -vq True; then
+                            echo "Не все KafkaTopic стали Ready в течение 15 секунд"
+                            exit 1
+                            else
+                            echo "Все KafkaTopic объекты готовы"
+                        fi
+                    fi
                     """
                 }
             }
         }
-        stage('Запуск Helm Tests') {
-            steps {
-                sh """
-                echo "Тестируем, что созданы все топики..."
-                helm test ${env.RELEASE_NAME} -n ${env.NAMESPACE} --timeout 2m
-                """
-            }
-        }
     }
-
     post {
         failure {
             echo 'Произошел сбой конвейера. Изучите журналы, приведенные выше.'
