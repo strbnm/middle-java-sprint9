@@ -2,7 +2,7 @@
 global:
   domain: bankapp.local # Example domain for ingress
   spring_config_import: "file:/app/config/application.yml"
-  kafka_bootstrap_servers: "bank-app-kafka-bootstrap:9092"
+  kafka_bootstrap_servers: "bank-app-kafka-bootstrap.kafka.svc.cluster.local:9092"
 
 accounts-service:
   replicaCount: 1
