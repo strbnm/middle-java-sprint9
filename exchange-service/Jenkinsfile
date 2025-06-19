@@ -236,12 +236,12 @@ pipeline {
                 stage('Install Kafka if needed') {
                     steps {
                         script {
-                            def kafkaExists = sh(
-                                script: "helm list -n kafka | grep -q kafka",
-                                returnStatus: true
-                            ) == 0
+                            def kafkaOutput = sh(
+                                script: "kubectl get strimzi -o name -n kafka",
+                                returnStdout: true
+                            ).trim()
 
-                            if (!kafkaExists) {
+                            if (kafkaOutput == "") {
                                 echo "Kafka cluster not found, installing..."
                                 build job: 'kafka-job/master',
                                       propagate: true,
@@ -386,12 +386,12 @@ pipeline {
                 stage('Install Kafka if needed') {
                     steps {
                         script {
-                            def kafkaExists = sh(
-                                script: "helm list -n kafka | grep -q kafka",
-                                returnStatus: true
-                            ) == 0
+                            def kafkaOutput = sh(
+                                script: "kubectl get strimzi -o name -n kafka",
+                                returnStdout: true
+                            ).trim()
 
-                            if (!kafkaExists) {
+                            if (kafkaOutput == "") {
                                 echo "Kafka cluster not found, installing..."
                                 build job: 'kafka-job/master',
                                       propagate: true,
