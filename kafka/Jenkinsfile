@@ -32,7 +32,7 @@ pipeline {
                         sleep 2
                         done
 
-                        if kubectl get kafkatopic -n kafka -o jsonpath='{range .items[*]}{.status.conditions[?(@.type=="Ready")].status}{" "}{end}' | grep -vq True; then
+                        if ! kubectl get kafkatopic -n kafka -o jsonpath='{range .items[*]}{.status.conditions[?(@.type=="Ready")].status}{" "}{end}' | grep -vq True; then
                             echo "Не все KafkaTopic стали Ready в течение 15 секунд"
                             exit 1
                             else
