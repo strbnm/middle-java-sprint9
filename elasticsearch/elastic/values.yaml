@@ -1,0 +1,7 @@
+elasticsearch:
+  global:
+    kibanaEnabled: true
+
+gateway:
+  gatewayName: gateway
+  gatewayNamespace: nginx-gateway
