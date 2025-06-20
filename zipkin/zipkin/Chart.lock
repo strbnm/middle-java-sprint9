@@ -1,0 +1,6 @@
+dependencies:
+- name: zipkin
+  repository: https://zipkin.io/zipkin-helm
+  version: 0.3.6
+digest: sha256:b818acf253c494cbbc7b0465cdbf4f40369ea786677afeda369cc757899db506
+generated: "2025-06-20T23:07:10.5254209+03:00"

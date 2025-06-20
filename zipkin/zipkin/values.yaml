@@ -1,0 +1,12 @@
+zipkin:
+  storageType: other
+  # This section goes to a ConfigMap
+  configOverrides:
+    STORAGE_TYPE: elasticsearch
+    ES_HOSTS: http://elasticsearch.monitoring.svc.cluster.local:9200
+  cassandra:
+    enabled: false
+
+gateway:
+  gatewayName: gateway
+  gatewayNamespace: nginx-gateway
