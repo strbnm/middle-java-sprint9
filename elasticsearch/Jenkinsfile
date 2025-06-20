@@ -1,0 +1,36 @@
+pipeline {
+    agent any
+
+    environment {
+        RELEASE_NAME    = 'elasticsearch'
+        NAMESPACE       = 'monitoring'
+    }
+
+    stages {
+        stage('Deploy Elasticsearch and Kibana') {
+            steps {
+                dir('elasticsearch') {
+                    sh '''
+                    echo "Deploy Elasticsearch and Kibana in cluster..."
+                    if ! kubectl get namespace | grep $NAMESPACE; then
+                        kubectl create namespace $NAMESPACE
+                    fi
+
+                    if ! helm list -n $NAMESPACE | grep $RELEASE_NAME; then
+                        helm upgrade --install $RELEASE_NAME ./elastic -n $NAMESPACE --wait
+                    fi
+                    '''
+                }
+            }
+        }
+    }
+    post {
+        failure {
+            echo 'Произошел сбой конвейера. Изучите журналы, приведенные выше.'
+        }
+        success {
+            echo 'Кластер Elasticsearch и Kibana был развернут и тесты прошли успешно.'
+        }
+    }
+}
+

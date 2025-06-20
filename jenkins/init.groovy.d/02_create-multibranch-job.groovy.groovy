@@ -20,7 +20,8 @@ def mapJobNameToScriptPath = [
         "exchange-generator": "exchange-generator/Jenkinsfile",
         "notifications-service": "notifications-service/Jenkinsfile",
         "front-ui": "front-ui/Jenkinsfile",
-        "kafka-job": "kafka/Jenkinsfile"
+        "kafka-job": "kafka/Jenkinsfile",
+        "es-kibana-job": "elasticsearch/Jenkinsfile"
 ]
 
 println "--> Запуск создания multibranch jobs"
