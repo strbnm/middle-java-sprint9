@@ -75,3 +75,10 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+gateway:
+  gatewayName: gateway
+  gatewayNamespace: nginx-gateway
+  routes:
+    - name: exchange-generator-route
+      path: /exchange-generator

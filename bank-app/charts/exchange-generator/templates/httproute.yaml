@@ -1,19 +1,19 @@
+{{- if and .Values.gateway .Values.gateway.routes }}
+{{- range $route := .Values.gateway.routes }}
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
-  name: zipkin-route
+  name: {{ $route.name }}
   namespace: {{ $.Release.Namespace }}
 spec:
   parentRefs:
     - name: {{ $.Values.gateway.gatewayName }}
       namespace: {{ $.Values.gateway.gatewayNamespace }}
-  hostnames:
-    - "zipkin.{{ $.Release.Namespace }}.local"
   rules:
     - matches:
         - path:
             type: PathPrefix
-            value: /
+            value: {{ $route.path }}
       filters:
         - type: URLRewrite
           urlRewrite:
@@ -21,5 +21,8 @@ spec:
               type: ReplacePrefixMatch
               replacePrefixMatch: /
       backendRefs:
-        - name: zipkin
-          port: 9411
+        - name: {{ include "exchange-generator.fullname" $ }}
+          port: {{ $.Values.service.port }}
+---
+{{- end }}
+{{- end }}
