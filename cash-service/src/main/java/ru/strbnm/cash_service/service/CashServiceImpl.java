@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
+
+import io.micrometer.core.instrument.MeterRegistry;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,17 +46,19 @@ public class CashServiceImpl implements CashService {
   private final CashTransactionInfoRepository cashTransactionInfoRepository;
   private final KafkaTemplate<String, NotificationMessage> kafkaTemplate;
   private final ObjectMapper objectMapper = new ObjectMapper();
+  private final MeterRegistry meterRegistry;
 
   @Autowired
   public CashServiceImpl(
           @Qualifier("accountsServiceApi") AccountsServiceApi accountsServiceApi,
           BlockerServiceApi blockerServiceApi,
           CashTransactionInfoRepository cashTransactionInfoRepository,
-          KafkaTemplate<String, NotificationMessage> kafkaTemplate) {
+          KafkaTemplate<String, NotificationMessage> kafkaTemplate, MeterRegistry meterRegistry) {
     this.accountsServiceApi = accountsServiceApi;
     this.blockerServiceApi = blockerServiceApi;
     this.cashTransactionInfoRepository = cashTransactionInfoRepository;
     this.kafkaTemplate = kafkaTemplate;
+    this.meterRegistry = meterRegistry;
   }
 
     @Override
@@ -123,8 +127,14 @@ public class CashServiceImpl implements CashService {
         info.setSuccess(false);
         info.setUpdatedAt(Instant.now().getEpochSecond());
         return cashTransactionInfoRepository.save(info)
-                .flatMap(saved -> sendNotification(saved.getId(), user.getEmail(), message)
-                        .then(getCashOperationResponse(CashOperationResponse.OperationStatusEnum.FAILED, errors)));
+                .flatMap(saved -> {
+                    meterRegistry.counter("operation.cash.blocked",
+                                    "login", info.getLogin(),
+                                    "currency", info.getCurrency())
+                            .increment();
+                    return sendNotification(saved.getId(), user.getEmail(), message)
+                            .then(getCashOperationResponse(CashOperationResponse.OperationStatusEnum.FAILED, errors));
+                });
     }
 
     private Mono<CashOperationResponse> handleProcessingError(CashTransactionInfo info, Throwable error) {

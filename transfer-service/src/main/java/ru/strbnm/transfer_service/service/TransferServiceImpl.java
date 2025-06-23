@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
+
+import io.micrometer.core.instrument.MeterRegistry;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,17 +46,19 @@ public class TransferServiceImpl implements TransferService {
   private final TransferTransactionInfoRepository transferTransactionInfoRepository;
   private final ObjectMapper objectMapper = new ObjectMapper();
   private final KafkaTemplate<String, NotificationMessage> kafkaTemplate;
+  private final MeterRegistry meterRegistry;
 
   @Autowired
   public TransferServiceImpl(
           @Qualifier("accountsServiceApi") AccountsServiceApi accountsServiceApi,
           BlockerServiceApi blockerServiceApi, ExchangeServiceApi exchangeServiceApi,
-          TransferTransactionInfoRepository transferTransactionInfoRepository, KafkaTemplate<String, NotificationMessage> kafkaTemplate) {
+          TransferTransactionInfoRepository transferTransactionInfoRepository, KafkaTemplate<String, NotificationMessage> kafkaTemplate, MeterRegistry meterRegistry) {
     this.accountsServiceApi = accountsServiceApi;
     this.blockerServiceApi = blockerServiceApi;
       this.exchangeServiceApi = exchangeServiceApi;
       this.transferTransactionInfoRepository = transferTransactionInfoRepository;
       this.kafkaTemplate = kafkaTemplate;
+      this.meterRegistry = meterRegistry;
   }
 
     @Override
@@ -185,11 +189,21 @@ public class TransferServiceImpl implements TransferService {
                     info.setUpdatedAt(Instant.now().getEpochSecond());
 
                     return transferTransactionInfoRepository.save(info)
-                            .flatMap(saved -> sendNotification(saved.getId(), user.getEmail(), msg)
-                                    .then(getTransferOperationResponse(
-                                            isSuccess ? TransferOperationResponse.OperationStatusEnum.SUCCESS : TransferOperationResponse.OperationStatusEnum.FAILED,
-                                            isSuccess ? List.of() : response.getErrors()
-                                    )));
+                            .flatMap(saved -> {
+                                if (saved.isSuccess()) {
+                                    return sendNotification(saved.getId(), user.getEmail(), msg)
+                                            .then(getTransferOperationResponse(TransferOperationResponse.OperationStatusEnum.SUCCESS, List.of()));
+                                } else {
+                                    meterRegistry.counter("operation.transfer.itself.failed",
+                                                    "login", info.getFromLogin(),
+                                                    "fromCurrency", info.getFromCurrency(),
+                                                    "toCurrency", info.getToCurrency())
+                                            .increment();
+                                    return sendNotification(saved.getId(), user.getEmail(), msg)
+                                            .then(getTransferOperationResponse(TransferOperationResponse.OperationStatusEnum.FAILED, response.getErrors()));
+                                }
+
+                            });
                 });
     }
 
@@ -217,6 +231,12 @@ public class TransferServiceImpl implements TransferService {
                                             .then(sendNotification(saved.getId(), toUser.getEmail(), toUserMessage))
                                             .then(getTransferOperationResponse(TransferOperationResponse.OperationStatusEnum.SUCCESS, List.of()));
                                 } else {
+                                    meterRegistry.counter("operation.transfer.other.failed",
+                                            "fromLogin", info.getFromLogin(),
+                                            "toLogin", info.getToLogin(),
+                                            "fromCurrency", info.getFromCurrency(),
+                                            "toCurrency", info.getToCurrency())
+                                            .increment();
                                     return sendNotification(saved.getId(), fromUser.getEmail(), fromUserMessage)
                                             .then(getTransferOperationResponse(TransferOperationResponse.OperationStatusEnum.FAILED, response.getErrors()));
                                 }
@@ -246,8 +266,16 @@ public class TransferServiceImpl implements TransferService {
         info.setSuccess(false);
         info.setUpdatedAt(Instant.now().getEpochSecond());
         return transferTransactionInfoRepository.save(info)
-                .flatMap(saved -> sendNotification(saved.getId(), user.getEmail(), message)
-                        .then(getTransferOperationResponse(TransferOperationResponse.OperationStatusEnum.FAILED, errors)));
+                .flatMap(saved -> {
+                    meterRegistry.counter("operation.transfer.blocked",
+                                    "fromLogin", info.getFromLogin(),
+                                    "toLogin", info.getToLogin(),
+                                    "fromCurrency", info.getFromCurrency(),
+                                    "toCurrency", info.getToCurrency())
+                            .increment();
+                    return sendNotification(saved.getId(), user.getEmail(), message)
+                            .then(getTransferOperationResponse(TransferOperationResponse.OperationStatusEnum.FAILED, errors));
+                });
     }
 
     private Mono<TransferOperationResponse> handleProcessingError(TransferTransactionInfo info, Throwable error) {

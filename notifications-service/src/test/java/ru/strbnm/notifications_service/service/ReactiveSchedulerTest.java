@@ -7,6 +7,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
+
+import io.micrometer.core.instrument.MeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,11 +25,14 @@ class ReactiveSchedulerTest {
     @Mock
     private NotificationRepository notificationRepository;
 
+    @Mock
+    private MeterRegistry meterRegistry;
+
     private ReactiveScheduler reactiveScheduler;
 
     @BeforeEach
     void setUp() {
-        reactiveScheduler = new ReactiveScheduler(notificationRepository, 2);
+        reactiveScheduler = new ReactiveScheduler(notificationRepository, 2, meterRegistry);
     }
 
     @Test

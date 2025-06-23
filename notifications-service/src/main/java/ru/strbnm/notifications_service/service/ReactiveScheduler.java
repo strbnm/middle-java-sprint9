@@ -1,7 +1,10 @@
 package ru.strbnm.notifications_service.service;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.annotation.PostConstruct;
 import java.time.Duration;
+import java.util.concurrent.ThreadLocalRandom;
+
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -20,23 +23,32 @@ public class ReactiveScheduler {
 
   private final NotificationRepository notificationRepository;
   private final int limit;
+  private final MeterRegistry meterRegistry;
 
   public ReactiveScheduler(
-      NotificationRepository notificationRepository,
-      @Value("${application.notification.limit:10}") int limit) {
+          NotificationRepository notificationRepository,
+          @Value("${application.notification.limit:10}") int limit, MeterRegistry meterRegistry) {
     this.notificationRepository = notificationRepository;
     this.limit = limit;
+      this.meterRegistry = meterRegistry;
   }
 
   public Mono<Void> processNotifications() {
     return notificationRepository
         .findUnsentLimited(limit)
-        .doOnNext(
-            notification ->
-                log.info(
-                    "Отправка сообщения на электронную почту {}: {}",
-                    notification.getEmail(),
-                    notification.getMessage()))
+        .mapNotNull(
+            notification -> {
+                boolean fail = ThreadLocalRandom.current().nextInt(100) < 30;
+                if (fail) {
+                  meterRegistry.counter("notification.failed", "email", notification.getEmail()).increment();
+                  return null;
+                } else {
+                  log.info(
+                      "Отправка сообщения на электронную почту {}: {}",
+                      notification.getEmail(),
+                      notification.getMessage());
+                  return notification;
+                }})
         .map(
             n -> {
               n.setSent(true);
