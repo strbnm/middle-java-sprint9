@@ -88,6 +88,10 @@ subprojects {
     }
     dependencies {
         implementation 'org.springframework.boot:spring-boot-starter-actuator'
+        implementation platform('io.micrometer:micrometer-bom:1.15.1')
+        implementation 'io.micrometer:micrometer-tracing-bridge-brave'
+        implementation 'io.zipkin.reporter2:zipkin-reporter-brave'
+        implementation 'io.micrometer:micrometer-registry-prometheus'
     }
     tasks.named('test') {
         useJUnitPlatform()
