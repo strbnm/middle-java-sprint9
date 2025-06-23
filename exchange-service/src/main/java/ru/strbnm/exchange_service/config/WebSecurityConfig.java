@@ -26,7 +26,7 @@ public class WebSecurityConfig {
             exchange ->
                 exchange
                     .pathMatchers(HttpMethod.GET, "/api/v1/rates").permitAll() // <-- разрешаем GET
-                    .pathMatchers("/actuator/health/**", "/actuator/info").permitAll()
+                    .pathMatchers("/actuator/health/**", "/actuator/info", "/actuator/prometheus").permitAll()
                     .pathMatchers("/api/v1/rates", "/api/v1/convert")
                     .hasAuthority("SCOPE_resource.readwrite")
                     .anyExchange()

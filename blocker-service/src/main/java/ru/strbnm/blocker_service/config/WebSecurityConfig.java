@@ -24,7 +24,7 @@ public class WebSecurityConfig {
         .authorizeExchange(
             exchange ->
                 exchange
-                    .pathMatchers("/actuator/health/**", "/actuator/info").permitAll()
+                    .pathMatchers("/actuator/health/**", "/actuator/info", "/actuator/prometheus").permitAll()
                     .pathMatchers("/api/v1/check_transaction")
                     .hasAuthority("SCOPE_resource.read")
                     .anyExchange()

@@ -25,7 +25,7 @@ public class WebSecurityConfig {
         .authorizeExchange(
             exchange ->
                 exchange
-                    .pathMatchers("/actuator/health/**", "/actuator/info").permitAll()
+                    .pathMatchers("/actuator/health/**", "/actuator/info", "/actuator/prometheus").permitAll()
                     .anyExchange()
                     .authenticated())
         .csrf(ServerHttpSecurity.CsrfSpec::disable)

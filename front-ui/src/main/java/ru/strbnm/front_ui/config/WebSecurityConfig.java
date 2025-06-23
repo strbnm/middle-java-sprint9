@@ -40,7 +40,7 @@ public class WebSecurityConfig {
                         .csrfTokenRepository(CookieServerCsrfTokenRepository.withHttpOnlyFalse())
                 )
                 .authorizeExchange(exchange -> exchange
-                    .pathMatchers("/actuator/health/**", "/actuator/info").permitAll()
+                    .pathMatchers("/actuator/health/**", "/actuator/info", "/actuator/prometheus").permitAll()
                     .pathMatchers("/", "/signup", "/css/**", "/login").permitAll()
                     .anyExchange().authenticated()
                 )
