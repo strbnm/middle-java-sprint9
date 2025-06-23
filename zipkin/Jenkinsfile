@@ -1,36 +1,48 @@
 pipeline {
     agent any
 
+    parameters {
+        string(name: 'NAMESPACE', defaultValue: 'test', description: 'В какое окружение (namespace) устанавливать?')
+    }
+
     environment {
-        RELEASE_NAME    = 'zipkin'
-        NAMESPACE       = 'monitoring'
+        RELEASE_NAME = 'zipkin'
     }
 
     stages {
         stage('Deploy Zipkin') {
             steps {
                 dir('zipkin') {
-                    sh '''
-                    echo "Deploy Zipkin in cluster..."
-                    if ! kubectl get namespace | grep $NAMESPACE; then
-                        kubectl create namespace $NAMESPACE
-                    fi
+                    sh """
+                        echo "Deploying Zipkin to namespace: ${params.NAMESPACE}"
 
-                    if ! helm list -n $NAMESPACE | grep $RELEASE_NAME; then
-                        helm upgrade --install $RELEASE_NAME ./zipkin -n $NAMESPACE --wait
-                    fi
-                    '''
+                        NAMESPACE="${params.NAMESPACE}"
+
+                        if ! kubectl get namespace "$NAMESPACE" > /dev/null 2>&1; then
+                            echo "Namespace $NAMESPACE does not exist. Creating..."
+                            kubectl create namespace "$NAMESPACE"
+                        fi
+
+                        if ! helm list -n "$NAMESPACE" | grep -q "$RELEASE_NAME"; then
+                            echo "Installing Zipkin in $NAMESPACE..."
+                            helm upgrade --install "$RELEASE_NAME" ./zipkin -n "$NAMESPACE" --wait
+                        else
+                            echo "Zipkin already installed in $NAMESPACE"
+                        fi
+                    """
                 }
             }
         }
     }
+
     post {
         failure {
             echo 'Произошел сбой конвейера. Изучите журналы, приведенные выше.'
         }
         success {
-            echo 'Кластер Zipkin был развернут и тесты прошли успешно.'
+            echo 'Кластер Zipkin был развернут успешно.'
         }
     }
 }
+
 
