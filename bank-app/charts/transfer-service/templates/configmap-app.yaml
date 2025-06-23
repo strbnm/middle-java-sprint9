@@ -25,6 +25,11 @@ data:
           enabled: true
         readinessState:
           enabled: true
+      zipkin:
+        tracing:
+          endpoint: ${ZIPKIN_URL}/api/v2/spans
+        sampling:
+          probability: 1
     spring:
       security:
         oauth2:
