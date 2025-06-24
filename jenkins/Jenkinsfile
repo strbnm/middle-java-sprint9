@@ -325,45 +325,36 @@ pipeline {
                         }
                     }
                 }
+                stage('Create monitoring-test') {
+                    steps {
+                        sh 'kubectl get namespace monitoring-test >/dev/null 2>&1 || kubectl create namespace monitoring-test'
+                    }
+                }
                 stage("Deploy monitoring tools"){
                     parallel {
                         stage("Deploy Zipkin") {
                             steps {
                                 dir('zipkin') {
                                     sh """
-                                        if ! helm list -n test | grep -q zipkin; then
-                                            echo "Installing Zipkin in test..."
-                                            helm upgrade --install zipkin ./zipkin -n test --wait
+                                        if ! helm list -n monitoring-test | grep -q zipkin; then
+                                            echo "Installing Zipkin in monitoring-test..."
+                                            helm upgrade --install zipkin ./zipkin -n monitoring-test --wait
                                         else
-                                            echo "Zipkin already installed in test"
+                                            echo "Zipkin already installed in monitoring-test"
                                         fi
                                     """
                                 }
                             }
                         }
-                        stage("Deploy Prometheus") {
+                        stage("Deploy Prometheus Stack") {
                             steps {
                                 dir('prometheus') {
                                     sh """
-                                        if ! helm list -n test | grep -q prometheus; then
-                                            echo "Installing Prometheus in test..."
-                                            helm upgrade --install prometheus ./prometheus -n test --wait
+                                        if ! helm list -n monitoring-test | grep -q prometheus-stack; then
+                                            echo "Installing Prometheus in monitoring-test..."
+                                            helm upgrade --install prometheus-stack ./prometheus -n monitoring-test --wait
                                         else
-                                            echo "Prometheus already installed in test"
-                                        fi
-                                    """
-                                }
-                            }
-                        }
-                        stage("Deploy Grafana") {
-                            steps {
-                                dir('grafana') {
-                                    sh """
-                                        if ! helm list -n test | grep -q grafana; then
-                                            echo "Installing Grafana in test..."
-                                            helm upgrade --install grafana ./grafana -n test --wait
-                                        else
-                                            echo "Grafana already installed in test"
+                                            echo "Prometheus already installed in monitoring-test"
                                         fi
                                     """
                                 }
@@ -373,11 +364,11 @@ pipeline {
                             steps {
                                 dir('elasticsearch') {
                                     sh """
-                                        if ! helm list -n test | grep -q elasticsearch; then
-                                            echo "Installing Elasticsearch in test..."
-                                            helm upgrade --install elasticsearch ./elastic -n test --wait --timeout 10m
+                                        if ! helm list -n monitoring-test | grep -q elasticsearch; then
+                                            echo "Installing Elasticsearch in monitoring-test..."
+                                            helm upgrade --install elasticsearch ./elastic -n monitoring-test --wait --timeout 10m
                                         else
-                                            echo "Elasticsearch already installed in test"
+                                            echo "Elasticsearch already installed in monitoring-test"
                                         fi
                                     """
                                 }
@@ -387,11 +378,11 @@ pipeline {
                             steps {
                                 dir('logstash') {
                                     sh """
-                                        if ! helm list -n test | grep -q logstash; then
-                                            echo "Installing Logstash in test..."
-                                            helm upgrade --install logstash ./logstash -n test --wait
+                                        if ! helm list -n monitoring-test | grep -q logstash; then
+                                            echo "Installing Logstash in monitoring-test..."
+                                            helm upgrade --install logstash ./logstash -n monitoring-test --wait
                                         else
-                                            echo "Logstash already installed in test"
+                                            echo "Logstash already installed in monitoring-test"
                                         fi
                                     """
                                 }
@@ -625,45 +616,36 @@ pipeline {
                         }
                     }
                 }
+                stage('Create monitoring-prod') {
+                    steps {
+                        sh 'kubectl get namespace monitoring-prod >/dev/null 2>&1 || kubectl create namespace monitoring-prod'
+                    }
+                }
                 stage("Deploy monitoring tools"){
                     parallel {
                         stage("Deploy Zipkin") {
                             steps {
                                 dir('zipkin') {
                                     sh """
-                                        if ! helm list -n prod | grep -q zipkin; then
-                                            echo "Installing Zipkin in prod..."
-                                            helm upgrade --install zipkin ./zipkin -n prod --wait
+                                        if ! helm list -n monitoring-prod | grep -q zipkin; then
+                                            echo "Installing Zipkin in monitoring-prod..."
+                                            helm upgrade --install zipkin ./zipkin -n monitoring-prod --wait
                                         else
-                                            echo "Zipkin already installed in prod"
+                                            echo "Zipkin already installed in monitoring-prod"
                                         fi
                                     """
                                 }
                             }
                         }
-                        stage("Deploy Prometheus") {
+                        stage("Deploy Prometheus Stack") {
                             steps {
                                 dir('prometheus') {
                                     sh """
-                                        if ! helm list -n prod | grep -q prometheus; then
-                                            echo "Installing Prometheus in prod..."
-                                            helm upgrade --install prometheus ./prometheus -n prod --wait
+                                        if ! helm list -n monitoring-prod | grep -q prometheus-stack; then
+                                            echo "Installing Prometheus in monitoring-prod..."
+                                            helm upgrade --install prometheus-stack ./prometheus -n monitoring-prod --wait
                                         else
-                                            echo "Prometheus already installed in prod"
-                                        fi
-                                    """
-                                }
-                            }
-                        }
-                        stage("Deploy Grafana") {
-                            steps {
-                                dir('grafana') {
-                                    sh """
-                                        if ! helm list -n prod | grep -q grafana; then
-                                            echo "Installing Grafana in prod..."
-                                            helm upgrade --install grafana ./grafana -n prod --wait
-                                        else
-                                            echo "Grafana already installed in prod"
+                                            echo "Prometheus already installed in monitoring-prod"
                                         fi
                                     """
                                 }
@@ -673,11 +655,11 @@ pipeline {
                             steps {
                                 dir('elasticsearch') {
                                     sh """
-                                        if ! helm list -n prod | grep -q elasticsearch; then
-                                            echo "Installing Elasticsearch in prod..."
-                                            helm upgrade --install elasticsearch ./elastic -n prod --wait --timeout 10m
+                                        if ! helm list -n monitoring-prod | grep -q elasticsearch; then
+                                            echo "Installing Elasticsearch in monitoring-prod..."
+                                            helm upgrade --install elasticsearch ./elastic -n monitoring-prod --wait --timeout 10m
                                         else
-                                            echo "Elasticsearch already installed in prod"
+                                            echo "Elasticsearch already installed in monitoring-prod"
                                         fi
                                     """
                                 }
@@ -687,11 +669,11 @@ pipeline {
                             steps {
                                 dir('logstash') {
                                     sh """
-                                        if ! helm list -n prod | grep -q logstash; then
-                                            echo "Installing Logstash in prod..."
-                                            helm upgrade --install logstash ./logstash -n prod --wait
+                                        if ! helm list -n monitoring-prod | grep -q logstash; then
+                                            echo "Installing Logstash in monitoring-prod..."
+                                            helm upgrade --install logstash ./logstash -n monitoring-prod --wait
                                         else
-                                            echo "Logstash already installed in prod"
+                                            echo "Logstash already installed in monitoring-prod"
                                         fi
                                     """
                                 }
