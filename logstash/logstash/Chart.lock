@@ -1,0 +1,6 @@
+dependencies:
+- name: logstash
+  repository: oci://registry-1.docker.io/bitnamicharts
+  version: 7.0.4
+digest: sha256:552e0760966622e0677c295f5d89048e63faadf627d9757f35a24bf22cddcaac
+generated: "2025-06-24T20:59:51.1363508+03:00"

@@ -325,6 +325,80 @@ pipeline {
                         }
                     }
                 }
+                stage("Deploy monitoring tools"){
+                    parallel {
+                        stage("Deploy Zipkin") {
+                            steps {
+                                dir('zipkin') {
+                                    sh """
+                                        if ! helm list -n test | grep -q zipkin; then
+                                            echo "Installing Zipkin in test..."
+                                            helm upgrade --install zipkin ./zipkin -n test --wait
+                                        else
+                                            echo "Zipkin already installed in test"
+                                        fi
+                                    """
+                                }
+                            }
+                        }
+                        stage("Deploy Prometheus") {
+                            steps {
+                                dir('prometheus') {
+                                    sh """
+                                        if ! helm list -n test | grep -q prometheus; then
+                                            echo "Installing Prometheus in test..."
+                                            helm upgrade --install prometheus ./prometheus -n test --wait
+                                        else
+                                            echo "Prometheus already installed in test"
+                                        fi
+                                    """
+                                }
+                            }
+                        }
+                        stage("Deploy Grafana") {
+                            steps {
+                                dir('grafana') {
+                                    sh """
+                                        if ! helm list -n test | grep -q grafana; then
+                                            echo "Installing Grafana in test..."
+                                            helm upgrade --install grafana ./grafana -n test --wait
+                                        else
+                                            echo "Grafana already installed in test"
+                                        fi
+                                    """
+                                }
+                            }
+                        }
+                        stage("Deploy ES + Kibana") {
+                            steps {
+                                dir('elasticsearch') {
+                                    sh """
+                                        if ! helm list -n test | grep -q elasticsearch; then
+                                            echo "Installing Elasticsearch in test..."
+                                            helm upgrade --install elasticsearch ./elastic -n test --wait
+                                        else
+                                            echo "Elasticsearch already installed in test"
+                                        fi
+                                    """
+                                }
+                            }
+                        }
+                        stage("Deploy Logstash") {
+                            steps {
+                                dir('logstash') {
+                                    sh """
+                                        if ! helm list -n test | grep -q logstash; then
+                                            echo "Installing Logstash in test..."
+                                            helm upgrade --install logstash ./logstash -n test --wait
+                                        else
+                                            echo "Logstash already installed in test"
+                                        fi
+                                    """
+                                }
+                            }
+                        }
+                    }
+                }
                 stage('Helm Deploy to TEST') {
                     steps {
                         dir('bank-app') {
@@ -547,6 +621,80 @@ pipeline {
                                       wait: true
                             } else {
                                 echo "Kafka already installed — skipping install."
+                            }
+                        }
+                    }
+                }
+                stage("Deploy monitoring tools"){
+                    parallel {
+                        stage("Deploy Zipkin") {
+                            steps {
+                                dir('zipkin') {
+                                    sh """
+                                        if ! helm list -n prod | grep -q zipkin; then
+                                            echo "Installing Zipkin in prod..."
+                                            helm upgrade --install zipkin ./zipkin -n prod --wait
+                                        else
+                                            echo "Zipkin already installed in prod"
+                                        fi
+                                    """
+                                }
+                            }
+                        }
+                        stage("Deploy Prometheus") {
+                            steps {
+                                dir('prometheus') {
+                                    sh """
+                                        if ! helm list -n prod | grep -q prometheus; then
+                                            echo "Installing Prometheus in prod..."
+                                            helm upgrade --install prometheus ./prometheus -n prod --wait
+                                        else
+                                            echo "Prometheus already installed in prod"
+                                        fi
+                                    """
+                                }
+                            }
+                        }
+                        stage("Deploy Grafana") {
+                            steps {
+                                dir('grafana') {
+                                    sh """
+                                        if ! helm list -n prod | grep -q grafana; then
+                                            echo "Installing Grafana in prod..."
+                                            helm upgrade --install grafana ./grafana -n prod --wait
+                                        else
+                                            echo "Grafana already installed in prod"
+                                        fi
+                                    """
+                                }
+                            }
+                        }
+                        stage("Deploy ES + Kibana") {
+                            steps {
+                                dir('elasticsearch') {
+                                    sh """
+                                        if ! helm list -n prod | grep -q elasticsearch; then
+                                            echo "Installing Elasticsearch in prod..."
+                                            helm upgrade --install elasticsearch ./elastic -n prod --wait
+                                        else
+                                            echo "Elasticsearch already installed in prod"
+                                        fi
+                                    """
+                                }
+                            }
+                        }
+                        stage("Deploy Logstash") {
+                            steps {
+                                dir('logstash') {
+                                    sh """
+                                        if ! helm list -n prod | grep -q logstash; then
+                                            echo "Installing Logstash in prod..."
+                                            helm upgrade --install logstash ./logstash -n prod --wait
+                                        else
+                                            echo "Logstash already installed in prod"
+                                        fi
+                                    """
+                                }
                             }
                         }
                     }

@@ -89,9 +89,12 @@ subprojects {
     dependencies {
         implementation 'org.springframework.boot:spring-boot-starter-actuator'
         implementation platform('io.micrometer:micrometer-bom:1.15.1')
-        implementation 'io.micrometer:micrometer-tracing-bridge-brave'
-        implementation 'io.zipkin.reporter2:zipkin-reporter-brave'
+        implementation 'io.opentelemetry:opentelemetry-exporter-zipkin'
+        implementation 'io.micrometer:micrometer-tracing-bridge-otel'
         implementation 'io.micrometer:micrometer-registry-prometheus'
+        implementation 'org.apache.logging.log4j:log4j-slf4j-impl:2.25.0'
+        implementation 'org.slf4j:slf4j-api:2.0.17'
+        implementation 'org.apache.kafka:kafka-clients:3.9.1'
     }
     tasks.named('test') {
         useJUnitPlatform()
