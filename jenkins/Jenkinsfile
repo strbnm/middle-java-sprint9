@@ -310,7 +310,12 @@ pipeline {
                     steps {
                         script {
                             def kafkaOutput = sh(
-                                script: "kubectl get strimzi -o name -n kafka",
+                                script: '''
+                                    # отключаем прерывание на ошибках
+                                    set +e
+                                    output=$(kubectl get kafka -o name -n kafka 2>/dev/null)
+                                    echo "$output"
+                                ''',
                                 returnStdout: true
                             ).trim()
 
@@ -601,7 +606,12 @@ pipeline {
                     steps {
                         script {
                             def kafkaOutput = sh(
-                                script: "kubectl get strimzi -o name -n kafka",
+                                script: '''
+                                    # отключаем прерывание на ошибках
+                                    set +e
+                                    output=$(kubectl get kafka -o name -n kafka 2>/dev/null)
+                                    echo "$output"
+                                ''',
                                 returnStdout: true
                             ).trim()
 
