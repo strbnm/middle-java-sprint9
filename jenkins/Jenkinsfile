@@ -375,7 +375,7 @@ pipeline {
                                     sh """
                                         if ! helm list -n test | grep -q elasticsearch; then
                                             echo "Installing Elasticsearch in test..."
-                                            helm upgrade --install elasticsearch ./elastic -n test --wait
+                                            helm upgrade --install elasticsearch ./elastic -n test --wait --timeout 10m
                                         else
                                             echo "Elasticsearch already installed in test"
                                         fi
@@ -675,7 +675,7 @@ pipeline {
                                     sh """
                                         if ! helm list -n prod | grep -q elasticsearch; then
                                             echo "Installing Elasticsearch in prod..."
-                                            helm upgrade --install elasticsearch ./elastic -n prod --wait
+                                            helm upgrade --install elasticsearch ./elastic -n prod --wait --timeout 10m
                                         else
                                             echo "Elasticsearch already installed in prod"
                                         fi
