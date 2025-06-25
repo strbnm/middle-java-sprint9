@@ -94,7 +94,7 @@ subprojects {
         implementation 'io.opentelemetry:opentelemetry-exporter-zipkin'
         implementation 'io.micrometer:micrometer-tracing-bridge-otel'
         implementation 'io.micrometer:micrometer-registry-prometheus'
-        implementation 'org.apache.logging.log4j:log4j-slf4j-impl:2.25.0'
+        implementation 'org.apache.logging.log4j:log4j-slf4j2-impl:2.25.0'
         implementation 'org.slf4j:slf4j-api:2.0.17'
     }
     tasks.named('test') {
