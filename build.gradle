@@ -85,7 +85,9 @@ subprojects {
 
     configurations.configureEach {
         exclude group: 'com.vaadin.external.google', module: 'android-json'
+        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
     }
+
     dependencies {
         implementation 'org.springframework.boot:spring-boot-starter-actuator'
         implementation platform('io.micrometer:micrometer-bom:1.15.1')

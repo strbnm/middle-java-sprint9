@@ -365,34 +365,34 @@ pipeline {
                                 }
                             }
                         }
-                        stage("Deploy ES + Kibana") {
-                            steps {
-                                dir('elasticsearch') {
-                                    sh """
-                                        if ! helm list -n monitoring-test | grep -q elasticsearch; then
-                                            echo "Installing Elasticsearch in monitoring-test..."
-                                            helm upgrade --install elasticsearch ./elastic -n monitoring-test --wait --timeout 10m
-                                        else
-                                            echo "Elasticsearch already installed in monitoring-test"
-                                        fi
-                                    """
-                                }
-                            }
-                        }
-                        stage("Deploy Logstash") {
-                            steps {
-                                dir('logstash') {
-                                    sh """
-                                        if ! helm list -n monitoring-test | grep -q logstash; then
-                                            echo "Installing Logstash in monitoring-test..."
-                                            helm upgrade --install logstash ./logstash -n monitoring-test --wait
-                                        else
-                                            echo "Logstash already installed in monitoring-test"
-                                        fi
-                                    """
-                                }
-                            }
-                        }
+//                         stage("Deploy ES + Kibana") {
+//                             steps {
+//                                 dir('elasticsearch') {
+//                                     sh """
+//                                         if ! helm list -n monitoring-test | grep -q elasticsearch; then
+//                                             echo "Installing Elasticsearch in monitoring-test..."
+//                                             helm upgrade --install elasticsearch ./elastic -n monitoring-test --wait --timeout 10m
+//                                         else
+//                                             echo "Elasticsearch already installed in monitoring-test"
+//                                         fi
+//                                     """
+//                                 }
+//                             }
+//                         }
+//                         stage("Deploy Logstash") {
+//                             steps {
+//                                 dir('logstash') {
+//                                     sh """
+//                                         if ! helm list -n monitoring-test | grep -q logstash; then
+//                                             echo "Installing Logstash in monitoring-test..."
+//                                             helm upgrade --install logstash ./logstash -n monitoring-test --wait
+//                                         else
+//                                             echo "Logstash already installed in monitoring-test"
+//                                         fi
+//                                     """
+//                                 }
+//                             }
+//                         }
                     }
                 }
                 stage('Helm Deploy to TEST') {
@@ -661,34 +661,34 @@ pipeline {
                                 }
                             }
                         }
-                        stage("Deploy ES + Kibana") {
-                            steps {
-                                dir('elasticsearch') {
-                                    sh """
-                                        if ! helm list -n monitoring-prod | grep -q elasticsearch; then
-                                            echo "Installing Elasticsearch in monitoring-prod..."
-                                            helm upgrade --install elasticsearch ./elastic -n monitoring-prod --wait --timeout 10m
-                                        else
-                                            echo "Elasticsearch already installed in monitoring-prod"
-                                        fi
-                                    """
-                                }
-                            }
-                        }
-                        stage("Deploy Logstash") {
-                            steps {
-                                dir('logstash') {
-                                    sh """
-                                        if ! helm list -n monitoring-prod | grep -q logstash; then
-                                            echo "Installing Logstash in monitoring-prod..."
-                                            helm upgrade --install logstash ./logstash -n monitoring-prod --wait
-                                        else
-                                            echo "Logstash already installed in monitoring-prod"
-                                        fi
-                                    """
-                                }
-                            }
-                        }
+//                         stage("Deploy ES + Kibana") {
+//                             steps {
+//                                 dir('elasticsearch') {
+//                                     sh """
+//                                         if ! helm list -n monitoring-prod | grep -q elasticsearch; then
+//                                             echo "Installing Elasticsearch in monitoring-prod..."
+//                                             helm upgrade --install elasticsearch ./elastic -n monitoring-prod --wait --timeout 10m
+//                                         else
+//                                             echo "Elasticsearch already installed in monitoring-prod"
+//                                         fi
+//                                     """
+//                                 }
+//                             }
+//                         }
+//                         stage("Deploy Logstash") {
+//                             steps {
+//                                 dir('logstash') {
+//                                     sh """
+//                                         if ! helm list -n monitoring-prod | grep -q logstash; then
+//                                             echo "Installing Logstash in monitoring-prod..."
+//                                             helm upgrade --install logstash ./logstash -n monitoring-prod --wait
+//                                         else
+//                                             echo "Logstash already installed in monitoring-prod"
+//                                         fi
+//                                     """
+//                                 }
+//                             }
+//                         }
                     }
                 }
                 stage('Helm Deploy to PROD') {
