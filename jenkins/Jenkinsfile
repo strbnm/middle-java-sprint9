@@ -371,7 +371,7 @@ pipeline {
                                     sh """
                                         if ! helm list -n monitoring-test | grep -q elasticsearch; then
                                             echo "Installing Elasticsearch in monitoring-test..."
-                                            helm upgrade --install elasticsearch ./elastic -n monitoring-test --wait --timeout 10m
+                                            helm upgrade --install elasticsearch ./elastic -n monitoring-test --wait --timeout 15m
                                         else
                                             echo "Elasticsearch already installed in monitoring-test"
                                         fi
@@ -384,7 +384,7 @@ pipeline {
                                 dir('logstash') {
                                     sh """
                                         echo "Installing Logstash in monitoring-test..."
-                                        helm upgrade --install logstash ./logstash -n monitoring-test --wait --timeout 10m
+                                        helm upgrade --install logstash ./logstash -n monitoring-test --wait --timeout 15m
                                     """
                                 }
                             }
