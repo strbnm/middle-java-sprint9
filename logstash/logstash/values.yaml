@@ -22,29 +22,28 @@ logstash:
         codec => "json"
       }
   filter: |-
-    # Разбор стандартных полей logstash-logback-encoder
-    if [@timestamp] {
-      date {
-        match => ["@timestamp", "ISO8601"]
+    filter {
+      if [@timestamp] {
+        date {
+          match => ["@timestamp", "ISO8601"]
+        }
       }
-    }
-
-    # Уровень логирования в нижний регистр
-    mutate {
-      lowercase => ["level"]
-    }
-
-    # Преобразуем MDC
-    if [mdc] {
-      ruby {
-        code => '
-          mdc = event.get("mdc")
-          if mdc.is_a?(Hash)
-            mdc.each { |k, v| event.set("mdc_" + k, v) }
-          end
-        '
+  
+      mutate {
+        lowercase => ["level"]
       }
-      remove_field => ["mdc"]
+  
+      if [mdc] {
+        ruby {
+          code => '
+            mdc = event.get("mdc")
+            if mdc.is_a?(Hash)
+              mdc.each { |k, v| event.set("mdc_#{k}", v) }
+            end
+          '
+        }
+        remove_field => ["mdc"]
+      }
     }
   output: |-
     elasticsearch {

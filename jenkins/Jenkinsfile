@@ -385,7 +385,7 @@ pipeline {
                                     sh """
                                         if ! helm list -n monitoring-test | grep -q logstash; then
                                             echo "Installing Logstash in monitoring-test..."
-                                            helm upgrade --install logstash ./logstash -n monitoring-test --wait
+                                            helm upgrade --install logstash ./logstash -n monitoring-test --wait --timeout 10m
                                         else
                                             echo "Logstash already installed in monitoring-test"
                                         fi

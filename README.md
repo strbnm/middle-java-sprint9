@@ -1,8 +1,9 @@
 ### Микросервисное приложение «Банк»
 
 Микросервисное приложение «Банк» с использованием Spring Boot (реактивный стек) и паттернов микросервисной архитектуры,
-с настроенным CI/CD (Jenkins), деплоем в k8s, с Apache Kafka для обмена сообщениями между микросервисами
-в рамках выполнения задания спринта 11 курса Middle-Java Яндекс.Практикум.
+с настроенным CI/CD (Jenkins), деплоем в k8s, с Apache Kafka для обмена сообщениями между микросервисами,
+с подключенными сервисами мониторинга Zipkin, Prometheus, Grafana, ELK в рамках выполнения задания спринта 12 
+курса Middle-Java Яндекс.Практикум.
 - Spring Boot 3.4.4
 - Spring Security
 - Spring Cloud Contract
@@ -14,6 +15,10 @@
 - K8s
 - Apache Kafka
 - Spring Kafka
+- Zipkin
+- Prometheus
+- Grafana
+- ELK
 
 Приложение состоит из следующих микросервисов, реализованных в виде отдельных моделей многомодульного проекта:
 - [фронта (Front UI)](front-ui)
@@ -40,6 +45,7 @@ API на базе NGINX Gateway Fabric - API Gateway, Load Balancing, Service Di
 Для OAuth2 используется Keycloak.
 
 Все микросервисы предоставляют ручку /actuator/health для проверки своего состояния и проб liveness и readiness - паттерн Health Check API.
+Все микросервисы предоставляют ручку /actuator/prometheus для метрик.
 
 Сервис нотификации имитирует отправку сообщений на электронную почту, распечатывая их в лог.
 
@@ -47,6 +53,12 @@ API на базе NGINX Gateway Fabric - API Gateway, Load Balancing, Service Di
 Передача курсов валют exchange-generator для обновления в exchange-service осуществляется через Apache Kafka.
 
 Конфигурации хранятся в виде шаблонов configmap и загружаются при развертывании через helm или обновляются через kubectl apply - паттерн External Configuration.
+
+Каждый микросервис реализует поставку своих трейсов в Zipkin.
+
+Каждый микросервис реализует поставку метрик в Prometheus.
+
+Каждый микросервис реализует логирование информационной, диагностической информации и ошибок в топик logs Apache Kafka для логов.
 
 #### Сборка приложения
 
@@ -90,12 +102,23 @@ docker compose up -d --build
 
 После развертывания сайт приложения будет доступен по адресу: `http://bankapp.test.local` для тестовой среды и `http://bankapp.prod.local` для продакшн.
 
+Zipkin будет доступен по адресу: `http://zipkin.monitoring-test.local` для тестовой среды и `http://zipkin.monitoring-prod.local` для продакшн.
+
+Grafana будет доступна по адресу: `http://grafana.monitoring-test.local` для тестовой среды и `http://grafana.monitoring-prod.local` для продакшн.
+
+Kibana будет доступна по адресу: `http://kibana.monitoring-test.local` для тестовой среды и `http://kibana.monitoring-prod.local` для продакшн.
+
 Для этого необходимо добавить следующие записи в etc/hosts:
 ```shell
 127.0.0.1 bankapp.test.local
 127.0.0.1 bankapp.prod.local
+127.0.0.1 zipkin.monitoring-test.local
+127.0.0.1 zipkin.monitoring-prod.local
+127.0.0.1 grafana.monitoring-test.local
+127.0.0.1 grafana.monitoring-prod.local
+127.0.0.1 kibana.monitoring-test.local
+127.0.0.1 kibana.monitoring-prod.local
 ```
-
 
 #### Пользователи
 При первоначальной загрузке приложения создаются тестовые пользователи
