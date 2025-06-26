@@ -67,3 +67,6 @@ data:
         org.springframework.web.filter.reactive.ServerHttpObservationFilter: TRACE # Spring Boot 3+ - WebFlux Observability
         io.r2dbc.proxy: DEBUG      # Основное логирование SQL через r2dbc-proxy
         io.r2dbc.proxy.listener.QueryExecutionInfoListener: TRACE
+      pattern:
+        correlation: "[${spring.application.name:},%X{traceId:-},%X{spanId:-}]"
+      include-application-name: false
