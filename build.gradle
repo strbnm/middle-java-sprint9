@@ -142,6 +142,19 @@ subprojects {
             }
         }
     }
+
+    // Копирование единой конфигурации Logback во все модули проекта
+    tasks.named('processResources').configure {
+        from("${rootDir}/logback/logback.xml") {
+            into ''
+        }
+    }
+
+    tasks.named('processTestResources').configure {
+        from("${rootDir}/logback/logback-test.xml") {
+            into ''
+        }
+    }
 }
 
 // Отключаем задачи Java в корневом проекте
