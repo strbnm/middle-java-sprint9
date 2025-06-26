@@ -38,6 +38,9 @@ data:
           endpoint: ${ZIPKIN_URL}/api/v2/spans
         sampling:
           probability: 1
+      metrics:
+        tags:
+          application: ${spring.application.name}
     spring:
       thymeleaf:
         check-template-location: true
