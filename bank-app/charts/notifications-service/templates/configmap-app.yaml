@@ -60,3 +60,10 @@ data:
       sql:
         init:
           mode: never
+    logging:
+      level:
+        org.springframework.web.reactive.function.client.ExchangeFunctions: DEBUG  # исходящие WebClient-запросы
+        org.springframework.web.server.adapter.HttpWebHandlerAdapter: DEBUG       # входящие HTTP-запросы
+        org.springframework.web.filter.reactive.ServerHttpObservationFilter: TRACE # Spring Boot 3+ - WebFlux Observability
+        io.r2dbc.proxy: DEBUG      # Основное логирование SQL через r2dbc-proxy
+        io.r2dbc.proxy.listener.QueryExecutionInfoListener: TRACE

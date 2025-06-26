@@ -36,3 +36,8 @@ data:
           resourceserver:
             jwt:
               issuer-uri: ${KEYCLOAK_ISSUER_URL}
+    logging:
+      level:
+        org.springframework.web.reactive.function.client.ExchangeFunctions: DEBUG  # исходящие WebClient-запросы
+        org.springframework.web.server.adapter.HttpWebHandlerAdapter: DEBUG       # входящие HTTP-запросы
+        org.springframework.web.filter.reactive.ServerHttpObservationFilter: TRACE # Spring Boot 3+ - WebFlux Observability

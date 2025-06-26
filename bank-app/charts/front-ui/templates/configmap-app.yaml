@@ -70,3 +70,8 @@ data:
           url: ${GATEWAY_API_URL}/transfer-service
         accounts-service:
           url: ${GATEWAY_API_URL}/accounts-service
+    logging:
+      level:
+        org.springframework.web.reactive.function.client.ExchangeFunctions: DEBUG  # исходящие WebClient-запросы
+        org.springframework.web.server.adapter.HttpWebHandlerAdapter: DEBUG       # входящие HTTP-запросы
+        org.springframework.web.filter.reactive.ServerHttpObservationFilter: TRACE # Spring Boot 3+ - WebFlux Observability
