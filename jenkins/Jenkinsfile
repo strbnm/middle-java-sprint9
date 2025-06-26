@@ -364,7 +364,7 @@ pipeline {
                                         kubectl create configmap my-dashboards \\
                                           --from-file=./grafana/dashboards/ \\
                                           --namespace monitoring-test \\
-                                          --label grafana_dashboard=1
+                                          --labels grafana_dashboard=1
                                     """
                                 }
                             }

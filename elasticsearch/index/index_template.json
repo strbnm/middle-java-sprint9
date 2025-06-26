@@ -1,0 +1,68 @@
+{
+  "index_templates": [
+    {
+      "name": "logs-template",
+      "index_template": {
+        "index_patterns": ["logs-*"],
+        "template": {
+          "settings": {
+            "number_of_shards": 3,
+            "number_of_replicas": 2
+          },
+          "mappings": {
+            "dynamic_templates": [
+              {
+                "strings_as_keywords": {
+                  "match_mapping_type": "string",
+                  "mapping": {
+                    "type": "keyword"
+                  }
+                }
+              }
+            ],
+            "properties": {
+              "@timestamp": {
+                "type": "date"
+              },
+              "message": {
+                "type": "text"
+              },
+              "logger_name": {
+                "type": "keyword"
+              },
+              "thread_name": {
+                "type": "keyword"
+              },
+              "level": {
+                "type": "keyword"
+              },
+              "level_value": {
+                "type": "integer"
+              },
+              "mdc_*": {
+                "type": "keyword",
+                "ignore_above": 256
+              },
+              "stack_trace": {
+                "type": "text"
+              },
+              "host": {
+                "type": "keyword"
+              },
+              "application": {
+                "type": "keyword"
+              }
+            }
+          }
+        },
+        "priority": 500,
+        "version": 1,
+        "data_stream": {
+          "timestamp_field": {
+            "name": "@timestamp"
+          }
+        }
+      }
+    }
+  ]
+}
