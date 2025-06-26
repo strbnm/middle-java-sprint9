@@ -4,6 +4,7 @@ metadata:
   name: {{ include "exchange-service.fullname" . }}
   labels:
     {{- include "exchange-service.labels" . | nindent 4 }}
+    app: {{ include "exchange-service.fullname" . }}
 spec:
   type: {{ .Values.service.type }}
   ports:

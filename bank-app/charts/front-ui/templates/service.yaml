@@ -4,6 +4,7 @@ metadata:
   name: {{ include "front-ui.fullname" . }}
   labels:
     {{- include "front-ui.labels" . | nindent 4 }}
+    app: {{ include "front-ui.fullname" . }}
 spec:
   type: {{ .Values.service.type }}
   ports:

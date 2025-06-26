@@ -4,6 +4,7 @@ metadata:
   name: {{ include "transfer-service.fullname" . }}
   labels:
     {{- include "transfer-service.labels" . | nindent 4 }}
+    app: {{ include "transfer-service.fullname" . }}
 spec:
   type: {{ .Values.service.type }}
   ports:

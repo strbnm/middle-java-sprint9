@@ -4,6 +4,7 @@ metadata:
   name: {{ include "notifications-service.fullname" . }}
   labels:
     {{- include "notifications-service.labels" . | nindent 4 }}
+    app: {{ include "notifications-service.fullname" . }}
 spec:
   type: {{ .Values.service.type }}
   ports:

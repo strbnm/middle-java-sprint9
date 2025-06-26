@@ -1,3 +1,6 @@
 gateway:
   gatewayName: gateway
   gatewayNamespace: nginx-gateway
+
+kube-prometheus-stack:
+  kubernetesServiceMonitors:

@@ -4,6 +4,7 @@ metadata:
   name: {{ include "exchange-generator.fullname" . }}
   labels:
     {{- include "exchange-generator.labels" . | nindent 4 }}
+    app: {{ include "exchange-generator.fullname" . }}
 spec:
   type: {{ .Values.service.type }}
   ports:

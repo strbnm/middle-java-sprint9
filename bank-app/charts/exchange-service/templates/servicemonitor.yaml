@@ -8,7 +8,7 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app: {{ include "accounts-service.fullname" . }}
+      app: {{ include "exchange-service.fullname" . }}
   namespaceSelector:
     matchNames:
       - {{ .Release.Namespace }}

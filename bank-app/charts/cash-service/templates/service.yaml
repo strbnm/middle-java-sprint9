@@ -4,6 +4,7 @@ metadata:
   name: {{ include "cash-service.fullname" . }}
   labels:
     {{- include "cash-service.labels" . | nindent 4 }}
+    app: {{ include "cash-service.fullname" . }}
 spec:
   type: {{ .Values.service.type }}
   ports:

@@ -8,7 +8,7 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app: {{ .Chart.Name }}
+      app: {{ include "front-ui.fullname" . }}
   namespaceSelector:
     matchNames:
       - {{ .Release.Namespace }}

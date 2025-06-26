@@ -4,6 +4,7 @@ metadata:
   name: {{ include "accounts-service.fullname" . }}
   labels:
     {{- include "accounts-service.labels" . | nindent 4 }}
+    app: {{ include "accounts-service.fullname" . }}
 spec:
   type: {{ .Values.service.type }}
   ports:
