@@ -84,6 +84,4 @@ public class KafkaConsumerServiceTest {
                 .value(entity.getRateToRub())
                 .build();
     }
-
-
 }

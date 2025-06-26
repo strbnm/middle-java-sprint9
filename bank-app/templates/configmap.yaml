@@ -11,4 +11,4 @@ data:
 
   KEYCLOAK_ISSUER_URL: {{ printf "http://keycloak.%s.svc.cluster.local/realms/bank-app" .Release.Namespace }}
   GATEWAY_API_URL: "http://gateway-nginx.nginx-gateway.svc.cluster.local"
-  ZIPKIN_URL: {{ printf "http://ziplin.monitoring-%s.svc.cluster.local" .Release.Namespace }}
+  ZIPKIN_URL: {{ printf "http://zipkin.monitoring-%s.svc.cluster.local" .Release.Namespace }}

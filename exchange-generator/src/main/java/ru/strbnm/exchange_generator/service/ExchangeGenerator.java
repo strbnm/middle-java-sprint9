@@ -1,5 +1,8 @@
 package ru.strbnm.exchange_generator.service;
 
+import io.micrometer.observation.Observation;
+import io.micrometer.observation.ObservationRegistry;
+import io.micrometer.tracing.Tracer;
 import jakarta.annotation.PostConstruct;
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -28,32 +31,44 @@ public class ExchangeGenerator {
   private final Random random = new Random();
   private final MathContext mathContext = new MathContext(6, RoundingMode.HALF_UP);
 
+  private final ObservationRegistry observationRegistry;
+
+
   @Autowired
-  public ExchangeGenerator(KafkaTemplate<String, ExchangeRateMessage> kafkaTemplate) {
+  public ExchangeGenerator(KafkaTemplate<String, ExchangeRateMessage> kafkaTemplate, ObservationRegistry observationRegistry) {
       this.kafkaTemplate = kafkaTemplate;
+      this.observationRegistry = observationRegistry;
   }
 
-  public void generateAndSendRates() {
-    long timestamp = Instant.now().getEpochSecond();
-    UUID uuid = UUID.randomUUID();
-    List<Rate> rates =
-            List.of(
-                    Rate.builder().title("Рубль").name("RUB").value(BigDecimal.ONE).build(),
-                    Rate.builder().title("Доллар").name("USD").value(round(randomInRange(0.01, 0.02))).build(),
-                    Rate.builder().title("Юань").name("CNY").value(round(randomInRange(0.1, 0.2))).build());
+    public void generateAndSendRates() {
+        Observation.createNotStarted("generateAndSendRates", observationRegistry)
+                .lowCardinalityKeyValue("operation", "kafka-send-currency-rates")
+                .observe(() -> {
+                    long timestamp = Instant.now().getEpochSecond();
+                    List<Rate> rates = List.of(
+                            Rate.builder().title("Рубль").name("RUB").value(BigDecimal.ONE).build(),
+                            Rate.builder().title("Доллар").name("USD").value(round(randomInRange(0.01, 0.02))).build(),
+                            Rate.builder().title("Юань").name("CNY").value(round(randomInRange(0.1, 0.2))).build()
+                    );
 
-    ExchangeRateMessage message = ExchangeRateMessage.builder().timestamp(timestamp).rates(rates).build();
-    kafkaTemplate.send("exchange-rates", "actual_rates", message).whenComplete((result, e) -> {
-          if (e != null) {
-              log.error("Ошибка при отправке сообщения: {}", e.getMessage(), e);
-              return;
-          }
+                    ExchangeRateMessage message = ExchangeRateMessage.builder()
+                            .timestamp(timestamp)
+                            .rates(rates)
+                            .build();
 
-          RecordMetadata metadata = result.getRecordMetadata();
-          log.info("Сообщение отправлено. Topic = {}, partition = {}, offset = {}",
-                  metadata.topic(), metadata.partition(), metadata.offset());
-      });  ;
-  }
+                    kafkaTemplate.send("exchange-rates", "actual_rates", message)
+                            .whenComplete((result, e) -> {
+                                if (e != null) {
+                                    log.error("Ошибка при отправке сообщения: {}", e.getMessage(), e);
+                                    return;
+                                }
+
+                                RecordMetadata metadata = result.getRecordMetadata();
+                                log.info("Сообщение отправлено. Topic = {}, partition = {}, offset = {}",
+                                        metadata.topic(), metadata.partition(), metadata.offset());
+                            });
+                });
+    }
 
 
   @Scheduled(fixedDelay = 1000)
