@@ -361,6 +361,10 @@ pipeline {
                                         else
                                             echo "Prometheus already installed in monitoring-test"
                                         fi
+                                        kubectl create configmap my-dashboards \
+                                          --from-file=./grafana/dashboards/ \
+                                          --namespace monitoring-test \
+                                          --label grafana_dashboard=1
                                     """
                                 }
                             }
