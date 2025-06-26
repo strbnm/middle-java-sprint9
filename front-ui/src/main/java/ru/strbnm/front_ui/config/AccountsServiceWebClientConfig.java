@@ -22,13 +22,15 @@ public class AccountsServiceWebClientConfig {
 
     @Profile("default")
     @Bean("accountsWebClient")
-    public WebClient accountsWebClient(ReactiveOAuth2AuthorizedClientManager authorizedClientManager) {
+    public WebClient accountsWebClient(
+            WebClient.Builder webClientBuilder,
+            ReactiveOAuth2AuthorizedClientManager authorizedClientManager) {
         ServerOAuth2AuthorizedClientExchangeFilterFunction oauth2Filter =
                 new ServerOAuth2AuthorizedClientExchangeFilterFunction(authorizedClientManager);
 
         oauth2Filter.setDefaultClientRegistrationId("accounts-client");
 
-        return WebClient.builder()
+        return webClientBuilder
                 .filter(oauth2Filter)
                 .baseUrl(baseUrl)
                 .build();

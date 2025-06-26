@@ -22,13 +22,15 @@ public class ExchangeWebClientConfig {
 
     @Profile("default")
     @Bean("exchangeWebClient")
-    public WebClient exchangeWebClient(ReactiveOAuth2AuthorizedClientManager authorizedClientManager) {
+    public WebClient exchangeWebClient(
+            WebClient.Builder webClientBuilder,
+            ReactiveOAuth2AuthorizedClientManager authorizedClientManager) {
         ServerOAuth2AuthorizedClientExchangeFilterFunction oauth2Filter =
                 new ServerOAuth2AuthorizedClientExchangeFilterFunction(authorizedClientManager);
 
         oauth2Filter.setDefaultClientRegistrationId("exchange-client");
 
-        return WebClient.builder()
+        return webClientBuilder
                 .filter(oauth2Filter)
                 .baseUrl(baseUrl)
                 .build();

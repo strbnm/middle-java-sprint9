@@ -22,13 +22,15 @@ public class BlockerWebClientConfig {
 
     @Profile("default")
     @Bean("blockerWebClient")
-    public WebClient blockerWebClient(ReactiveOAuth2AuthorizedClientManager authorizedClientManager) {
+    public WebClient blockerWebClient(
+            WebClient.Builder webClientBuilder,
+            ReactiveOAuth2AuthorizedClientManager authorizedClientManager) {
         ServerOAuth2AuthorizedClientExchangeFilterFunction oauth2Filter =
                 new ServerOAuth2AuthorizedClientExchangeFilterFunction(authorizedClientManager);
 
         oauth2Filter.setDefaultClientRegistrationId("blocker-client");
 
-        return WebClient.builder()
+        return webClientBuilder
                 .filter(oauth2Filter)
                 .baseUrl(baseUrl)
                 .build();

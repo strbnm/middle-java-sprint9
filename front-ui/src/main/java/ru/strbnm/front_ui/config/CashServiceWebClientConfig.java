@@ -22,13 +22,15 @@ public class CashServiceWebClientConfig {
 
     @Profile("default")
     @Bean("cashWebClient")
-    public WebClient cashWebClient(ReactiveOAuth2AuthorizedClientManager authorizedClientManager) {
+    public WebClient cashWebClient(
+            WebClient.Builder webClientBuilder,
+            ReactiveOAuth2AuthorizedClientManager authorizedClientManager) {
         ServerOAuth2AuthorizedClientExchangeFilterFunction oauth2Filter =
                 new ServerOAuth2AuthorizedClientExchangeFilterFunction(authorizedClientManager);
 
         oauth2Filter.setDefaultClientRegistrationId("cash-client");
 
-        return WebClient.builder()
+        return webClientBuilder
                 .filter(oauth2Filter)
                 .baseUrl(baseUrl)
                 .build();

@@ -22,13 +22,15 @@ public class TransferServiceWebClientConfig {
 
     @Profile("default")
     @Bean("transferWebClient")
-    public WebClient transferWebClient(ReactiveOAuth2AuthorizedClientManager authorizedClientManager) {
+    public WebClient transferWebClient(
+            WebClient.Builder webClientBuilder,
+            ReactiveOAuth2AuthorizedClientManager authorizedClientManager) {
         ServerOAuth2AuthorizedClientExchangeFilterFunction oauth2Filter =
                 new ServerOAuth2AuthorizedClientExchangeFilterFunction(authorizedClientManager);
 
         oauth2Filter.setDefaultClientRegistrationId("transfer-client");
 
-        return WebClient.builder()
+        return webClientBuilder
                 .filter(oauth2Filter)
                 .baseUrl(baseUrl)
                 .build();
