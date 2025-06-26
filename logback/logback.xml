@@ -12,7 +12,7 @@
         <topic>logs</topic>
         <keyingStrategy class="com.github.danielwegener.logback.kafka.keying.NoKeyKeyingStrategy" />
         <deliveryStrategy class="com.github.danielwegener.logback.kafka.delivery.AsynchronousDeliveryStrategy" />
-        <producerConfig>bank-app-kafka-bootstrap.kafka.svc.cluster.local:9092</producerConfig>
+        <producerConfig>bootstrap.servers=bank-app-kafka-bootstrap.kafka.svc.cluster.local:9092</producerConfig>
 
         <!-- this is the fallback appender if kafka is not available. -->
         <appender-ref ref="STDOUT" />
