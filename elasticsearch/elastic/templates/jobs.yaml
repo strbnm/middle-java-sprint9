@@ -18,7 +18,7 @@ spec:
               curl -v -X PUT http://elasticsearch:9200/_ilm/policy/bankapp_policy
               -H 'Content-Type: application/json'
               --data-binary @/ilm/ilm-policy.json &&
-              curl -v -X PUT http://elasticsearch:9200/_index_template/logs_template
+              curl -v -X PUT http://elasticsearch:9200/_index_template/logs-bankapp
               -H 'Content-Type: application/json'
               --data-binary @/template/logs-template.json
           volumeMounts:

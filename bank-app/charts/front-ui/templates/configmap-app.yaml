@@ -14,10 +14,6 @@ data:
           cookie:
             name: SESSION_${spring.application.name}
 
-    logging:
-      level:
-        org.springframework.web.reactive.function.client.ExchangeFunctions: TRACE
-
     management:
       endpoints:
         web:

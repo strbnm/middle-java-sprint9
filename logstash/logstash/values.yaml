@@ -35,7 +35,7 @@ logstash:
   output: |-
     elasticsearch {
       hosts => ["http://elasticsearch:9200"]
-      index => "bankapp-logs-%{+YYYY.MM.dd}"
+      index => "logs-bankapp-%{+YYYY.MM.dd}"
     }
   resources:
     limits:
