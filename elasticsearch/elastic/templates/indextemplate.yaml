@@ -10,7 +10,7 @@ data:
         {
           "name": "logs_template",
           "index_template": {
-            "index_patterns": ["logs-*"],
+            "index_patterns": ["bankapp-logs-*"],
             "template": {
               "settings": {
                 "number_of_shards": 3,
