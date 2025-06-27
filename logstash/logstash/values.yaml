@@ -1,13 +1,13 @@
 logstash:
   readinessProbe:
-    initialDelaySeconds: 120
-    periodSeconds: 20
+    initialDelaySeconds: 300
+    periodSeconds: 30
     timeoutSeconds: 10
     successThreshold: 1
     failureThreshold: 10
   livenessProbe:
-    initialDelaySeconds: 120
-    periodSeconds: 20
+    initialDelaySeconds: 300
+    periodSeconds: 30
     timeoutSeconds: 10
     successThreshold: 1
     failureThreshold: 10
