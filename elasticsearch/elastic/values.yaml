@@ -1,6 +1,26 @@
 elasticsearch:
   global:
     kibanaEnabled: true
+  master:
+    livenessProbe:
+      enabled: false
+    readinessProbe:
+      enabled: false
+  data:
+    livenessProbe:
+      enabled: false
+    readinessProbe:
+      enabled: false
+  coordinating:
+    livenessProbe:
+      enabled: false
+    readinessProbe:
+      enabled: false
+  ingest:
+    livenessProbe:
+      enabled: false
+    readinessProbe:
+      enabled: false
 
 gateway:
   gatewayName: gateway
