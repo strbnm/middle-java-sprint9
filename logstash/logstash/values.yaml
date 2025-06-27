@@ -36,9 +36,6 @@ logstash:
     elasticsearch {
       hosts => ["http://elasticsearch:9200"]
       index => "bankapp-logs-%{+YYYY.MM.dd}"
-      retry_on_conflict => 3
-      action => "index"
-      workers => 4
     }
   resources:
     limits:
