@@ -1,0 +1,57 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: load-es-template
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    "helm.sh/hook": post-install
+spec:
+  template:
+    spec:
+      containers:
+        - name: curl
+          image: curlimages/curl
+          command:
+            - sh
+            - -c
+            - >
+              curl -X PUT http://elasticsearch:9200/_index_template/logs-template
+              -H 'Content-Type: application/json'
+              --data-binary @/templates/logs-template.json
+          volumeMounts:
+            - name: templates
+              mountPath: /templates
+      restartPolicy: OnFailure
+      volumes:
+        - name: templates
+          configMap:
+            name: es-index-template
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: load-es-ilm-policy
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    "helm.sh/hook": post-install
+spec:
+  template:
+    spec:
+      containers:
+        - name: curl
+          image: curlimages/curl
+          command:
+            - sh
+            - -c
+            - >
+              curl -X PUT http://elasticsearch:9200/_ilm/policy/bankapp_policy
+              -H 'Content-Type: application/json'
+              --data-binary @/templates/ilm-policy.json
+          volumeMounts:
+            - name: templates
+              mountPath: /templates
+      restartPolicy: OnFailure
+      volumes:
+        - name: templates
+          configMap:
+            name: es-ilm-policy

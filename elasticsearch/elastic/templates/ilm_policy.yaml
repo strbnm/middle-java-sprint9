@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: es-ilm-policy
+  namespace: {{ .Release.Namespace }}
+data:
+  ilm-policy.json: |
+    {
+      "policy": {
+        "phases": {
+          "hot": {
+            "min_age": "0ms",
+            "actions": {
+              "rollover": {
+                "max_size": "2GB",
+                "max_age": "1d"
+              }
+            }
+          },
+          "delete": {
+            "min_age": "30d",
+            "actions": {
+              "delete": {}
+            }
+          }
+        }
+      }
+    }
