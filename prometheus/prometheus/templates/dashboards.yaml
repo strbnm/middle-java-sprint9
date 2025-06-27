@@ -7,5 +7,5 @@ metadata:
     grafana_dashboard: "1"
 data:
   spring-dashboard.json: |-
-{{ .Files.Get "spring_boot_statistics_dashboard.json" | indent 4 }}
+{{ .Files.Get "files/spring_boot_statistics_dashboard.json" | indent 4 }}
 ---
