@@ -3,24 +3,56 @@ elasticsearch:
     kibanaEnabled: true
   master:
     livenessProbe:
-      enabled: false
+      initialDelaySeconds: 300
+      periodSeconds: 30
+      timeoutSeconds: 10
+      successThreshold: 1
+      failureThreshold: 10
     readinessProbe:
-      enabled: false
+      initialDelaySeconds: 300
+      periodSeconds: 30
+      timeoutSeconds: 10
+      successThreshold: 1
+      failureThreshold: 10
   data:
     livenessProbe:
-      enabled: false
+      initialDelaySeconds: 300
+      periodSeconds: 30
+      timeoutSeconds: 10
+      successThreshold: 1
+      failureThreshold: 10
     readinessProbe:
-      enabled: false
+      initialDelaySeconds: 300
+      periodSeconds: 30
+      timeoutSeconds: 10
+      successThreshold: 1
+      failureThreshold: 10
   coordinating:
     livenessProbe:
-      enabled: false
+      initialDelaySeconds: 300
+      periodSeconds: 30
+      timeoutSeconds: 10
+      successThreshold: 1
+      failureThreshold: 10
     readinessProbe:
-      enabled: false
+      initialDelaySeconds: 300
+      periodSeconds: 30
+      timeoutSeconds: 10
+      successThreshold: 1
+      failureThreshold: 10
   ingest:
     livenessProbe:
-      enabled: false
+      initialDelaySeconds: 300
+      periodSeconds: 30
+      timeoutSeconds: 10
+      successThreshold: 1
+      failureThreshold: 10
     readinessProbe:
-      enabled: false
+      initialDelaySeconds: 300
+      periodSeconds: 30
+      timeoutSeconds: 10
+      successThreshold: 1
+      failureThreshold: 10
 
 gateway:
   gatewayName: gateway
