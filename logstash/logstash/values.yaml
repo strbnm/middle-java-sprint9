@@ -22,17 +22,28 @@ logstash:
         codec => "json"
       }
   filter: |-
-    filter {
-      if [@timestamp] {
-        date {
-          match => ["@timestamp", "ISO8601"]
-        }
-      }
-  
-      mutate {
-        lowercase => ["level"]
+    if [@timestamp] {
+      date {
+        match => ["@timestamp", "ISO8601"]
       }
     }
+
+    mutate {
+      lowercase => ["level"]
+    }
+
+    if [mdc] {
+      ruby {
+        code => '
+          mdc = event.get("mdc")
+          if mdc.is_a?(Hash)
+            mdc.each { |k, v| event.set("mdc_#{k}", v) }
+          end
+        '
+      }
+      remove_field => ["mdc"]
+    }
+
   output: |-
     elasticsearch {
       hosts => ["http://elasticsearch:9200"]
