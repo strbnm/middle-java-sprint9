@@ -1,0 +1,12 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: logs
+  labels:
+    strimzi.io/cluster: bank-app
+spec:
+  partitions: 8
+  replicas: 2
+  config:
+    retention.ms: 7200000000
+    segment.bytes: 1073741824
