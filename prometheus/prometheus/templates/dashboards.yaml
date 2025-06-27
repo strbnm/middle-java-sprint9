@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: spring-dashboard
+  namespace: {{ .Release.Namespace }}
+  labels:
+    grafana_dashboard: "1"
+data:
+  spring-dashboard.json: |-
+{{ .Files.Get "spring_boot_statistics_dashboard.json" | indent 4 }}
+---
