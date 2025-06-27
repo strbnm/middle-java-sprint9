@@ -8,13 +8,14 @@ data:
     {
       "index_templates": [
         {
-          "name": "logs-template",
+          "name": "logs_template",
           "index_template": {
             "index_patterns": ["logs-*"],
             "template": {
               "settings": {
                 "number_of_shards": 3,
-                "number_of_replicas": 2
+                "number_of_replicas": 2,
+                "index.lifecycle.name": "bankapp_policy"
               },
               "mappings": {
                 "dynamic_templates": [
