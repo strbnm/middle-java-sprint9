@@ -6,7 +6,8 @@ metadata:
 data:
   logs-template.json: |
     {
-      "index_patterns": ["bankapp-logs-*"],
+      "index_patterns": ["logs-bankapp-*"],
+      "data_stream": {},
       "template": {
         "settings": {
           "number_of_shards": 3,
@@ -60,11 +61,7 @@ data:
         }
       },
       "priority": 500,
-      "version": 1,
-      "data_stream": {
-        "timestamp_field": {
-          "name": "@timestamp"
-        }
-      }
+      "version": 1
     }
+
 
