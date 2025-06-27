@@ -1,6 +1,8 @@
 elasticsearch:
   global:
     kibanaEnabled: true
+  master:
+    livenessProbe:
 
 gateway:
   gatewayName: gateway

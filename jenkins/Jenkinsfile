@@ -335,61 +335,60 @@ pipeline {
                         sh 'kubectl get namespace monitoring-test >/dev/null 2>&1 || kubectl create namespace monitoring-test'
                     }
                 }
-                stage("Deploy monitoring tools"){
-                    parallel {
-                        stage("Deploy Zipkin") {
-                            steps {
-                                dir('zipkin') {
-                                    sh """
-                                        if ! helm list -n monitoring-test | grep -q zipkin; then
-                                            echo "Installing Zipkin in monitoring-test..."
-                                            helm upgrade --install zipkin ./zipkin -n monitoring-test --wait
-                                        else
-                                            echo "Zipkin already installed in monitoring-test"
-                                        fi
-                                    """
-                                }
-                            }
-                        }
-                        stage("Deploy Prometheus Stack") {
-                            steps {
-                                dir('prometheus') {
-                                    sh """
-                                        if ! helm list -n monitoring-test | grep -q prometheus-stack; then
-                                            echo "Installing Prometheus in monitoring-test..."
-                                            helm upgrade --install prometheus-stack ./prometheus -n monitoring-test --wait
-                                        else
-                                            echo "Prometheus already installed in monitoring-test"
-                                        fi
-                                    """
-                                }
-                            }
-                        }
-                        stage("Deploy ES + Kibana") {
-                            steps {
-                                dir('elasticsearch') {
-                                    sh """
-                                        if ! helm list -n monitoring-test | grep -q elasticsearch; then
-                                            echo "Installing Elasticsearch in monitoring-test..."
-                                            helm upgrade --install elasticsearch ./elastic -n monitoring-test --wait --timeout 15m
-                                        else
-                                            echo "Elasticsearch already installed in monitoring-test"
-                                        fi
-                                    """
-                                }
-                            }
-                        }
-                        stage("Deploy Logstash") {
-                            steps {
-                                dir('logstash') {
-                                    sh """
-                                        echo "Installing Logstash in monitoring-test..."
-                                        helm upgrade --install logstash ./logstash -n monitoring-test --wait --timeout 15m
-                                    """
-                                }
+                stages{
+                    stage("Deploy Zipkin") {
+                        steps {
+                            dir('zipkin') {
+                                sh """
+                                    if ! helm list -n monitoring-test | grep -q zipkin; then
+                                        echo "Installing Zipkin in monitoring-test..."
+                                        helm upgrade --install zipkin ./zipkin -n monitoring-test --wait
+                                    else
+                                        echo "Zipkin already installed in monitoring-test"
+                                    fi
+                                """
                             }
                         }
                     }
+                    stage("Deploy Prometheus Stack") {
+                        steps {
+                            dir('prometheus') {
+                                sh """
+                                    if ! helm list -n monitoring-test | grep -q prometheus-stack; then
+                                        echo "Installing Prometheus in monitoring-test..."
+                                        helm upgrade --install prometheus-stack ./prometheus -n monitoring-test --wait
+                                    else
+                                        echo "Prometheus already installed in monitoring-test"
+                                    fi
+                                """
+                            }
+                        }
+                    }
+                    stage("Deploy ES + Kibana") {
+                        steps {
+                            dir('elasticsearch') {
+                                sh """
+                                    if ! helm list -n monitoring-test | grep -q elasticsearch; then
+                                        echo "Installing Elasticsearch in monitoring-test..."
+                                        helm upgrade --install elasticsearch ./elastic -n monitoring-test --wait --timeout 15m
+                                    else
+                                        echo "Elasticsearch already installed in monitoring-test"
+                                    fi
+                                """
+                            }
+                        }
+                    }
+                    stage("Deploy Logstash") {
+                        steps {
+                            dir('logstash') {
+                                sh """
+                                    echo "Installing Logstash in monitoring-test..."
+                                    helm upgrade --install logstash ./logstash -n monitoring-test --wait --timeout 15m
+                                """
+                            }
+                        }
+                    }
+
                 }
                 stage('Helm Deploy to TEST') {
                     steps {
