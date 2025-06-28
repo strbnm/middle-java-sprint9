@@ -108,6 +108,8 @@ Grafana будет доступна по адресу: `http://grafana.monitorin
 
 Kibana будет доступна по адресу: `http://kibana.monitoring-test.local` для тестовой среды и `http://kibana.monitoring-prod.local` для продакшн.
 
+Prometheus (Alert) будет доступен по адресу `http://alertmanager.monitoring-test.local/alerts` для тестовой среды и `http://alertmanager.monitoring-test.local/alerts` для продакшн.
+
 Для этого необходимо добавить следующие записи в etc/hosts:
 ```shell
 127.0.0.1 bankapp.test.local
@@ -118,7 +120,18 @@ Kibana будет доступна по адресу: `http://kibana.monitoring-
 127.0.0.1 grafana.monitoring-prod.local
 127.0.0.1 kibana.monitoring-test.local
 127.0.0.1 kibana.monitoring-prod.local
+127.0.0.1 alertmanager.monitoring-test.local
 ```
+
+#### Алерты
+
+Для метрик настроено два алерта:
+1. Задержка обновления курсов валют более 30 сек. [Ссылка для тестовой среды](http://alertmanager.monitoring-test.local/alerts?page=1&search=HighDelayGetNewCurrencyRate)
+![HighDelayGetNewCurrencyRate](docs/img_3.png)
+
+2. Более 6 неуспешных попыток входа для пользователя в течении одной минуты. [Ссылка для тестовой среды](http://alertmanager.monitoring-test.local/alerts?page=1&search=TooManyFailedLogins)
+![TooManyFailedLogins](docs/img_2.png)
+
 
 #### Пользователи
 При первоначальной загрузке приложения создаются тестовые пользователи

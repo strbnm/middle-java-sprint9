@@ -47,5 +47,5 @@ spec:
               type: ReplacePrefixMatch
               replacePrefixMatch: /
       backendRefs:
-        - name: prometheus-stack-kube-prom-alertmanager
-          port: 8080
+        - name: prometheus-stack-kube-prom-prometheus
+          port: 9090
