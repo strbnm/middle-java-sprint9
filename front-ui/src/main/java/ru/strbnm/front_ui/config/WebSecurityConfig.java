@@ -20,6 +20,8 @@ import org.springframework.security.oauth2.client.web.DefaultReactiveOAuth2Autho
 import org.springframework.security.oauth2.client.web.server.ServerOAuth2AuthorizedClientRepository;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.WebFilterExchange;
+import org.springframework.security.web.server.authentication.RedirectServerAuthenticationFailureHandler;
+import org.springframework.security.web.server.authentication.RedirectServerAuthenticationSuccessHandler;
 import org.springframework.security.web.server.authentication.ServerAuthenticationFailureHandler;
 import org.springframework.security.web.server.authentication.ServerAuthenticationSuccessHandler;
 import org.springframework.security.web.server.context.WebSessionServerSecurityContextRepository;
@@ -38,14 +40,38 @@ public class WebSecurityConfig {
 
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http, MeterRegistry meterRegistry) {
+
+        // Дефолтный success handler (редирект на "/")
+        ServerAuthenticationSuccessHandler defaultSuccessHandler =
+                new RedirectServerAuthenticationSuccessHandler("/");
+
+        // Наш обёрнутый success handler
+        ServerAuthenticationSuccessHandler wrappedSuccessHandler = (webFilterExchange, authentication) -> {
+            String username = authentication.getName();
+            meterRegistry.counter("custom.login", "username", username, "status", "success").increment();
+            return defaultSuccessHandler.onAuthenticationSuccess(webFilterExchange, authentication);
+        };
+
+        // Дефолтный failure handler (отдаёт 401)
+        ServerAuthenticationFailureHandler defaultFailureHandler =
+                new RedirectServerAuthenticationFailureHandler("/login?error");
+
+        // Обёртка
+        ServerAuthenticationFailureHandler wrappedFailureHandler = (webFilterExchange, exception) -> {
+            return webFilterExchange.getExchange().getFormData()
+                    .defaultIfEmpty(new org.springframework.util.LinkedMultiValueMap<>())
+                    .flatMap(data -> {
+                        String username = data.getFirst("username");
+                        meterRegistry.counter("custom.login", "username", username == null ? "unknown" : username, "status", "failure").increment();
+                        return defaultFailureHandler.onAuthenticationFailure(webFilterExchange, exception);
+                    });
+        };
         http
                 .oauth2Client(Customizer.withDefaults())
                 .securityContextRepository(new WebSessionServerSecurityContextRepository())
-                .formLogin(form -> form
-                                .loginPage("/login")
-                        .authenticationSuccessHandler(new LoggingSuccessHandler(meterRegistry))
-                        .authenticationFailureHandler(new LoggingFailureHandler(meterRegistry))
-                        )
+                .formLogin((login) -> login
+                        .authenticationSuccessHandler(wrappedSuccessHandler)
+                        .authenticationFailureHandler(wrappedFailureHandler))
                 .csrf(csrf -> csrf
                         .csrfTokenRepository(CookieServerCsrfTokenRepository.withHttpOnlyFalse())
                 )
@@ -82,35 +108,5 @@ public class WebSecurityConfig {
         authorizedClientManager.setAuthorizedClientProvider(authorizedClientProvider);
 
         return authorizedClientManager;
-    }
-
-    static class LoggingSuccessHandler implements ServerAuthenticationSuccessHandler {
-        private final MeterRegistry meterRegistry;
-
-        LoggingSuccessHandler(MeterRegistry registry) {
-            this.meterRegistry = registry;
-        }
-
-        @Override
-        public Mono<Void> onAuthenticationSuccess(WebFilterExchange exchange, Authentication authentication) {
-            String username = authentication.getName();
-            meterRegistry.counter("user.login.attempts", "username", username, "outcome", "success").increment();
-            return exchange.getChain().filter(exchange.getExchange());
-        }
-    }
-
-    static class LoggingFailureHandler implements ServerAuthenticationFailureHandler {
-        private final MeterRegistry meterRegistry;
-
-        LoggingFailureHandler(MeterRegistry registry) {
-            this.meterRegistry = registry;
-        }
-
-        @Override
-        public Mono<Void> onAuthenticationFailure(WebFilterExchange exchange, AuthenticationException ex) {
-            String username = exchange.getExchange().getRequest().getQueryParams().getFirst("username");
-            meterRegistry.counter("user.login.attempts", "username", username != null ? username : "unknown", "outcome", "failure").increment();
-            return Mono.error(ex);
-        }
     }
 }
