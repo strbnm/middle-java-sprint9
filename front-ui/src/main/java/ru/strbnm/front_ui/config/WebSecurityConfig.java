@@ -42,6 +42,7 @@ public class WebSecurityConfig {
                 .oauth2Client(Customizer.withDefaults())
                 .securityContextRepository(new WebSessionServerSecurityContextRepository())
                 .formLogin(form -> form
+                                .loginPage("/login")
                         .authenticationSuccessHandler(new LoggingSuccessHandler(meterRegistry))
                         .authenticationFailureHandler(new LoggingFailureHandler(meterRegistry))
                         )

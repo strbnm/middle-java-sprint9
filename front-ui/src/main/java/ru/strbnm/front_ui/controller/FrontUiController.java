@@ -42,6 +42,11 @@ public class FrontUiController {
     return Mono.just("redirect:/main");
   }
 
+  @GetMapping("/login")
+  public Mono<String> loginForm() {
+      return Mono.just("login");
+  }
+
   @GetMapping("/main")
   @PreAuthorize("isAuthenticated()")
   public Mono<String> mainPage(Model model, WebSession session) {
