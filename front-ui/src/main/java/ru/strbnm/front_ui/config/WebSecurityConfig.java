@@ -57,15 +57,13 @@ public class WebSecurityConfig {
                 new RedirectServerAuthenticationFailureHandler("/login?error");
 
         // Обёртка
-        ServerAuthenticationFailureHandler wrappedFailureHandler = (webFilterExchange, exception) -> {
-            return webFilterExchange.getExchange().getFormData()
-                    .defaultIfEmpty(new org.springframework.util.LinkedMultiValueMap<>())
-                    .flatMap(data -> {
-                        String username = data.getFirst("username");
-                        meterRegistry.counter("custom.login", "username", username == null ? "unknown" : username, "status", "failure").increment();
-                        return defaultFailureHandler.onAuthenticationFailure(webFilterExchange, exception);
-                    });
-        };
+        ServerAuthenticationFailureHandler wrappedFailureHandler = (webFilterExchange, exception) -> webFilterExchange.getExchange().getFormData()
+                .defaultIfEmpty(new org.springframework.util.LinkedMultiValueMap<>())
+                .flatMap(data -> {
+                    String username = data.getFirst("username");
+                    meterRegistry.counter("custom.login", "username", username == null ? "unknown" : username, "status", "failure").increment();
+                    return defaultFailureHandler.onAuthenticationFailure(webFilterExchange, exception);
+                });
         http
                 .oauth2Client(Customizer.withDefaults())
                 .securityContextRepository(new WebSessionServerSecurityContextRepository())
