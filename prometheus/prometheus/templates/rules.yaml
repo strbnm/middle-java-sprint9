@@ -30,10 +30,10 @@ spec:
     - name: user.login.alerts
       rules:
         - alert: TooManyFailedLogins
-          expr: increase(user_login_attempts{outcome="failure"}[1m]) > 10
+          expr: increase(custom_login_total{status="failure"}[1m]) > 6
           for: 1m
           labels:
             severity: warning
           annotations:
             summary: "Много неуспешных логинов за последнюю минуту"
-            description: "Более 10 неуспешных попыток входа за последнюю минуту."
+            description: "Более 6 неуспешных попыток входа за последнюю минуту."
