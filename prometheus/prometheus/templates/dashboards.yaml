@@ -9,3 +9,13 @@ data:
   spring-dashboard.json: |-
 {{ .Files.Get "files/spring_boot_statistics_dashboard.json" | indent 4 }}
 ---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bankapp-dashboard
+  namespace: {{ .Release.Namespace }}
+  labels:
+    grafana_dashboard: "1"
+data:
+  bankapp-dashboard.json: |-
+{{ .Files.Get "files/bankapp-statistics-dashboard.json" | indent 4 }}
