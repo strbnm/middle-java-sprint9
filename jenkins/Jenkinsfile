@@ -628,7 +628,7 @@ pipeline {
                     }
                 }
                 stage("Deploy monitoring tools"){
-                    parallel {
+                    stages {
                         stage("Deploy Zipkin") {
                             steps {
                                 dir('zipkin') {
@@ -657,34 +657,30 @@ pipeline {
                                 }
                             }
                         }
-//                         stage("Deploy ES + Kibana") {
-//                             steps {
-//                                 dir('elasticsearch') {
-//                                     sh """
-//                                         if ! helm list -n monitoring-prod | grep -q elasticsearch; then
-//                                             echo "Installing Elasticsearch in monitoring-prod..."
-//                                             helm upgrade --install elasticsearch ./elastic -n monitoring-prod --wait --timeout 10m
-//                                         else
-//                                             echo "Elasticsearch already installed in monitoring-prod"
-//                                         fi
-//                                     """
-//                                 }
-//                             }
-//                         }
-//                         stage("Deploy Logstash") {
-//                             steps {
-//                                 dir('logstash') {
-//                                     sh """
-//                                         if ! helm list -n monitoring-prod | grep -q logstash; then
-//                                             echo "Installing Logstash in monitoring-prod..."
-//                                             helm upgrade --install logstash ./logstash -n monitoring-prod --wait
-//                                         else
-//                                             echo "Logstash already installed in monitoring-prod"
-//                                         fi
-//                                     """
-//                                 }
-//                             }
-//                         }
+                        stage("Deploy ES + Kibana") {
+                            steps {
+                                dir('elasticsearch') {
+                                    sh """
+                                        if ! helm list -n monitoring-prod | grep -q elasticsearch; then
+                                            echo "Installing Elasticsearch in monitoring-prod..."
+                                            helm upgrade --install elasticsearch ./elastic -n monitoring-prod --wait --timeout 15m
+                                        else
+                                            echo "Elasticsearch already installed in monitoring-prod"
+                                        fi
+                                    """
+                                }
+                            }
+                        }
+                        stage("Deploy Logstash") {
+                            steps {
+                                dir('logstash') {
+                                    sh """
+                                        echo "Installing Logstash in monitoring-prod..."
+                                        helm upgrade --install logstash ./logstash -n monitoring-prod --wait --timeout 15m
+                                    """
+                                }
+                            }
+                        }
                     }
                 }
                 stage('Helm Deploy to PROD') {
