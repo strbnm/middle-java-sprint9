@@ -1,0 +1,19 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: user-login-alerts
+  namespace: {{ .Release.Namespace }}
+  labels:
+    release: {{ .Release.Name }}
+spec:
+  groups:
+    - name: user.login.alerts
+      rules:
+        - alert: TooManyFailedLogins
+          expr: sum by (username) (increase(custom_login_total{status="failure"}[1m])) > 6
+          for: 1m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Много неуспешных логинов у пользователя {{`{{`}} $labels.username {{`}}`}} за последнюю минуту"
+            description: "Более 6 неуспешных попыток входа у пользователя {{`{{`}} $labels.username {{`}}`}} за последнюю минуту."

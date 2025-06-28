@@ -17,25 +17,3 @@ spec:
           annotations:
             summary: "Нет обновления курсов валют"
             description: "Курсы валют не обновлялись более 30 сек."
----
-apiVersion: monitoring.coreos.com/v1
-kind: PrometheusRule
-metadata:
-  name: user-login-alerts
-  namespace: {{ .Release.Namespace }}
-  labels:
-    release: {{ .Release.Name }}
-spec:
-  groups:
-    - name: user.login.alerts
-      rules:
-        - alert: TooManyFailedLogins
-          expr: sum by (username) (increase(custom_login_total{status="failure"}[1m])) > 6
-          for: 1m
-          labels:
-            severity: warning
-          annotations:
-            summary: |-
-              {{- printf "Пользователь {{ $labels.username }} превысил лимит неуспешных логинов" }}
-            description: |-
-              {{- printf "Более 6 неуспешных попыток входа у пользователя {{ $labels.username }} за последнюю минуту." }}
