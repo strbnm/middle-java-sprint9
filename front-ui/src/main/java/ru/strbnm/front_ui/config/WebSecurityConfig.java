@@ -1,5 +1,6 @@
 package ru.strbnm.front_ui.config;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.access.AccessDeniedException;
@@ -7,6 +8,8 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableReactiveMethodSecurity;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientManager;
@@ -16,6 +19,9 @@ import org.springframework.security.oauth2.client.registration.ReactiveClientReg
 import org.springframework.security.oauth2.client.web.DefaultReactiveOAuth2AuthorizedClientManager;
 import org.springframework.security.oauth2.client.web.server.ServerOAuth2AuthorizedClientRepository;
 import org.springframework.security.web.server.SecurityWebFilterChain;
+import org.springframework.security.web.server.WebFilterExchange;
+import org.springframework.security.web.server.authentication.ServerAuthenticationFailureHandler;
+import org.springframework.security.web.server.authentication.ServerAuthenticationSuccessHandler;
 import org.springframework.security.web.server.context.WebSessionServerSecurityContextRepository;
 import org.springframework.security.web.server.csrf.CookieServerCsrfTokenRepository;
 import reactor.core.publisher.Mono;
@@ -31,11 +37,14 @@ public class WebSecurityConfig {
     }
 
     @Bean
-    public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
+    public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http, MeterRegistry meterRegistry) {
         http
                 .oauth2Client(Customizer.withDefaults())
                 .securityContextRepository(new WebSessionServerSecurityContextRepository())
-                .formLogin(Customizer.withDefaults())
+                .formLogin(form -> form
+                        .authenticationSuccessHandler(new LoggingSuccessHandler(meterRegistry))
+                        .authenticationFailureHandler(new LoggingFailureHandler(meterRegistry))
+                        )
                 .csrf(csrf -> csrf
                         .csrfTokenRepository(CookieServerCsrfTokenRepository.withHttpOnlyFalse())
                 )
@@ -72,5 +81,35 @@ public class WebSecurityConfig {
         authorizedClientManager.setAuthorizedClientProvider(authorizedClientProvider);
 
         return authorizedClientManager;
+    }
+
+    static class LoggingSuccessHandler implements ServerAuthenticationSuccessHandler {
+        private final MeterRegistry meterRegistry;
+
+        LoggingSuccessHandler(MeterRegistry registry) {
+            this.meterRegistry = registry;
+        }
+
+        @Override
+        public Mono<Void> onAuthenticationSuccess(WebFilterExchange exchange, Authentication authentication) {
+            String username = authentication.getName();
+            meterRegistry.counter("user.login.attempts", "username", username, "outcome", "success").increment();
+            return exchange.getChain().filter(exchange.getExchange());
+        }
+    }
+
+    static class LoggingFailureHandler implements ServerAuthenticationFailureHandler {
+        private final MeterRegistry meterRegistry;
+
+        LoggingFailureHandler(MeterRegistry registry) {
+            this.meterRegistry = registry;
+        }
+
+        @Override
+        public Mono<Void> onAuthenticationFailure(WebFilterExchange exchange, AuthenticationException ex) {
+            String username = exchange.getExchange().getRequest().getQueryParams().getFirst("username");
+            meterRegistry.counter("user.login.attempts", "username", username != null ? username : "unknown", "outcome", "failure").increment();
+            return Mono.error(ex);
+        }
     }
 }
